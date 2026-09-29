@@ -1,0 +1,5 @@
+# Pinned framework revision consumed by Loom.
+# SPEC: Loom consumes a specific framework revision; fail closed on mismatch.
+I2P_COMMIT=1d6658833713fd8de4852b2c85d8be65db98796f
+I2P_VERSION=2.1.0
+I2P_PATH=../I2P

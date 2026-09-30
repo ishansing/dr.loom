@@ -48,10 +48,17 @@ Legend: `[ ]` open · `[~]` in progress · `[x]` done (with evidence link).
 
 ## Phase 1 — During milestone 1 (design alongside code)
 
-- [ ] **R-10 Crash-recovery tests.** `kill -9` mid-transaction; lease
-  expiry + successor fencing with epoch proof.
-- [ ] **R-11 Audit vocabularies.** Decision/outcome value sets,
-  evidence-ref format, retention rule.
+- [x] **R-10 Crash-recovery tests.** `kill -9` mid-txn → committed kept,
+  uncommitted gone, resume intact (RECOVER-OK); expiry→epoch+1 succession
+  with stale-reject gate prototype (FENCE-OK, `/tmp`-only). Incidental:
+  single schema owner required. See `05-r10-crash-recovery.md`.
+- [x] **R-11 Audit vocabularies.** Decision
+  (`pending|allowed|denied|escalated|expired`) + outcome
+  (`pending|completed|failed|interrupted|timeout|not-executed`) sets with
+  lifecycle invariants; lifecycle-as-inserts (`action_id`, latest-row
+  view); `kind:locator` evidence refs with file hashes; immutable ledger
+  + audited archival retirement. Schema v2 delta documented, no code.
+  See `06-r11-audit-vocabularies.md`.
 - [ ] **R-12 Pause-vs-turn accounting.** Approval pauses must not mint
   transitions; only committed effects do (OpenAI precedent, 02 Part 4).
 - [ ] **R-13 Per-thread resume semantics.** One resume point per agent

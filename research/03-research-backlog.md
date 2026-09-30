@@ -59,10 +59,14 @@ Legend: `[ ]` open · `[~]` in progress · `[x]` done (with evidence link).
   view); `kind:locator` evidence refs with file hashes; immutable ledger
   + audited archival retirement. Schema v2 delta documented, no code.
   See `06-r11-audit-vocabularies.md`.
-- [ ] **R-12 Pause-vs-turn accounting.** Approval pauses must not mint
-  transitions; only committed effects do (OpenAI precedent, 02 Part 4).
-- [ ] **R-13 Per-thread resume semantics.** One resume point per agent
-  thread, not global (subagent isolation shape, 02 Part 4.6).
+- [x] **R-12 Pause-vs-turn accounting.** Pauses mint no rows; one open
+  `running` per (run, thread); close-once; crash-during-pause triage as
+  queries; no heartbeats, no resume-point rewrites. See
+  `07-r12-pause-vs-turn.md`.
+- [x] **R-13 Per-thread resume semantics.** `thread_id` on ledger+audit,
+  resume per (run, thread); spawn/handoff as audit actions; handoff =
+  release+acquire with epoch trail; holder named `<agent>:<thread>`;
+  spawn depth ≤ 3. See `08-r13-threads.md`.
 - [ ] **R-14 CLI UX for human runs.** `init/record/status` flows covering
   `HUMAN-RUNS.md` runbooks.
 

@@ -117,10 +117,16 @@ Legend: `[ ]` open · `[~]` in progress · `[x]` done (with evidence link).
   cursor refresh with data-as-of shown; no control buttons in v1
   (drill-down hands off to CLI); status chips derived, never stored.
   See `15-r21-dashboard.md`.
-- [ ] **R-22 Multi-agent wire choice.** A2A vs simple handoff envelope —
-  only if Loom leaves single-workspace scope.
-- [ ] **R-23 MCP spec pin.** Observed stable `2025-11-25`, moving target —
-  pin before any MCP-facing surface.
+- [x] **R-22 Multi-agent wire choice.** Envelope now (fixed payload:
+  ids + refs + grants + deadline + budget slice, context by reference),
+  A2A only on interop need (mapping recorded, transport-only change);
+  no federated leases, no discovery protocol before first use case.
+  See `20-r22-wire.md`.
+- [x] **R-23 MCP spec pin.** Pinned `2025-11-25` (stdio + Streamable
+  HTTP); Loom is client/host only, serves nothing in v1; untrusted
+  descriptions never policy/context; explicit approval for
+  sampling/elicitation; roots denied at connect. Re-pin via R-29
+  watch only. See `21-r23-mcp-pin.md`.
 - [x] **R-24 Memory-write governance.** Three scopes (thread scratch
   standard / run-shared high-risk / org-KB critical-human); org-KB
   reads logged as consumption trail; heuristic content classes

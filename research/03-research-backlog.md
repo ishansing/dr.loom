@@ -100,8 +100,12 @@ Legend: `[ ]` open · `[~]` in progress · `[x]` done (with evidence link).
   staging high-risk vs prod critical; rollback = restore via gates
   (kill stops, rollback restores), failed confirm auto-opens rollback,
   double-failed restore → human incident. See `13-r19-deploy.md`.
-- [ ] **R-20 Risk scoring.** Primitives attached to sessions;
-  escalate/block thresholds.
+- [x] **R-20 Risk scoring.** Additive transparent score from recorded
+  observables only (tier, sensitivity, blast radius, novelty, velocity,
+  history, irreversibility); action + decaying session scores;
+  escalate-40 (tier up, cheap) / block-75 (deny, conservative);
+  risk never kills (budgets/human do); crossings audited;
+  false-positive asymmetry explicit. See `14-r20-risk.md`.
 - [ ] **R-21 Dashboard hydration.** Startup + post-recovery store
   hydration design.
 - [ ] **R-22 Multi-agent wire choice.** A2A vs simple handoff envelope —

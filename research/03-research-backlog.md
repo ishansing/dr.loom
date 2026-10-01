@@ -123,8 +123,13 @@ Legend: `[ ]` open · `[~]` in progress · `[x]` done (with evidence link).
   writes rejected; quarantine-not-delete poisoning response with
   blast-radius review; governed consolidation (narrow-only, no
   auto-promotion). See `16-r24-memory.md`.
-- [ ] **R-25 Cost metering.** Usage objects incl. invisible reasoning
-  tokens; per-run accounting hooks.
+- [x] **R-25 Cost metering.** One normalized usage row per turn
+  (provider quirks at ingestion edge, raw payload as evidence);
+  creation/read splits used as billed, no allocation models;
+  versioned human-entered price tables pinned per run; unpriced =
+  NULL cost shown distinctly, never zero; idempotent late arrivals;
+  books primary, provider dashboard backstop with monthly drift
+  review; never interpolate. See `17-r25-metering.md`.
 - [ ] **R-26 Loom's own eval harness.** Golden runs + trajectory scoring
   for the harness itself.
 

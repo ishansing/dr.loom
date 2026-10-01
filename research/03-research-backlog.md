@@ -93,8 +93,13 @@ Legend: `[ ]` open · `[~]` in progress · `[x]` done (with evidence link).
   `authorize()` decision point; workspace `..`-escape as mechanical
   invariant; shipped defaults with ask-floors; secrets never in policy.
   See `12-r18-scopes.md`.
-- [ ] **R-19 Deployment authorization + rollback.** Harness-level
-  procedure, not per-run improvisation.
+- [x] **R-19 Deployment authorization + rollback.** Same five gates
+  for every deploy (propose → verify on exact hash → human authorize →
+  lease-held relayed execute → confirm); immutable hash-addressed
+  artifacts, mutable tags never inputs; promotion = new chain;
+  staging high-risk vs prod critical; rollback = restore via gates
+  (kill stops, rollback restores), failed confirm auto-opens rollback,
+  double-failed restore → human incident. See `13-r19-deploy.md`.
 - [ ] **R-20 Risk scoring.** Primitives attached to sessions;
   escalate/block thresholds.
 - [ ] **R-21 Dashboard hydration.** Startup + post-recovery store

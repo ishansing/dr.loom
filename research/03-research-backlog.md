@@ -130,8 +130,13 @@ Legend: `[ ]` open · `[~]` in progress · `[x]` done (with evidence link).
   NULL cost shown distinctly, never zero; idempotent late arrivals;
   books primary, provider dashboard backstop with monthly drift
   review; never interpolate. See `17-r25-metering.md`.
-- [ ] **R-26 Loom's own eval harness.** Golden runs + trajectory scoring
-  for the harness itself.
+- [x] **R-26 Loom's own eval harness.** Enforcement fixtures as code
+  (leases, recovery, audit triples, kill/budget/permission corpora,
+  schema migrations) in CI; three granularities with LLM-judge
+  restricted to quality dimensions; human goldens as dated records;
+  flaky fixtures quarantined not skipped; monthly calibration loop
+  feeding R-16/R-20 with audited tuning changes (narrow-only guardrail).
+  See `18-r26-eval.md`.
 
 ## Standing — continuous
 

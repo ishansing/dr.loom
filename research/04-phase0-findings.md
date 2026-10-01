@@ -5,7 +5,19 @@ closed — Designs R-03/R-04/R-06/R-08 are build-ready specifications, no code
 written under them. Framework baseline: I2P `1d66588` (v2.1.0), HEAD
 verified unchanged.
 
-## R-01 — §25 gate reassessment: still gated, same 4 items
+## R-01 — §25 gate: MET 2026-10-01 (updated; reassessment below is history)
+
+- Closure verified in-repo: I2P `4fe0869` "Close gate 25", judgment
+  `tests/skills/results/2026-10-01-readiness-gate-closed.md` — **GATE
+  MET**, all four conditions met by run, none waived.
+- Delta over the `1d66588` pin is evidence-only (README status, FAIL-07
+  result line, five result files; no contract/registry/lockfile changes;
+  `VERSION` still `2.1.0`). Loom re-pinned to `4fe0869`.
+- Scope change from the grilling outcome: the global kill switch joins
+  the first milestone (SPEC updated). Enforcement code is permitted as of
+  this closure; R-04/R-06/R-11 designs are now build-ready.
+
+Original 2026-09-30 reassessment (gate still closed at the time):
 
 - HEAD is still `1d6658833713fd8de4852b2c85d8be65db98796f`, `VERSION`
   still `2.1.0` — `FRAMEWORK_REF` matches. No framework drift.
@@ -180,10 +192,7 @@ write-path gating is the one piece the scaffold still lacks by design.
 
 ## What stays blocked
 
-- Any enforcement-code change (R-04 gating, trigger migration, outbox
-  tables) waits on R-01's four human-run items.
-- Non-code follow-ups: none — Phase-0 research is complete. Suggested
-  next: R-10/R-11 (crash-recovery tests, audit vocabularies) as pure
-  test/schema design. Enforcement *behavior* still needs the gate, but
-  R-10's kill-and-recover experiments run against throwaway DBs like
-  R-05 and don't touch enforcement paths.
+- Nothing on research grounds — the gate is met and enforcement designs
+  (R-04 gating, trigger migration, outbox tables, R-11 schema v2) are
+  build-ready pending the user's build authorization.
+- Non-code follow-ups: R-14 CLI UX; standing watches R-27–R-29.

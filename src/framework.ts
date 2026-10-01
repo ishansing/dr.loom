@@ -4,7 +4,7 @@ export interface FrameworkRevision {
 }
 
 export const EXPECTED_FRAMEWORK: FrameworkRevision = {
-	commit: "1d6658833713fd8de4852b2c85d8be65db98796f",
+	commit: "4fe0869ae41b0d81cbe3c6bc643f10ff2049ceed",
 	version: "2.1.0",
 };
 

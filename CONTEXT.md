@@ -46,3 +46,13 @@ Start by reading `SPEC.md`, then inspect the referenced framework contracts and 
 whether the §25 conditions have since been met. Clarify Loom's actual enforcement boundary
 with the user before defining schemas or writing code. Keep the source registry and adapter
 procedures in I2P; Loom should consume a pinned revision and persist execution evidence.
+
+## Update 2026-10-01 — gate met, pin moved
+
+The §25 gate is **MET** (I2P `4fe0869`, judgment
+`tests/skills/results/2026-10-01-readiness-gate-closed.md`; all four
+conditions met by run, none waived). Loom re-pinned `1d66588` → `4fe0869`
+(`FRAMEWORK_REF`, `src/framework.ts`, `SPEC.md`; evidence-only delta,
+`VERSION` still `2.1.0`). Kill switch joins milestone 1 per the grilling
+outcome. Enforcement code is permitted; R-04/R-06/R-11 designs are
+build-ready pending build authorization.

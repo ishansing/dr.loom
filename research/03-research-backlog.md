@@ -10,14 +10,12 @@ Legend: `[ ]` open · `[~]` in progress · `[x]` done (with evidence link).
 
 ## Phase 0 — Blocks milestone-1 code (research first, in order)
 
-- [~] **R-01 §25 gate evidence.** Repeat standard + greenfield goldens, run
-  one full grilling interview, run browser FAIL-07 or record permanently
-  blocked. (Per SPEC, no enforcement code until closed. Evidence:
-  `../I2P/tests/skills/results/`.)
-  Reassessed 2026-09-30: HEAD still `1d66588`, only new file is
-  `2026-09-28-upgrades-validation.md` (adjacent upgrades, closes none of
-  the four). Same 4 items open, 3 need a human. See `04-phase0-findings.md`
-  R-01. Enforcement code stays gated.
+- [x] **R-01 §25 gate evidence.** GATE MET 2026-10-01 — all four
+  conditions met by run, none waived (`2026-10-01-golden-repeat.md`,
+  `-greenfield-repeat.md`, `-grilling.md`, `-fail07.md`; judgment
+  `2026-10-01-readiness-gate-closed.md`). I2P HEAD `4fe0869`
+  (evidence-only delta over `1d66588`); Loom re-pinned, kill switch joins
+  milestone 1 per grilling outcome. Enforcement code permitted.
 - [x] **R-02 `bun:sqlite` trigger/authorizer support.** Triggers
   (`RAISE(ABORT)`) verified working; no authorizer on
   `Database.prototype`; readonly handles verified. See
@@ -67,8 +65,12 @@ Legend: `[ ]` open · `[~]` in progress · `[x]` done (with evidence link).
   resume per (run, thread); spawn/handoff as audit actions; handoff =
   release+acquire with epoch trail; holder named `<agent>:<thread>`;
   spawn depth ≤ 3. See `08-r13-threads.md`.
-- [ ] **R-14 CLI UX for human runs.** `init/record/status` flows covering
-  `HUMAN-RUNS.md` runbooks.
+- [x] **R-14 CLI UX for human runs.** Four-command surface (init /
+  record / status / check-framework) mapped to all 7 HUMAN-RUNS.md
+  families; resume bundle = per-thread last-committed + open phases +
+  open approvals + lease; failure contract; no interactive prompting, no
+  human lease commands, orientation read-only. Design only — lands with
+  R-11 schema v2 + R-13 threads at build. See `09-r14-cli-ux.md`.
 
 ## Phase 2 — Later milestones (do not start early)
 

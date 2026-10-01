@@ -156,4 +156,19 @@ Legend: `[ ]` open · `[~]` in progress · `[x]` done (with evidence link).
 - [ ] **R-28 Primary-source confirmation.** Confirm secondary-only items
   from 01/02 against primaries before citing elsewhere.
 - [ ] **R-29 Upstream drift.** Framework pins, MCP spec, runtime APIs —
-  monthly check.
+  monthly check. Now also: Pi releases (`@earendil-works/*`).
+
+## New scope (post-backlog)
+
+- [x] **R-30 Pi agent interception.** `earendil-works/pi` v0.99.2 verified
+  locally; no safety in core (gates all extension-built); veto via
+  extension `tool_call` block/throw; control via SDK embedding or RPC;
+  ledger via event stream + session JSONL + usage stats; telemetry is
+  observability not audit; no lease primitive; bypasses named. Loom as
+  Pi extension (+SDK/RPC supervisor) is the natural construction.
+  See `22-r30-pi-agent.md`.
+- [x] **R-31 OpenCode vs Pi for Loom.** Verdict: Pi adapter first,
+  OpenCode second, Loom core once (runtime-agnostic) + two thin
+  adapters; flexibility / reliability / multi-agent compared with
+  Pi's poverty-as-feature stated honestly; shared conformance suite
+  across both. See `23-opencode-vs-pi.md`.

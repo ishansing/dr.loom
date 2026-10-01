@@ -78,8 +78,11 @@ Legend: `[ ]` open · `[~]` in progress · `[x]` done (with evidence link).
   per-agent isolation boundary.
 - [ ] **R-16 Budgets.** Timeout/retry/cost counters, per-agent caps,
   fan-out limiters. (No turnkey precedent — pure policy design.)
-- [ ] **R-17 Kill-switch semantics.** Global + per-run; revocation
-  propagation to leases and sandboxes.
+- [x] **R-17 Kill-switch semantics.** Global + per-run scopes, latched;
+  engage = epoch-bump revocation + kill flag + freeze approvals + halt
+  relay (one txn) + best-effort runtime signals; human-only engage/reset,
+  reset re-verifies before clearing; kill check first in write gate.
+  Mechanism reuses R-10-proven fencing. See `10-r17-kill-switch.md`.
 - [ ] **R-18 Scoped permissions model.** Capability vs ACL; per-session
   scopes.
 - [ ] **R-19 Deployment authorization + rollback.** Harness-level

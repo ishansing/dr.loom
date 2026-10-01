@@ -116,8 +116,13 @@ Legend: `[ ]` open · `[~]` in progress · `[x]` done (with evidence link).
   only if Loom leaves single-workspace scope.
 - [ ] **R-23 MCP spec pin.** Observed stable `2025-11-25`, moving target —
   pin before any MCP-facing surface.
-- [ ] **R-24 Memory-write governance.** Shared-KB persists as
-  approval-gated high-risk action (poisoning, 02 Part 2.5).
+- [x] **R-24 Memory-write governance.** Three scopes (thread scratch
+  standard / run-shared high-risk / org-KB critical-human); org-KB
+  reads logged as consumption trail; heuristic content classes
+  (instruction/fact/secret-shaped→deny); mandatory provenance, unsourced
+  writes rejected; quarantine-not-delete poisoning response with
+  blast-radius review; governed consolidation (narrow-only, no
+  auto-promotion). See `16-r24-memory.md`.
 - [ ] **R-25 Cost metering.** Usage objects incl. invisible reasoning
   tokens; per-run accounting hooks.
 - [ ] **R-26 Loom's own eval harness.** Golden runs + trajectory scoring

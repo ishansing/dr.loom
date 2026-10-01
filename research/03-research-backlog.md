@@ -172,3 +172,12 @@ Legend: `[ ]` open · `[~]` in progress · `[x]` done (with evidence link).
   adapters; flexibility / reliability / multi-agent compared with
   Pi's poverty-as-feature stated honestly; shared conformance suite
   across both. See `23-opencode-vs-pi.md`.
+- [x] **R-32 Pi-as-base-runtime research.** `research/pi/` folder: index
+  with 41-item coverage matrix + 6 track docs, all verified against
+  Pi `main` + `pi.dev/docs/latest` (npm `0.99.2`, 2026-10-01).
+  Material corrections to the source checklist: fork-URL + sdk-path
+  fixes, no per-role models (virtual models), no skill top-k router,
+  no agent-level output schema (terminate-on-tool), no core
+  approvals/tasks/stages/budgets/locks, sessionDir trust hole still
+  open, pi-durable exists but experimental. v0.1 focus upheld with
+  two adjustments. See `research/pi/00-index.md`.

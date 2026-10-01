@@ -106,8 +106,12 @@ Legend: `[ ]` open · `[~]` in progress · `[x]` done (with evidence link).
   escalate-40 (tier up, cheap) / block-75 (deny, conservative);
   risk never kills (budgets/human do); crossings audited;
   false-positive asymmetry explicit. See `14-r20-risk.md`.
-- [ ] **R-21 Dashboard hydration.** Startup + post-recovery store
-  hydration design.
+- [x] **R-21 Dashboard hydration.** Read-only projection, zero owned
+  state; readonly-handle hydration before any resume action; one
+  recomputable view set serving dashboard + CLI + triage; monotonic
+  cursor refresh with data-as-of shown; no control buttons in v1
+  (drill-down hands off to CLI); status chips derived, never stored.
+  See `15-r21-dashboard.md`.
 - [ ] **R-22 Multi-agent wire choice.** A2A vs simple handoff envelope —
   only if Loom leaves single-workspace scope.
 - [ ] **R-23 MCP spec pin.** Observed stable `2025-11-25`, moving target —

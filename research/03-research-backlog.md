@@ -74,8 +74,13 @@ Legend: `[ ]` open · `[~]` in progress · `[x]` done (with evidence link).
 
 ## Phase 2 — Later milestones (do not start early)
 
-- [ ] **R-15 Sandbox orchestration.** gVisor vs Firecracker vs Docker;
-  per-agent isolation boundary.
+- [x] **R-15 Sandbox orchestration.** Walls-not-judge separation; backend
+  ladder (OS sandbox → containers → microVMs, deploy picks, runs don't);
+  invariants on every backend (root confinement, no-net-default,
+  no-privilege, env-secrets, resource limits); per-run default with
+  per-thread option for untrusted threads; snapshots as evidence;
+  kill → freeze+snapshot, destroy human-only, no thaw primitive. See
+  `19-r15-sandbox.md`.
 - [x] **R-16 Budgets.** Time (absolute deadlines, inherited on spawn) /
   retry (Finagle-shaped token bucket, safe-retries-only) / cost (usage
   objects per thread, explicit caps, unset = meter-only) / fan-out

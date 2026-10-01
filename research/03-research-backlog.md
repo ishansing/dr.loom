@@ -76,15 +76,23 @@ Legend: `[ ]` open · `[~]` in progress · `[x]` done (with evidence link).
 
 - [ ] **R-15 Sandbox orchestration.** gVisor vs Firecracker vs Docker;
   per-agent isolation boundary.
-- [ ] **R-16 Budgets.** Timeout/retry/cost counters, per-agent caps,
-  fan-out limiters. (No turnkey precedent — pure policy design.)
+- [x] **R-16 Budgets.** Time (absolute deadlines, inherited on spawn) /
+  retry (Finagle-shaped token bucket, safe-retries-only) / cost (usage
+  objects per thread, explicit caps, unset = meter-only) / fan-out
+  (live-thread + call caps). Breach ⇒ run-scoped kill (cost) or honest
+  terminal outcomes; counters as recomputable rows; enforcement points
+  ordered. See `11-r16-budgets.md`.
 - [x] **R-17 Kill-switch semantics.** Global + per-run scopes, latched;
   engage = epoch-bump revocation + kill flag + freeze approvals + halt
   relay (one txn) + best-effort runtime signals; human-only engage/reset,
   reset re-verifies before clearing; kill check first in write gate.
   Mechanism reuses R-10-proven fencing. See `10-r17-kill-switch.md`.
-- [ ] **R-18 Scoped permissions model.** Capability vs ACL; per-session
-  scopes.
+- [x] **R-18 Scoped permissions model.** ACL policy (deny-wins,
+  global→run→thread, managed baseline un-narrowable) + capability
+  grants (delegation narrows only, expire, audited); single
+  `authorize()` decision point; workspace `..`-escape as mechanical
+  invariant; shipped defaults with ask-floors; secrets never in policy.
+  See `12-r18-scopes.md`.
 - [ ] **R-19 Deployment authorization + rollback.** Harness-level
   procedure, not per-run improvisation.
 - [ ] **R-20 Risk scoring.** Primitives attached to sessions;

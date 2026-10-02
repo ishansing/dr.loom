@@ -215,3 +215,18 @@ Timing, triggers, and a record template: [watch-schedule.md](watch-schedule.md).
   lost Score distribution, alias-version masking and default retry/
   timeout semantics. R-35 remains pending. See
   `research/pi/10-system-one-internal-integration.md`.
+- [x] **R-37 FOSS decision-model comparison.** Shortlist decider-2b/4b
+  GGUF, Laya and kev-0.8b for R-35 shadow eval on Loom labels;
+  GLiNER2 as CPU pre-filter only; explicit exclusions with reasons
+  (terms, licenses, missing artifacts, uncalibrated hosts). Staged
+  adoption gates; no model installed. See
+  `research/pi/11-foss-decision-models.md` (2026-10-03).
+- [x] **R-38 QLoRA harness classifier verdict.** Qwen2.5-1.5B base
+  verified (Apache-2.0, 1.54B, 32k); r=16 q/v ≈ 2.75M trainable;
+  Unsloth SFT + GGUF export path confirmed. Corrections: proposal's
+  free-text TRUE/FALSE yields no probabilities — use letter-logit
+  readout + fitted temperature; "Qwen-1.5B" = Qwen2.5-1.5B; ~20 ms
+  is per-decision. Verdict: conditional yes on narrow stable tasks
+  (accuracy/latency/cost/offline), no on breadth/startup/out-of-box
+  calibration; third R-35 arm, train only after labels exist. See
+  `research/pi/12-qlora-harness-classifier.md` (2026-10-03).

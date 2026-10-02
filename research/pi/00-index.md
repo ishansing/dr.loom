@@ -11,6 +11,10 @@ integration path, see [R-34 System One research](09-system-one-decision-models.m
 For Pi's classifier adapter call path and Loom-side validation, isolation,
 metering, failure and recovery contracts, see
 [R-36 internal integration research](10-system-one-internal-integration.md).
+For open-weight alternatives, benchmark standings and the conditional
+shortlist, see [R-37 FOSS comparison](11-foss-decision-models.md).
+For the fine-tuned Qwen2.5-1.5B verdict versus the Jev API, see
+[R-38 QLoRA verdict](12-qlora-harness-classifier.md).
 
 ## Source pins (what "latest" meant)
 

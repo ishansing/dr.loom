@@ -171,8 +171,10 @@ Pi events / I2P request / retrieved evidence (untrusted)
    -> Loom audit/usage records and outcome labels
 ```
 
-The decision model has **no access to grants, credentials, or an effect
-API**. A returned probability is advisory evidence; it cannot mint a
+In the proposed **isolated sidecar**, the decision model receives no grants,
+Pi credentials, or effect API. A classifier invoked from a Pi extension is
+*not* isolated: extensions share Pi's process privileges. In either design,
+a returned probability is advisory evidence; it cannot mint a
 human approval, clear a kill flag, mark verification pass, extend a
 lease, or silently select an unapproved skill. Pi's own
 [security guidance](https://pi.dev/docs/latest/security) says extension
@@ -258,10 +260,11 @@ to deterministic routing when measurements degrade.
 
 ## 7. Pi/Bun integration shape (illustrative, not implementation)
 
-Pi already exposes a classifier API to **extensions**, so the smallest
-spike can be a Pi extension calling `ctx.modelRegistry.classify()`
-and returning a recommendation to Loom's orchestrator; it need not
-add TypeSafe's SDK to Loom. Conversely an out-of-process Bun service
+Pi already exposes a classifier API to **extensions**, so a small
+shadow-mode spike can call `ctx.modelRegistry.classify()` and return
+an advisory recommendation to Loom's orchestrator; this does **not**
+isolate the classifier credential or its input from Pi's process. For
+independent credential and failure boundaries an out-of-process Bun service
 may use TypeSafe's [JavaScript SDK](https://docs.typesafe.ai/sdk/javascript)
 (`systemOne`) or direct HTTP if inference and credentials must be
 isolated from Pi's extension process. Use exactly one model/version

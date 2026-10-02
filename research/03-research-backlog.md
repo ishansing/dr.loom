@@ -206,3 +206,12 @@ Timing, triggers, and a record template: [watch-schedule.md](watch-schedule.md).
   injection and distribution shift, and measure p95/p99 and cost.
   Decide on adoption from recorded evidence; until then no classifier
   is in the authorization or completion path. Protocol: R-34 §6.
+- [x] **R-36 System One internal integration.** Trace Pi's classifier
+  catalogue → registry → runtime/auth → System One HTTP/answer/usage
+  parser and virtual-model example; compare same-process, trusted
+  sidecar and local deployment; define non-authoritative request/result
+  contract, numeric validation, metering ownership and kill/restart
+  behavior. Findings include Pi's missing range/sum/option validation,
+  lost Score distribution, alias-version masking and default retry/
+  timeout semantics. R-35 remains pending. See
+  `research/pi/10-system-one-internal-integration.md`.

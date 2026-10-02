@@ -4,7 +4,7 @@ Research snapshot: **2026-10-02 UTC**. This is a comparison of *mechanisms*, not
 benchmark or a decision to adopt other runtimes. Pi remains Loom's base agent loop,
 model interface, tool plumbing, and conversation store; Loom owns I2P execution
 policy, project/task state, leases, durable decisions, approval, audit, and verified
-completion. See [Pi research](00-index.md), [Pi/OpenCode comparison](../23-opencode-vs-pi.md),
+completion. See [Pi research](00-index.md), [Pi/OpenCode comparison](../runtimes/23-opencode-vs-pi.md),
 and [build mapping](07-loom-v01-mapping.md). No change to `FRAMEWORK_REF` or build authorization.
 
 Source snapshot for moving repositories: [Pi `9fba660`](https://github.com/earendil-works/pi/commit/9fba660cf1caca0ade5bea72269352416e595a19),
@@ -57,7 +57,7 @@ competitor's marketing or security guarantees have been independently tested.
   plugin `tool.execute.before`/`after` and session events show an adapter
   pattern. R-07 established that plugin-disable and bus-only permission events
   preclude using its session DB as Loom's audit source. [Agents](https://opencode.ai/docs/agents/),
-  [plugins](https://opencode.ai/docs/plugins/), [R-07](../04-phase0-findings.md).
+  [plugins](https://opencode.ai/docs/plugins/), [R-07](../phase-0/04-phase0-findings.md).
 * **OMP:** integrate typed agent output and a visible subagent roster rather
   than adopting 31 tools or its Rust core. Its docs specify `task.maxRecursionDepth`
   default 2, spawn-policy checks, and schema precedence; [Agent Hub](https://github.com/can1357/oh-my-pi/blob/main/docs/agent-hub.md)

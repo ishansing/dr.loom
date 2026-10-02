@@ -9,7 +9,7 @@ path and proposes a **non-authoritative decision service** inside Loom.
 Loom currently contains a Bun/SQLite scaffold with transitions, leases and
 audit inserts, but no Pi adapter or enforcement middleware yet:
 [`src/store.ts`](../../src/store.ts), [`src/framework.ts`](../../src/framework.ts),
-[T-01–T-19 plan](07-loom-v01-mapping.md).
+[T-01–T-19 plan](../pi/07-loom-v01-mapping.md).
 
 ## Executive finding
 
@@ -106,7 +106,7 @@ The paths below are verified from Pi's source, not inferred from the UI.
   sidecar requires one Loom-owned per-call metering record including
   failures. Do not count it a second time if a codemode tool has already
   folded nested model usage into its parent result
-  ([Pi codemode](https://pi.dev/docs/latest/codemode#models), [R-25](../17-r25-metering.md)).
+  ([Pi codemode](https://pi.dev/docs/latest/codemode#models), [R-25](../phase-2/17-r25-metering.md)).
 
 The [shared transport](https://github.com/earendil-works/pi/blob/9fba660/packages/ai/src/api/system-one-shared.ts)
 defaults to **two retries** (three total attempts) and applies a
@@ -134,7 +134,7 @@ network endpoint or arbitrary RPC methods. Conversely, an extension
 may use Pi's built-in provider without a new package, but should never
 claim to keep that provider credential from Pi's other loaded extensions.
 [Pi security](https://pi.dev/docs/latest/security),
-[Loom sandbox scope](../19-r15-sandbox.md).
+[Loom sandbox scope](../phase-2/19-r15-sandbox.md).
 
 ## 3. Where inference fits in the control flow
 
@@ -187,8 +187,8 @@ fresh checks. A `bool` can rank retrieved passages, but cannot turn
 a repository file into a trusted instruction or approve a shared-memory
 write. For potential prompt injection, a **positive signal** may
 escalate to human review; a low probability never disables OS
-isolation or a hard policy rule. Sources: [R-20](../14-r20-risk.md),
-[R-24](../16-r24-memory.md), [Jev adversarial limitations](https://docs.typesafe.ai/model-jaggedness/jev-1.13).
+isolation or a hard policy rule. Sources: [R-20](../phase-2/14-r20-risk.md),
+[R-24](../phase-2/16-r24-memory.md), [Jev adversarial limitations](https://docs.typesafe.ai/model-jaggedness/jev-1.13).
 
 ### D. Pre-tool interception is the *wrong first pilot*
 
@@ -202,7 +202,7 @@ classifier becomes an additional pre-tool *restrictive* signal,
 evaluate **before** acquiring the DB write lock, record its decision,
 then atomically recheck Loom's kill/lease/approval facts before the
 commit. No network wait inside `BEGIN IMMEDIATE` and no classifier
-response can substitute for a live epoch check ([R-04](../04-phase0-findings.md)).
+response can substitute for a live epoch check ([R-04](../phase-0/04-phase0-findings.md)).
 
 ## 4. A minimal internal contract (proposal, not implemented)
 
@@ -229,11 +229,11 @@ may contain secrets, tool logs or user data: filter and budget their
 size **before** calling a provider; if the state is redacted, evaluate
 whether redaction changes label quality. Only the trusted boundary may
 map the result to Loom routing. The proposal uses existing [R-11 audit
-evidence refs](../06-r11-audit-vocabularies.md) and
-[R-25 metering](../17-r25-metering.md); it does not add another task
+evidence refs](../phase-1/06-r11-audit-vocabularies.md) and
+[R-25 metering](../phase-2/17-r25-metering.md); it does not add another task
 database or rewrite Pi's JSONL. On a killed run, mark the decision
 `aborted`/stale and recheck run state before applying an arriving
-late response ([R-17](../10-r17-kill-switch.md)).
+late response ([R-17](../phase-2/10-r17-kill-switch.md)).
 
 ### Validation belongs in Loom
 
@@ -272,7 +272,7 @@ not guarantees provided by it.
   explicit retry policy; record both. Cancellation is advisory until
   the provider request settles, so apply only if the run and input
   still match. [Pi adapter](https://github.com/earendil-works/pi/blob/9fba660/packages/ai/src/api/system-one-shared.ts),
-  [R-16 budgets](../11-r16-budgets.md).
+  [R-16 budgets](../phase-2/11-r16-budgets.md).
 * **No holding a workspace lock.** Snapshot state, call classifier,
   validate returned result, then re-read the run/registry/kill/policy
   state and acquire or check the write lease before any mutation.
@@ -290,14 +290,14 @@ not guarantees provided by it.
   Loom action. Define one charge owner per call ID to prevent both
   unmetered calls and double-counting. Pi's
   [codemode docs](https://pi.dev/docs/latest/codemode#models),
-  [R-25](../17-r25-metering.md).
+  [R-25](../phase-2/17-r25-metering.md).
 * **Replay without double effects.** Shadow evaluations may rerun from
   the same immutable input hash; routing decisions that were applied
   must persist their outcome with request ID and policy version. On
   restart, check the committed result and actual task/phase state;
   never reroute a task merely because Pi's latest JSONL message or a
-  classifier response exists. [R-06 outbox](../04-phase0-findings.md),
-  [R-12 pause accounting](../07-r12-pause-vs-turn.md).
+  classifier response exists. [R-06 outbox](../phase-0/04-phase0-findings.md),
+  [R-12 pause accounting](../phase-1/07-r12-pause-vs-turn.md).
 
 ## 6. Evaluation ladder for an internal implementation
 
@@ -320,7 +320,7 @@ dataset and build authorization.
    intervals; then measure end-to-end p50/p95/p99 and provider cost
    (including failures and retries) under real concurrency. Use
    [R-34 evaluation plan](09-system-one-decision-models.md#6-evaluation-plan-before-any-adoption)
-   and [R-26 fixture discipline](../18-r26-eval.md), not a vendor
+   and [R-26 fixture discipline](../phase-2/18-r26-eval.md), not a vendor
    benchmark's aggregate score.
 4. **One reversible pilot:** *suggest* an optional eligible skill in
    operator-visible logs; do not change dispatch until reviewers show

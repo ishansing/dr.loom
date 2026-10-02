@@ -7,14 +7,14 @@ For the separate 2026-10-02 study of features to borrow from Claude Code,
 OpenCode, OMP, Hermes, DeepSeek Harness, and Codex **while retaining Pi as the
 base**, see [R-33 cross-harness comparison](08-cross-harness-comparison.md).
 For typed fast decision models, probability semantics, and a measured
-integration path, see [R-34 System One research](09-system-one-decision-models.md).
+integration path, see [R-34 System One research](../system-one/09-system-one-decision-models.md).
 For Pi's classifier adapter call path and Loom-side validation, isolation,
 metering, failure and recovery contracts, see
-[R-36 internal integration research](10-system-one-internal-integration.md).
+[R-36 internal integration research](../system-one/10-system-one-internal-integration.md).
 For open-weight alternatives, benchmark standings and the conditional
-shortlist, see [R-37 FOSS comparison](11-foss-decision-models.md).
+shortlist, see [R-37 FOSS comparison](../system-one/11-foss-decision-models.md).
 For the fine-tuned Qwen2.5-1.5B verdict versus the Jev API, see
-[R-38 QLoRA verdict](12-qlora-harness-classifier.md).
+[R-38 QLoRA verdict](../system-one/12-qlora-harness-classifier.md).
 
 ## Source pins (what "latest" meant)
 

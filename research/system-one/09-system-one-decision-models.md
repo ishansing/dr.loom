@@ -5,8 +5,8 @@ Research snapshot: **2026-10-03**. Status: research and proposed evaluation,
 the coding-agent runtime; a decision model, if adopted, would be a bounded
 *classifier called by Loom*, not a replacement for Pi's model/agent loop.
 This builds on [Pi's existing classifier integration](https://pi.dev/docs/latest/models#use-classifier-models),
-[R-20 risk scoring](../14-r20-risk.md), [R-18 permissions](../12-r18-scopes.md),
-[R-26 evals](../18-r26-eval.md), and the [Pi build plan](07-loom-v01-mapping.md).
+[R-20 risk scoring](../phase-2/14-r20-risk.md), [R-18 permissions](../phase-2/12-r18-scopes.md),
+[R-26 evals](../phase-2/18-r26-eval.md), and the [Pi build plan](../pi/07-loom-v01-mapping.md).
 
 ## 1. What the name means
 
@@ -179,7 +179,7 @@ human approval, clear a kill flag, mark verification pass, extend a
 lease, or silently select an unapproved skill. Pi's own
 [security guidance](https://pi.dev/docs/latest/security) says extension
 logic is not an OS sandbox. I2P's [registry](../../../I2P/dependency.md)
-and Loom's [R-18](../12-r18-scopes.md) define the permitted set.
+and Loom's [R-18](../phase-2/12-r18-scopes.md) define the permitted set.
 
 | Candidate use | Example typed question(s) | Decision owner / fallback | Priority |
 | --- | --- | --- | --- |
@@ -201,7 +201,7 @@ guard and the call fails, the action must take the predefined safer
 route. Never turn classifier failure into `allow` just because the
 request is time-sensitive. Sources: [Jev adversarial limitations](https://docs.typesafe.ai/model-jaggedness/jev-1.13),
 [Pi classifier error contract](https://pi.dev/docs/latest/codemode#classify),
-[Loom write-gate design](../04-phase0-findings.md).
+[Loom write-gate design](../phase-0/04-phase0-findings.md).
 
 ## 6. Evaluation plan before any adoption
 
@@ -213,7 +213,7 @@ should reflect the user's intent and I2P contract, not just an LLM
 teacher or the model's own answers. Log disagreements and ambiguities;
 do not call missing ground truth “wrong” by default. Use the
 [framework's runbooks](../../../I2P/tests/skills/HUMAN-RUNS.md)
-and [R-26 fixture design](../18-r26-eval.md) as starting sources.
+and [R-26 fixture design](../phase-2/18-r26-eval.md) as starting sources.
 
 For each candidate task and model, record:
 

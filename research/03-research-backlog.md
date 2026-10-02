@@ -192,3 +192,17 @@ Timing, triggers, and a record template: [watch-schedule.md](watch-schedule.md).
   useful idea to a Pi integration seam and existing T-01–T-19 ticket,
   identify what not to copy, and define proof for adoption.
   See `research/pi/08-cross-harness-comparison.md` (2026-10-02).
+- [x] **R-34 System One decision models.** Jev/TypeSafe, Cloudflare
+  Clef and open alternatives; Choice/Score/Noul probabilities versus
+  confidence and calibration; vendor/independent evidence, Pi's
+  classifier joint, Loom-appropriate use cases and non-authoritative
+  routing, plus a task-specific shadow evaluation plan. Research done;
+  provider adoption requires new Loom-labeled evidence.
+  See `research/pi/09-system-one-decision-models.md` (2026-10-03).
+- [ ] **R-35 Conditional System One validation.** Only when Loom's
+  deterministic milestone-1 gates and Pi adapter exist: replay labeled
+  I2P routing/triage cases in shadow mode, compare deterministic/chat
+  baselines, calibrate on separate tuning/held-out sets, test prompt
+  injection and distribution shift, and measure p95/p99 and cost.
+  Decide on adoption from recorded evidence; until then no classifier
+  is in the authorization or completion path. Protocol: R-34 §6.

@@ -6,6 +6,8 @@ Status: verified-against-latest synthesis (2026-10-01). Assumes
 For the separate 2026-10-02 study of features to borrow from Claude Code,
 OpenCode, OMP, Hermes, DeepSeek Harness, and Codex **while retaining Pi as the
 base**, see [R-33 cross-harness comparison](08-cross-harness-comparison.md).
+For typed fast decision models, probability semantics, and a measured
+integration path, see [R-34 System One research](09-system-one-decision-models.md).
 
 ## Source pins (what "latest" meant)
 

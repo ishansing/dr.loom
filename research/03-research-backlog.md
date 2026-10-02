@@ -149,14 +149,19 @@ Legend: `[ ]` open · `[~]` in progress · `[x]` done (with evidence link).
   feeding R-16/R-20 with audited tuning changes (narrow-only guardrail).
   See `18-r26-eval.md`.
 
-## Standing — continuous
+## Watches and one-time cleanup
+
+Timing, triggers, and a record template: [watch-schedule.md](watch-schedule.md).
 
 - [ ] **R-27 Preprint watch.** Re-verify 2026 preprints (monitor
-  context-rot, premature termination) once peer-reviewed.
+  context-rot, premature termination) once peer-reviewed, or before
+  relying on them for a Loom decision.
 - [ ] **R-28 Primary-source confirmation.** Confirm secondary-only items
-  from 01/02 against primaries before citing elsewhere.
+  from 01/02 against primaries before citing elsewhere. One-time cleanup;
+  mark done when every claim is sourced, labeled inference, or removed.
 - [ ] **R-29 Upstream drift.** Framework pins, MCP spec, runtime APIs —
-  monthly check. Now also: Pi releases (`@earendil-works/*`).
+  first working day monthly plus pre-upgrade/adapter/contract checks.
+  Includes Pi releases (`@earendil-works/*`); record each actual review.
 
 ## New scope (post-backlog)
 

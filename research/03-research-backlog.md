@@ -181,3 +181,9 @@ Legend: `[ ]` open · `[~]` in progress · `[x]` done (with evidence link).
   approvals/tasks/stages/budgets/locks, sessionDir trust hole still
   open, pi-durable exists but experimental. v0.1 focus upheld with
   two adjustments. See `research/pi/00-index.md`.
+- [x] **R-33 Cross-harness feature study.** Compare Claude Code,
+  OpenCode, OMP, Hermes, DeepSeek Harness, and Codex against Pi as
+  Loom's base; cite first-party mechanisms and maturity, map each
+  useful idea to a Pi integration seam and existing T-01–T-19 ticket,
+  identify what not to copy, and define proof for adoption.
+  See `research/pi/08-cross-harness-comparison.md` (2026-10-02).

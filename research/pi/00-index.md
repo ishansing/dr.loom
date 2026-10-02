@@ -3,6 +3,10 @@
 Status: verified-against-latest synthesis (2026-10-01). Assumes
 `earendil-works/pi`, NOT the PyPI namesake / `pi-go` / `oh-my-pi`.
 
+For the separate 2026-10-02 study of features to borrow from Claude Code,
+OpenCode, OMP, Hermes, DeepSeek Harness, and Codex **while retaining Pi as the
+base**, see [R-33 cross-harness comparison](08-cross-harness-comparison.md).
+
 ## Source pins (what "latest" meant)
 
 - Repo `main`: `6f1072cc` (then `395315f` minutes later — main moves

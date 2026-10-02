@@ -42,6 +42,9 @@ duplicate.
 
 ### Phase A — Loom core (no Pi needed; gate met, needs build auth)
 
+Detailed part-by-part implementation plan (files, tests, practices):
+[09-milestone-1-implementation.md](09-milestone-1-implementation.md).
+
 - **T-01 Schema v2.** `thread_id` on ledger+audit; `action_id/actor/
   tier`; kill table; `budgets` counters + usage rows; `grants`;
   `latest-row` views; append-only triggers; migration from v1.

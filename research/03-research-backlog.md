@@ -162,6 +162,9 @@ Timing, triggers, and a record template: [watch-schedule.md](watch-schedule.md).
 - [ ] **R-29 Upstream drift.** Framework pins, MCP spec, runtime APIs —
   first working day monthly plus pre-upgrade/adapter/contract checks.
   Includes Pi releases (`@earendil-works/*`); record each actual review.
+  First review: [watches/2026-10-16-r29.md](watches/2026-10-16-r29.md)
+  (I2P v4.0.0 re-pin proposed, Pi 1.3.0 + MCP 2026-07-28 under
+  investigation, Jev no action).
 
 ## New scope (post-backlog)
 

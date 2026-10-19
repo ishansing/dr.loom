@@ -14,6 +14,13 @@ Pi adapter                        extension veto + SDK supervisor + session read
 Pi runtime                        sessions, tools, models (unchanged upstream)
 ```
 
+**2026-10-19 verification:** layering over upstream Pi remains the proposed
+approach, not proof that hooks enforce every effect. See
+[Pi 1.3.0 API compatibility](10-pi-1.3.0-api-review.md) and
+[execution coverage / no-fork conditions](11-pi-1.3.0-execution-coverage.md).
+The research baseline remains `0.99.2`; reviewing `1.3.0` does not silently
+promote it. Untrusted code must not share Loom's control-plane authority.
+
 Rule running through everything below: **no fact has two writers**.
 `tasks.json` owns the task graph; the ledger owns execution evidence
 and references task ids. State files own project truth; audit rows
@@ -73,18 +80,32 @@ Detailed part-by-part implementation plan (files, tests, practices):
 
 ### Phase B — Pi adapter (needs A green; Pi pinned `0.99.2`)
 
-- **T-08 `loom-pi` extension.** `tool_call` veto (mutation family +
-  grant check + headless default-deny), audit feed
-  (request/verdict/finish), redaction of secrets before persist
-  (Pi has no sanitize flag — Loom implements it).
+Before this phase: deliberately select/promote a runtime version, then run
+the release-specific API and execution corpus. For `1.3.0`, account for
+custom-start events, retained MCP callability and cache-warming usage;
+validate mandatory-hook readiness, fail-closed completion outside Pi,
+and effect-time kill/lease checks. No claim of zero post-kill effects may
+rest solely on a pre-tool hook or cooperative `abort()`.
+
+- **T-08 `loom-pi` extension.** `tool_call` veto (owned callable inventory +
+  grant check + headless default-deny), final-payload validation at owned
+  tool/operations boundaries, audit feed (request/verdict/finish).
+  Redact secrets before exposure/persistence through a fail-closed owned
+  path; a throwing `tool_result` handler alone leaks the original result.
+  No untrusted executable resources; startup policy precedes discovery.
 - **T-09 SDK supervisor.** Session lifecycle, per-role sessions,
   usage ingestion (R-25), compaction decision-injection,
-  `abort/dispose` wiring, virtual-model role routing.
+  `abort/abortBash/dispose` wiring plus external execution-domain cleanup,
+  virtual-model role routing. Disable codemode model calls/cache warming
+  initially or separately mediate and meter them; ingest dedicated usage
+  entries as well as message usage.
 - **T-10 Session reader.** JSONL + `get_entries{since}` cursor →
   ledger evidence refs; read-only (never write Pi's DB/files).
 - **T-11 Structured results.** Terminate-on-tool result schema +
   task↔transition mirroring (no dual truth). Done: agent prose
-  never parsed for state.
+  never parsed for state; outer Loom verification fails closed even when
+  a Pi settlement hook throws. Neither settlement nor a nested terminating
+  tool result proves that all external work has stopped.
 
 ### Phase C — Orchestrator slice (needs B)
 

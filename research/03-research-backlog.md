@@ -165,6 +165,10 @@ Timing, triggers, and a record template: [watch-schedule.md](watch-schedule.md).
   First review: [watches/2026-10-16-r29.md](watches/2026-10-16-r29.md)
   (I2P v4.0.0 re-pin proposed, Pi 1.3.0 + MCP 2026-07-28 under
   investigation, Jev no action).
+  Pi follow-up (2026-10-19): [release API checks](pi/10-pi-1.3.0-api-review.md)
+  and [execution coverage](pi/11-pi-1.3.0-execution-coverage.md). Source review
+  and offline probes complete; sandbox/effect-boundary conformance and
+  runtime promotion remain pending. No pin changed.
 
 ## New scope (post-backlog)
 

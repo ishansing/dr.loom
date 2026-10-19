@@ -1,5 +1,11 @@
 # R-36 — Decision models inside Loom: integration contracts and boundaries
 
+**Release follow-up (2026-10-19):** [Pi 1.3.0 API verification](../pi/10-pi-1.3.0-api-review.md)
+reproduces the parser/alias/timeout limitations with offline fixtures. Its
+published offline catalogue has only `jev-latest` and a zero input price;
+do not assume versioned Jev lookup or use that price as billing evidence.
+This does not close R-35 or promote a runtime/model pin.
+
 Research snapshot: **2026-10-03**; Pi source reviewed at
 [`earendil-works/pi@9fba660`](https://github.com/earendil-works/pi/commit/9fba660cf1caca0ade5bea72269352416e595a19).
 Research only; no classifier service was installed, benchmarked or put into

@@ -1,5 +1,10 @@
 # Pi Track 4 — Verification, Tool Gateway, Tools, Skills
 
+**2026-10-19 correction:** the `tool_call` gateway is not universal effect
+interception or a fail-closed completion gate. See the release-specific
+[Pi 1.3.0 execution coverage](11-pi-1.3.0-execution-coverage.md) and
+[API review](10-pi-1.3.0-api-review.md) before using the historical claims below.
+
 Covers checklist items 13, 14, 26, 27, 28.
 
 ## Verification layer (item 13: `agent_before_settle` boundary)

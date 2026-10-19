@@ -1,5 +1,8 @@
 # Pi Track 1 — Runtime Abstraction, Models, Config, Events
 
+Release-specific follow-up: [Pi 1.3.0 API verification](10-pi-1.3.0-api-review.md)
+(2026-10-19) supersedes conflicting API/config claims in this historical snapshot.
+
 Covers checklist items 1, 25, 29, 35, 41. Pins: repo `main`
 (`6f1072cc`→`395315f`, 2026-10-01), npm `0.99.2`.
 

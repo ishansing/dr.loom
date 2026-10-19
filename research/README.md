@@ -52,6 +52,9 @@ routine: [watch-schedule.md](watch-schedule.md). Planned build:
 - [pi/06-control-observability-durability.md](pi/06-control-observability-durability.md) — retries, budgets, evals, pi-durable.
 - [pi/07-loom-v01-mapping.md](pi/07-loom-v01-mapping.md) — milestone-1 × v0.1 mapping; build tickets T-01–T-19.
 - [pi/08-cross-harness-comparison.md](pi/08-cross-harness-comparison.md) — borrowing from six harnesses.
+- [pi/09-milestone-1-implementation.md](pi/09-milestone-1-implementation.md) — ordered core implementation parts, tests and practices.
+- [pi/10-pi-1.3.0-api-review.md](pi/10-pi-1.3.0-api-review.md) — release-pinned SDK/classifier checks and reproducible offline probe.
+- [pi/11-pi-1.3.0-execution-coverage.md](pi/11-pi-1.3.0-execution-coverage.md) — execution-path coverage, bypasses and no-fork conditions.
 
 ## System One decision models (`system-one/`)
 
@@ -59,3 +62,8 @@ routine: [watch-schedule.md](watch-schedule.md). Planned build:
 - [system-one/10-system-one-internal-integration.md](system-one/10-system-one-internal-integration.md) — Pi call path; non-authoritative contract (R-36).
 - [system-one/11-foss-decision-models.md](system-one/11-foss-decision-models.md) — open-weight comparison; conditional shortlist (R-37).
 - [system-one/12-qlora-harness-classifier.md](system-one/12-qlora-harness-classifier.md) — fine-tuned 1.5B verdict vs Jev API (R-38).
+
+## Drift reviews
+
+- [2026-10-16 R-29](watches/2026-10-16-r29.md) — I2P, Pi, MCP and Jev upstream drift.
+- [2026-10-19 Pi follow-up](watches/2026-10-19-r29-pi.md) — Pi 1.3.0 API verification and conditional no-fork verdict.

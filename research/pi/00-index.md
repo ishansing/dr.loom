@@ -1,6 +1,10 @@
 # Pi-as-Base-Runtime Research — Index
 
-Status: verified-against-latest synthesis (2026-10-01). Assumes
+Status: historical synthesis (2026-10-01), with a release-specific
+[Pi 1.3.0 API review](10-pi-1.3.0-api-review.md) and
+[execution-path/no-fork review](11-pi-1.3.0-execution-coverage.md)
+(2026-10-19). Those reviews supersede conflicting gateway/API claims below;
+they are not a production conformance certificate. Assumes
 `earendil-works/pi`, NOT the PyPI namesake / `pi-go` / `oh-my-pi`.
 
 For the separate 2026-10-02 study of features to borrow from Claude Code,

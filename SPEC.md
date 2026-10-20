@@ -4,8 +4,8 @@
 
 Loom is a separate runtime for mechanically enforcing the
 [idea-to-production framework](../I2P/README.md). The framework owns *what* skills do and
-how they compose; Loom owns execution state and enforceable safety boundaries. This document
-is a starting spec, not an approved implementation design.
+how they compose; Loom owns execution state and enforceable safety boundaries. This draft
+records design decisions and required behavior, not implemented production guarantees.
 
 ## Source of truth and readiness
 
@@ -29,6 +29,73 @@ is a starting spec, not an approved implementation design.
 - Loom consumes a *specific framework revision*; it does not edit, reimplement, install,
   or silently substitute framework skills.
 
+## Runtime architecture and security boundary (2026-10-20 decision)
+
+**Build Loom over upstream Pi, not a fork.** Use Pi's SDK and extensions for
+agent execution; keep Loom's authoritative state, policy and verification
+outside the Pi execution environment. Pi owns conversations and sessions;
+Loom owns task/workflow state, grants, leases, audit and completion.
+Hooks provide early rejection, feedback and telemetry, not the sole safety
+boundary. Reconsider a fork only for a demonstrated missing contract that
+cannot be satisfied by owned operations, disabling a channel or an upstream
+change; more hooks would not sandbox malicious same-process code.
+
+The release-specific [API review](research/pi/10-pi-1.3.0-api-review.md) and
+[execution audit](research/pi/11-pi-1.3.0-execution-coverage.md) verified Pi
+`1.3.0` at `71023aec1546d6d677a65669c5665c0927ce0dd0`. Ordinary model/nested/
+registered MCP tools share a gateway, but SDK Bash, extension execution,
+startup and model-call paths do not all traverse it. Input can change after
+validation; redaction and settlement exceptions can fail open; cancellation
+can leave descendants or delayed effects running. Offline component probes
+are evidence of those limits, not end-to-end Loom safety proof. The old
+`0.99.2` research baseline is unchanged; runtime promotion remains separate.
+
+Required boundaries:
+
+1. **Isolated execution.** Run the entire Pi process, executable extensions
+   and descendants inside a restricted OS/container/VM execution domain,
+   including startup/reload. Keep the Loom DB, authoritative project state,
+   protected host paths and production/provider credentials outside it;
+   mediate provider access through an approved credential/egress boundary.
+   Raw shell works only in a restricted disposable workspace. Do not reuse
+   a writable workspace for a successor until the old execution domain can
+   no longer write; candidate output is promoted only through Loom gates.
+2. **Owned privileged operations.** Protected writes, merges, deployment
+   and other privileged effects go through narrow Loom-controlled operations.
+   Bind requests to supervisor-established run/thread identity; validate the
+   final payload/target after rewrites and recheck kill, deadline, grant,
+   policy and owner/epoch at the write/dispatch boundary. An earlier hook
+   approval is not transferable to changed input. Serialize local writes
+   with kill/lease state; a SQLite transaction cannot atomically cancel a
+   remote request. Never wait for network I/O while holding its write lock.
+3. **Independent completion.** Only Loom can mark a task complete, using
+   fresh trusted verification tied to the exact candidate artifact hash
+   and reconciled privileged work. Pi prose, a resolved `prompt()`,
+   `agent_settled` or a terminating tool result is not verification. Missing,
+   failed, throwing, cancelled or timed-out verification leaves the task
+   unverified/failed, never successfully complete.
+4. **Fail-closed output handling.** Owned output paths sanitize or withhold
+   content before exposure or persistence, including partial streams,
+   structured results, error details and spill files. A sanitizer failure
+   returns a safe error, not the raw result. A `tool_result` hook alone is
+   insufficient; secrets must not enter the execution domain unnecessarily.
+5. **Explicit startup and channels.** Use owned settings/loaders and only
+   trusted, reviewed executable components; disable ambient autoload,
+   uncontrolled MCP servers, codemode model calls and cache warming
+   initially. Enable a channel only after its startup, authorization,
+   cancellation, output and usage paths pass conformance. Disable unsupported
+   UI/RPC/SDK Bash routes or confine them to the same execution boundary.
+6. **Honest cancellation.** Kill closes future admission/dispatch, revokes
+   leases and triggers external execution-domain cleanup. Runtime ACKs or
+   idle state do not prove descendants stopped. Already-dispatched external
+   actions may still finish: record unresolved outcomes, reconcile target
+   state and do not replay blindly. Idempotent replay requires a real
+   effect-side deduplication contract; cancellation is not rollback.
+
+No untrusted execution or production authority is enabled before these
+boundaries are tested. Sandboxing is therefore an adapter prerequisite,
+not optional hardening after unrestricted execution has shipped.
+
 ## First milestone: session ledger, leases, audit (+ kill switch)
 
 The implementation language/runtime is **Bun**. A scaffold exists (`src/`
@@ -45,6 +112,8 @@ conventional append-only) are replaced, not extended.
    is the paused state). Evidence refs are `kind:locator` pointers with
    content hashes for files. Side effects go through an outbox relay
    (same-txn business+outbox write, cursor relay, idempotent replay).
+   Recheck each dispatch, not just a batch; unknown outcomes require
+   reconciliation before replay unless effect-side deduplication is proven.
    Treat `.itp/run.md` as a framework handoff artifact, not an authoritative
    concurrent database. Research: `research/phase-1/07-r12-pause-vs-turn.md`,
    `research/phase-1/08-r13-threads.md`, `research/phase-1/06-r11-audit-vocabularies.md`,
@@ -69,18 +138,24 @@ conventional append-only) are replaced, not extended.
    `research/phase-1/06-r11-audit-vocabularies.md` (schema v2 delta).
 4. **Kill switch.** Global + per-run scopes, latched; engage revokes
    leases by epoch bump, freezes pending approvals as denied, halts the
-   relay (one txn), then best-effort runtime signals. Human-only
-   engage/reset; reset re-verifies first. Research:
+   relay (one txn), then runtime signals/external containment. Deny only
+   approvals whose actions have not dispatched; do not label an in-flight
+   action `not-executed`. Preserve and reconcile its unresolved outcome.
+   Human-only engage/reset; reset re-verifies first. Research:
    `research/phase-2/10-r17-kill-switch.md`.
 
 ## Subsequent milestones (from `research/pi/07-loom-v01-mapping.md`)
 
-**Milestone 2 — Pi runtime adapter.** `loom-pi` extension (pre-tool veto,
-grant check, headless default-deny, audit feed, Loom-side redaction);
-SDK supervisor (sessions, usage ingestion, compaction injection,
-abort wiring, role routing); read-only session reader; terminate-on-tool
-result schema. Pi pinned `0.99.2`; no out-of-band writes to Pi state.
-Sandbox rung selected per deploy (R-15 ladder).
+**Milestone 2 — Isolated Pi runtime adapter.** `loom-pi` extension for
+early veto/feedback; owned privileged-operation and fail-closed output paths;
+external supervisor controlling a sandboxed SDK runner (sessions,
+all-channel usage ingestion, compaction injection, `abort` + `abortBash` +
+execution-domain cleanup, role routing);
+read-only session reader; structured result schema and independent completion
+gate. Establish the selected R-15 sandbox boundary before untrusted execution;
+no out-of-band writes to Pi state. `0.99.2` is the historical research
+baseline, not an installed dependency; select/promote a version explicitly.
+Pi `1.3.0` API compatibility alone does not satisfy this milestone.
 
 **Milestone 3 — Policy, budgets, orchestrator slice.** Single
 `authorize()` (deny-wins ACL + narrowing capability grants); risk
@@ -122,23 +197,47 @@ candidate inputs for these, not fixed semantics.
   transition, evidence references, and an accurate resume point without conversation history
   (proven: kill -9 mid-transaction keeps committed, drops uncommitted; pause
   triage is three queries, not inference).
-- Every high-risk action is auditable as requested, allowed/denied, and completed/failed;
-  a partial action cannot appear successful. Denied/expired decisions pair only
+- Every high-risk action is auditable as requested, allowed/denied, and
+  completed/failed or explicitly unresolved with evidence; a partial action
+  cannot appear successful. Denied/expired decisions pair only
   with `not-executed`; an `escalated` row is never terminal; UPDATE/DELETE on
   the audit log fail by trigger (proven in test).
-- Engaging the kill switch mid-run yields zero further effects: leases revoked,
-  pending approvals frozen denied, relay halted; reset requires human
-  re-verification and never re-grants leases.
+- Once kill commits, no new gated write or dispatch is admitted: leases
+  revoked, undispatched approvals denied, relay halted, including between
+  items in one batch. Record already-dispatched actions separately; late
+  success or uncertain outcomes cannot become `not-executed` or trigger
+  blind replay. Reset requires reconciliation and human re-verification,
+  never re-grants leases. Runtime containment is an adapter acceptance gate,
+  not a guarantee established by milestone-1 DB fixtures.
 - Missing or mismatched framework contract input — including skill-content
   hash drift versus `skills.lock.json` — stops the run with an actionable reason.
 - Tests demonstrate the above under contention, expiry, kill, and restart
   (deterministic fixtures in CI per R-26); documented artifacts
   remain usable with the framework alone.
 
+## Adapter acceptance criteria (before untrusted execution / production authority)
+
+- Attempts through model/nested/deferred tools, SDK/UI/RPC Bash, extension
+  execution, startup and model/usage channels are either disabled, confined
+  or mediated; tests cover the final callable inventory, not just visibility.
+- Missing mandatory controls, a mutated approved payload or stale owner/epoch
+  cannot authorize a privileged effect. The sandbox cannot access the Loom
+  DB, protected host paths or production credentials directly.
+- A throwing redactor exposes no raw content on final/partial/structured/
+  spill paths; missing or throwing verification cannot complete a task.
+- Cancellation tests include surviving descendants, unawaited host calls,
+  post-abort spawn races and delayed remote completion. Prove local-domain
+  cleanup; record/reconcile remote uncertainty rather than claiming undo.
+- Run the permanent release-pinned conformance corpus, including real
+  provider/MCP and sandbox integration for every enabled channel. The current
+  offline API and 16 execution component probes do not close this gate.
+
 ## Decisions still open
 
-- Sandbox rung per deploy (R-15 ladder is decided; the rung choice is a
-  deployment decision, not a design one).
+- Sandbox backend/rung per deploy and its cleanup evidence; isolation of
+  the whole execution domain from Loom authority is fixed, not optional.
+- Concrete privileged-operation transport, effect-specific idempotency/
+  reconciliation and output filtering mechanics, to prove in adapter tests.
 - Budget defaults, risk weights/thresholds, and per-runbook policy tuning —
   starting values researched, final values come from R-26 calibration history.
 - Dashboard shape and drill-down depth (read-only constraint is fixed).

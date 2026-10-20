@@ -7,11 +7,19 @@ Grounding: SPEC milestone bullet 4 (fail-closed manual stop minimum);
 R-04 epoch fencing (mechanism, already experiment-proven in R-10);
 R-11 audit tiers; R-12 pause-vs-kill distinction.
 
+**2026-10-20 refinement:** [Pi execution probes](../pi/11-pi-1.3.0-execution-coverage.md)
+disproved hook-only cancellation/containment assumptions. The normative
+[SPEC boundary](../../SPEC.md#runtime-architecture-and-security-boundary-2026-10-20-decision)
+requires external containment and reconciliation of already-dispatched
+effects. This design is not implemented by the current scaffold.
+
 ## What the kill switch is and is not
 
-- It stops **future effects**. Effects already committed stay committed
-  (the ledger is immutable; undo is rollback design, R-19, not kill).
-  Anyone promising retroactive stop is selling something.
+- It stops **new admissions/dispatches through Loom's effect gate**.
+  Already-dispatched remote actions may commit after kill, even after a
+  cancellation ACK. Record and reconcile their actual outcomes; cancellation
+  is not rollback (R-19). Local execution requires external containment;
+  neither hook denial nor epoch fencing alone stops an arbitrary process.
 - It is **global or per-run, latched**. Pause (R-12 approval) is
   per-action and reversible by verdict; kill is a state change to the
   harness itself that persists until a human explicitly resets it
@@ -40,20 +48,22 @@ a bug, so the local half is one `BEGIN IMMEDIATE … COMMIT`:
    cooperation from the killed agent required.
 2. **Set the kill flag.** `kills(scope, engaged_at, actor, reason)` row;
    latest row per scope is the state (same latest-row pattern as R-11).
-   The write gate checks kill state *first* (cheapest check, fails
-   fastest), lease second.
-3. **Freeze pending approvals.** All non-terminal audit actions in scope
-   get a terminal verdict row: `denied` + `not-executed`, actor = the
-   killing human, evidence = the kill row. Nothing stays "awaiting
-   human" under a kill — silence would be ambiguous, denial is explicit.
+   The write gate checks kill state *first* (cheapest check, fails fastest),
+   then deadline/grant/policy/lease in the SPEC order at the write boundary.
+3. **Freeze pending approvals.** Undispatched actions awaiting approval get
+   terminal `denied` + `not-executed` rows, actor = the killing human,
+   evidence = the kill row. Do not rewrite the history of an already-dispatched
+   action as a denial/non-execution. Keep it tracked until observed or
+   reconciled; interrupted/timeout evidence is not proof of no effect.
 4. **Halt the outbox relay** (R-06): relay stops relaying in-scope rows;
    unrelayed rows keep their unapplied state for post-reset triage.
-   Relay halt is a flag read per batch, not per row.
-5. **Signal runtimes best-effort** (OpenCode `abort`, session cancel
-   where an API exists). Best-effort and *outside* the guarantees:
-   even if the model keeps talking, no effect can land — the write
-   gate and frozen approvals already ensure that. Never treat a
-   runtime ACK as the kill; the local state is the kill.
+   Recheck the live gate at each dispatch, not merely once per batch.
+5. **Cancel and contain execution.** Request Pi `abort` + `abortBash` (or
+   equivalent runtime APIs), then have the external supervisor freeze/stop
+   the whole local execution domain and preserve evidence (R-15). Record
+   cleanup failures as unresolved; an ACK or idle state is not containment.
+   No new privileged dispatch is admitted, but already-dispatched remote
+   work may still finish. Never treat a runtime ACK as the kill.
 
 ## Authority and audit
 
@@ -62,29 +72,33 @@ a bug, so the local half is one `BEGIN IMMEDIATE … COMMIT`:
   no automation, no API token may engage or reset in v1.
 - Reset is a separate audited action, never automatic, never bundled
   with engage. Reset re-verifies: operator reviews unrelayed outbox
-  rows and non-terminal audit rows in scope (the R-12 triage queries)
-  *before* clearing the flag. Reset does not re-grant leases —
+   rows, non-terminal audit rows and already-dispatched uncertain actions
+   in scope (R-12 triage plus target-state reconciliation), and verifies
+   local execution-domain cleanup *before* clearing the flag. Reset does not re-grant leases —
   agents re-acquire normally (fresh epochs, clean fencing).
 - Kill-state is visible in `loom status` first line (R-14 bundle gains
   one field). A status that doesn't show kill state is incomplete.
 
 ## Latency and honesty bounds
 
-- Kill latency = one local txn + broadcast. Effects committed before
-  the txn stay committed; effects in-flight during it either land
-  before the epoch bump (then they're pre-kill history) or fail the
-  gate after it. There is no middle state, but there is a race window
-  measured in milliseconds — document it, don't deny it.
+- Local kill admission changes at the kill transaction's commit. Gated
+  local DB mutations serialize with that transaction; external dispatch and
+  remote commit are not a single SQLite transaction. Record dispatch identity
+  and gate outcome, then track a dispatched action even if its remote commit
+  occurs later. Do not hold the DB write lock across network I/O or claim a
+  universal millisecond cancellation bound. Backend cleanup latency and
+  effect-specific cancellation/idempotency must be measured separately.
 - Crashed-between-engage-steps recovery: engage is one txn for steps
-  1–4; step 5 (runtime signals) is recorded as its own audit rows and
-  retried on next status/boot. A kill half-signaled is still a full
-  kill locally.
+  1–4; step 5 (signals/containment) is recorded separately and retried on
+  next status/boot. Admission remains closed if cleanup is incomplete;
+  status must distinguish that state from confirmed local quiescence.
 
 ## What stays open (explicitly not v1)
 
 - Automatic engagement (risk-score or budget triggers) — R-16/R-20.
-- Sandbox destroy/freeze integration — R-15 (v1 refuses new spawns and
-  records; teardown rides the sandbox design).
+- Sandbox freeze/stop integration — R-15 is required before untrusted
+  adapter execution. Milestone-1 DB tests prove admission closure, not
+  process-tree containment; production authority waits for both.
 - Cross-harness propagation (two Loom DBs, federated runs) — no
   multi-harness story exists yet; kill is per-DB truthful and silent
   elsewhere, which must be documented at deploy time, not discovered.

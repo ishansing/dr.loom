@@ -1,5 +1,11 @@
 # Pi Track 6 — Control, Observability, Durability
 
+**2026-10-20 refinement:** [Pi 1.3.0 execution probes](11-pi-1.3.0-execution-coverage.md)
+show cancellation can leave late work/descendants, and `abort()` omits
+user Bash. The [adopted boundary](../../SPEC.md#runtime-architecture-and-security-boundary-2026-10-20-decision)
+requires external local-domain containment, dispatched-effect reconciliation
+and Loom-owned completion, not an inference from Pi idle/settled state.
+
 Covers checklist items 20 (approvals cross-ref), 24, 30, 31, 32, 33,
 34, 38, 39, 40. Versions: npm `0.99.2` all packages, Node
 `>=22.19.0`.

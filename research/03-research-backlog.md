@@ -77,10 +77,13 @@ Legend: `[ ]` open · `[~]` in progress · `[x]` done (with evidence link).
 - [x] **R-15 Sandbox orchestration.** Walls-not-judge separation; backend
   ladder (OS sandbox → containers → microVMs, deploy picks, runs don't);
   invariants on every backend (root confinement, no-net-default,
-  no-privilege, env-secrets, resource limits); per-run default with
+  no-privilege, external credential mediation, resource limits); per-run default with
   per-thread option for untrusted threads; snapshots as evidence;
   kill → freeze+snapshot, destroy human-only, no thaw primitive. See
   `phase-2/19-r15-sandbox.md`.
+  2026-10-20: whole Pi SDK/runtime/process-tree isolation is an adapter
+  prerequisite (T-15 moved before untrusted execution), not late hardening;
+  protected host state/credentials remain outside. Conformance still pending.
 - [x] **R-16 Budgets.** Time (absolute deadlines, inherited on spawn) /
   retry (Finagle-shaped token bucket, safe-retries-only) / cost (usage
   objects per thread, explicit caps, unset = meter-only) / fan-out
@@ -92,6 +95,9 @@ Legend: `[ ]` open · `[~]` in progress · `[x]` done (with evidence link).
   relay (one txn) + best-effort runtime signals; human-only engage/reset,
   reset re-verifies before clearing; kill check first in write gate.
   Mechanism reuses R-10-proven fencing. See `phase-2/10-r17-kill-switch.md`.
+  2026-10-20: close new admission/dispatch, deny only undispatched approvals,
+  reconcile in-flight effects and prove external local-domain cleanup;
+  cancellation is not rollback or universal zero-post-kill-effects proof.
 - [x] **R-18 Scoped permissions model.** ACL policy (deny-wins,
   global→run→thread, managed baseline un-narrowable) + capability
   grants (delegation narrows only, expire, audited); single
@@ -169,6 +175,8 @@ Timing, triggers, and a record template: [watch-schedule.md](watch-schedule.md).
   and [execution coverage](pi/11-pi-1.3.0-execution-coverage.md). Source review
   and offline probes complete; sandbox/effect-boundary conformance and
   runtime promotion remain pending. No pin changed.
+  Adopted design: upstream Pi + external Loom enforcement, owned output/
+  privileged-operation/completion gates; see [SPEC](../SPEC.md#runtime-architecture-and-security-boundary-2026-10-20-decision).
 
 ## New scope (post-backlog)
 

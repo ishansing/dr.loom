@@ -7,6 +7,12 @@ reviewable parts. Each part lists scope, files, tests, and done
 criteria. Research references point at the design docs; nothing here
 re-decides them.
 
+**2026-10-20 boundary update:** follow the [SPEC runtime decisions](../../SPEC.md#runtime-architecture-and-security-boundary-2026-10-20-decision)
+and [Pi execution findings](11-pi-1.3.0-execution-coverage.md). These parts
+prove core DB/admission invariants only. They do not certify Pi cancellation,
+process containment or remote rollback; isolated adapter execution is a
+separate required gate before untrusted work or production authority.
+
 ## Working practices (non-negotiable for every part)
 
 1. **TDD with `bun:test`.** Failing test first, then the minimum code
@@ -88,27 +94,34 @@ re-decides them.
 - **Scope:** `outbox(id, run_id, kind, payload, applied_at)` table;
   `enqueueOutbox` in the same txn as the business write; `relayBatch`
   with monotonic cursor; `markApplied`; startup `replayUnapplied`
-  with idempotent-effect contract (effects keyed by outbox id).
+  with effect-side idempotency keyed by outbox id or explicit reconciliation.
+  Recheck kill/authorization/epoch at each dispatch, not once per batch;
+  track dispatched-but-unconfirmed work without holding a DB write lock
+  across network I/O. Cursor position alone cannot prove an effect happened.
 - **Files:** `src/store.ts` (table + relay functions),
   `tests/outbox.test.ts` (effect spy counts invocations).
-- **Tests:** kill-mid-relay replays without double effect; crash
-  between effect and marker replays exactly once more; cursor
-  survives restart; WAL reader-bound documented in test comment.
+- **Tests:** kill between batch items prevents later admission; late
+  completion remains attributable to the dispatched action. Crash between
+  effect and marker deduplicates at an idempotent test target; an uncertain
+  non-idempotent effect blocks replay until target-state reconciliation.
+  Cursor survives restart; WAL reader-bound documented in test comment.
 - **Done:** SPEC resumability holds for side effects, not just rows.
 
 ## Part T-05 — Kill engage/reset (needs T-01–T-04)
 
 - **Scope:** `engageKill({scope, actor, reason})` — epoch-bump
-  revocation + kill row + approval freeze (`denied/not-executed`
-  rows) + relay-halt flag, one txn; `resetKill` requires human actor
+  revocation + kill row + undispatched approval freeze (`denied/not-executed`
+  rows) + relay-halt flag, one txn; preserve in-flight action history and
+  unresolved outcome evidence. `resetKill` requires human actor
   and returns the re-verification checklist (outbox + non-terminal
-  triage), never re-grants leases; `isKilled(scope)` first in gate
+  triage + dispatched-action reconciliation), never re-grants leases;
+  `isKilled(scope)` first in gate
   order; status-line data for R-14 bundle.
 - **Files:** `src/store.ts`, `tests/kill.test.ts` (kill drill:
-  engage mid-run → zero further effects; frozen approvals; reset
-  rules).
-- **Done:** SPEC kill criterion holds; runtime-signal hooks left as
-  no-op seams for the Pi adapter (no Pi code in core).
+  no new gated write/dispatch after kill, frozen undispatched approvals,
+  late/unknown outcomes never relabeled `not-executed`, reset rules).
+- **Done:** core SPEC kill criteria hold. Runtime abort/containment belongs
+  to the isolated adapter; no Pi code or fake containment guarantee in core.
 
 ## Part T-06 — Policy engine (needs T-01–T-03; extends T-02 gate)
 
@@ -145,8 +158,8 @@ re-decides them.
 
 ## Explicitly out of milestone 1
 
-Pi extension/SDK work (T-08–T-11), orchestrator slice (T-12–T-14),
-sandbox rung wiring (T-15), dashboard/deploy/calibration/OpenCode
+Pi extension/SDK work (T-08–T-11), mandatory adapter isolation (T-15,
+before untrusted execution), orchestrator slice (T-12–T-14), dashboard/deploy/calibration/OpenCode
 (T-16–T-19), System One adoption (R-35-gated), federated/A2A/MCP-server
 roles. If a part tempts scope creep toward these, split the commit,
 don't widen the part.

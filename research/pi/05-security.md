@@ -1,5 +1,11 @@
 # Pi Track 5 — Security
 
+**2026-10-20 decision:** the [release audit](11-pi-1.3.0-execution-coverage.md#6-adopted-loom-design-decisions-2026-10-20)
+and [SPEC](../../SPEC.md#runtime-architecture-and-security-boundary-2026-10-20-decision)
+adopt whole-Pi execution-domain isolation, an external Loom authority and
+owned privileged-operation/output/completion gates. The historical evidence
+below explains why permissions, hooks and tool-only sandboxes are insufficient.
+
 Covers checklist items 15, 16, 17, 18, 19, 20, 21, 22, 23.
 All quotes below are verbatim from current `main` docs (2026-10-01).
 

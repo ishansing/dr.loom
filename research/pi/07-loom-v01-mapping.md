@@ -8,14 +8,18 @@ state, context, verification, sandbox).
 ## The layering (read once, then the tables)
 
 ```text
-Orchestrator slice (Pi v0.1)      tasks.json, state, context, verify
-Loom core (milestone 1)           ledger, leases, audit, kill, budgets, policy
-Pi adapter                        extension veto + SDK supervisor + session reader
-Pi runtime                        sessions, tools, models (unchanged upstream)
+Trusted Loom control plane       tasks/state, ledger, policy, leases, audit,
+                                 privileged operations, verification, supervisor
+                       narrow identity-bound request/result channel
+----------------------- OS/container/VM boundary -----------------------
+Isolated Pi execution domain     SDK runner + owned extension hooks + Pi runtime
+                                 restricted workspace; no Loom DB/prod credentials
 ```
 
-**2026-10-19 verification:** layering over upstream Pi remains the proposed
-approach, not proof that hooks enforce every effect. See
+**2026-10-20 decision:** build over upstream Pi with external enforcement,
+not a fork or a hooks-only safety boundary. Normative requirements:
+[SPEC runtime architecture](../../SPEC.md#runtime-architecture-and-security-boundary-2026-10-20-decision).
+This is a design decision, not implemented protection. See
 [Pi 1.3.0 API compatibility](10-pi-1.3.0-api-review.md) and
 [execution coverage / no-fork conditions](11-pi-1.3.0-execution-coverage.md).
 The research baseline remains `0.99.2`; reviewing `1.3.0` does not silently
@@ -38,12 +42,12 @@ duplicate.
 | Context manager | Retrieval + injection via Pi hooks; R-24 provenance/classification rules | `context`/`context_with_system`, `session_before_compact`, skills on-demand |
 | Roles (planner/dev/reviewer) | Loom threads + grants + per-thread budgets; role = prompt+tools+model | subagent example, `setActiveTools`, virtual-model routing, per-session prompt overrides |
 | Structured outputs | Terminate-on-tool schema (`status/artifacts/filesChanged/decisions/problems/nextTasks/verification`) | `defineTool({terminate:true})` + `outputSchema` (Pi's own eval pattern) |
-| Verification | Task gates shaped like R-19 gates 2+5 (fresh evidence, confirm); `agent_before_settle` as the last harness hook | `turn_end`/`agent_before_settle` + one guarded `continue` |
-| Tool gateway | Loom `authorize()` (R-18) enforced at the extension veto; semantic tools as custom tools | `tool_call` block/mutate, `BashSpawnHook`, exposure modes, `prepareLoadout()` |
-| Sandbox | R-15 ladder (deploy picks rung); kill → freeze+snapshot | Container docs, Gondolin (not a cred boundary), Docker Sandbox cred proxy |
-| Kill / budgets / policy / leases / audit | Pure Loom, no Pi counterpart (all confirmed absent) | Extension veto + SDK `abort` + session reads as inputs |
+| Verification | Outer Loom gate on fresh evidence/exact candidate hash and reconciled privileged work; hook exceptions never certify completion | `turn_end`/`agent_before_settle` for optional corrective continuation only |
+| Tool gateway | Early extension veto plus owned privileged operations validating final input and live authorization at execution | `tool_call`, owned tool/operations implementations; exposure/loadout is not authorization |
+| Sandbox | Whole Pi SDK runner/process tree isolated from host authority before untrusted execution; selected R-15 backend proves cleanup | OS/container/VM boundary, credential/egress mediation; a Bash hook alone is insufficient |
+| Kill / budgets / policy / leases / audit | Loom owns admission/dispatch gates, outstanding-action reconciliation and containment supervision | `abort` + `abortBash` are cooperative inputs, not containment proof |
 | Memory governance | R-24 scopes + classification + quarantine | `custom` vs `custom_message` entries, consolidation as audited runs |
-| Metering | R-25 usage rows from turn-close deltas | `get_session_stats`, message `usage`, compaction usage |
+| Metering | R-25 ingestion with one charge owner per call, including non-turn channels | Stats + message/tool/compaction/dedicated usage; model channels disabled until governed |
 
 ## Build tickets (ordered; each lists scope + done-criteria)
 
@@ -66,11 +70,13 @@ Detailed part-by-part implementation plan (files, tests, practices):
   view; archival retirement procedure. Done: lifecycle fixtures
   (incl. denied→not-executed, escalated-must-resolve).
 - **T-04 Outbox relay.** Table + cursor relay + startup replay with
-  idempotent effects (R-06). Done: kill-mid-relay replays without
-  double-effect in test.
+  effect-side idempotency or reconciliation (R-06); live gate per dispatch.
+  Done: kill between batch items blocks later dispatches; crash after
+  dispatch preserves uncertainty and never blindly repeats a non-idempotent effect.
 - **T-05 Kill.** Engage/reset paths, epoch-bump revocation, approval
   freeze, relay halt, status line (R-17). Done: kill drill fixture
-  (engage mid-run → zero further effects, forensics snapshot noted).
+  (no new gated dispatch/write after kill; already-dispatched outcomes
+  reconciled, never falsely `not-executed`; containment tested in Phase B).
 - **T-06 Policy engine.** `authorize()` (R-18) + risk scoring (R-20)
   + budget draws (R-16) wired to the gate; decision corpus fixtures.
   Done: corpus (incl. adversarial near-misses) green.
@@ -78,7 +84,7 @@ Detailed part-by-part implementation plan (files, tests, practices):
   check-framework` per R-14; R-26 deterministic fixture set in CI.
   Done: human-run flow drill on throwaway DB end to end.
 
-### Phase B — Pi adapter (needs A green; Pi pinned `0.99.2`)
+### Phase B — isolated Pi adapter (needs A green; baseline `0.99.2`, version selection pending)
 
 Before this phase: deliberately select/promote a runtime version, then run
 the release-specific API and execution corpus. For `1.3.0`, account for
@@ -93,7 +99,9 @@ rest solely on a pre-tool hook or cooperative `abort()`.
   Redact secrets before exposure/persistence through a fail-closed owned
   path; a throwing `tool_result` handler alone leaks the original result.
   No untrusted executable resources; startup policy precedes discovery.
-- **T-09 SDK supervisor.** Session lifecycle, per-role sessions,
+- **T-09 External supervisor + sandboxed SDK runner.** Narrow
+  identity-bound requests/results; no Pi embedding beside host authority.
+  Session lifecycle, per-role sessions,
   usage ingestion (R-25), compaction decision-injection,
   `abort/abortBash/dispose` wiring plus external execution-domain cleanup,
   virtual-model role routing. Disable codemode model calls/cache warming
@@ -106,6 +114,15 @@ rest solely on a pre-tool hook or cooperative `abort()`.
   never parsed for state; outer Loom verification fails closed even when
   a Pi settlement hook throws. Neither settlement nor a nested terminating
   tool result proves that all external work has stopped.
+- **T-15 Isolation prerequisite (moved before untrusted execution).**
+  Select one R-15 backend and confine startup, Pi/SDK/extensions, tools and
+  descendants; separate Loom DB/credentials/protected host paths and mediate
+  egress. Prove local-domain cleanup, no successor workspace reuse while old
+  writers survive, and no direct privileged effects from raw shell. Retain
+  filesystem evidence on kill; failures leave the run blocked/unresolved.
+  T-08–T-11 may first use trusted synthetic fixtures, but Phase B cannot pass
+  without this boundary and its end-to-end tests. Full gates: [SPEC adapter
+  acceptance](../../SPEC.md#adapter-acceptance-criteria-before-untrusted-execution--production-authority).
 
 ### Phase C — Orchestrator slice (needs B)
 
@@ -116,9 +133,8 @@ rest solely on a pre-tool hook or cooperative `abort()`.
   governance (scopes, classification, quarantine path).
 - **T-14 Task verification gates.** Fresh-evidence rule per task +
   first R-26 human goldens recorded.
-- **T-15 Sandbox rung.** Deploy picks ladder rung; kill
-  freeze+snapshot wired; dev-only unsandboxed flag with audit
-  labeling.
+
+T-15 is now a Phase B prerequisite, not a post-orchestration hardening step.
 
 ### Phase D — Hardening (after C works end to end)
 

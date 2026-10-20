@@ -1,5 +1,7 @@
 # Loom Research Index
 
+Product delivery sequence and release gates: [ROADMAP.md](../ROADMAP.md).
+
 Tracking list: [03-research-backlog.md](03-research-backlog.md). Review
 routine: [watch-schedule.md](watch-schedule.md). Planned build:
 [pi/07-loom-v01-mapping.md](pi/07-loom-v01-mapping.md) (T-01–T-19).
@@ -55,6 +57,8 @@ routine: [watch-schedule.md](watch-schedule.md). Planned build:
 - [pi/09-milestone-1-implementation.md](pi/09-milestone-1-implementation.md) — ordered core implementation parts, tests and practices.
 - [pi/10-pi-1.3.0-api-review.md](pi/10-pi-1.3.0-api-review.md) — release-pinned SDK/classifier checks and reproducible offline probe.
 - [pi/11-pi-1.3.0-execution-coverage.md](pi/11-pi-1.3.0-execution-coverage.md) — execution-path evidence and adopted upstream-Pi/external-enforcement decisions.
+- [pi/12-pi-durable-adoption.md](pi/12-pi-durable-adoption.md) — separate durable-runtime candidate, Node/Bun proof, Loom fit and adoption gates.
+- [pi/13-pi-durable-recovery-boundaries.md](pi/13-pi-durable-recovery-boundaries.md) — recovery, replay, cancellation, storage and authority limits.
 
 ## System One decision models (`system-one/`)
 
@@ -67,3 +71,4 @@ routine: [watch-schedule.md](watch-schedule.md). Planned build:
 
 - [2026-10-16 R-29](watches/2026-10-16-r29.md) — I2P, Pi, MCP and Jev upstream drift.
 - [2026-10-19 Pi follow-up](watches/2026-10-19-r29-pi.md) — Pi 1.3.0 verification and adopted isolation/enforcement decisions; conformance pending.
+- [2026-10-20 Pi Durable](watches/2026-10-20-r29-pi-durable.md) — published 1.3.0 versus unreleased main; runtime evaluation recommended, no adoption.

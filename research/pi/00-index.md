@@ -7,6 +7,12 @@ Status: historical synthesis (2026-10-01), with a release-specific
 they are not a production conformance certificate. Assumes
 `earendil-works/pi`, NOT the PyPI namesake / `pi-go` / `oh-my-pi`.
 
+For the separate Pi Durable harness (not the coding-agent SDK), see the
+[2026-10-20 adoption assessment](12-pi-durable-adoption.md) and
+[recovery/boundary investigation](13-pi-durable-recovery-boundaries.md).
+Published `1.3.0` and unreleased main are distinguished; no runtime adoption
+or state-ownership change has been made.
+
 For the separate 2026-10-02 study of features to borrow from Claude Code,
 OpenCode, OMP, Hermes, DeepSeek Harness, and Codex **while retaining Pi as the
 base**, see [R-33 cross-harness comparison](08-cross-harness-comparison.md).

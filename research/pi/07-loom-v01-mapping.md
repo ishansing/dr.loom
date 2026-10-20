@@ -5,6 +5,11 @@ start Phase A). Reconciles SPEC milestone 1 (ledger, leases, audit,
 kill switch) with the Pi-track v0.1 slice (runtime interface, tasks,
 state, context, verification, sandbox).
 
+Product timing/release gates: [ROADMAP.md](../../ROADMAP.md). Keep T-01–T-19
+IDs stable; its P0–P6/H1 phases schedule these packages without renumbering
+them. Runtime selection precedes adapter implementation; T-15 precedes
+untrusted execution; T-19 remains planned after the first production release.
+
 ## The layering (read once, then the tables)
 
 ```text
@@ -149,3 +154,12 @@ T-15 is now a Phase B prerequisite, not a post-orchestration hardening step.
 Federated leases, A2A adoption, agent discovery, cross-harness kill,
 adaptive budgets, MCP server role, `pi-durable` dependency — all
 parked until a use case demands them (R-22/R-23/R-16/R-17 notes).
+
+**Pi Durable review (2026-10-20):** [R-39 assessment](12-pi-durable-adoption.md)
+recommends comparing it as the isolated execution runtime before freezing
+T-08, because it can replace some planned runtime scheduling/recovery work.
+Adoption remains deferred, not prohibited: choosing it would require a
+reviewed remap of T-08–T-13 APIs, one owner per fact, release-pinned
+conformance and the same external Loom authority/isolation. Do not stack
+Durable and the coding-agent loop or silently substitute its store for
+the protected ledger.

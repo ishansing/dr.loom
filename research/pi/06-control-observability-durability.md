@@ -113,6 +113,14 @@ Covers checklist items 20 (approvals cross-ref), 24, 30, 31, 32, 33,
 
 ## Durability / pi-durable (item 40: EXISTS, experimental)
 
+**2026-10-20 follow-up:** [Pi Durable adoption assessment](12-pi-durable-adoption.md)
+checks published `1.3.0` separately from current main, with Node/Bun API
+probes and [recovery/security analysis](13-pi-durable-recovery-boundaries.md).
+It is a separate execution-harness candidate, not a coding-agent plugin.
+Evaluate it before freezing T-08 to avoid duplicating runtime machinery;
+do not replace Loom authority or infer production adoption. The October 1
+snapshot below is historical; SPEC deferral stays until a reviewed decision.
+
 - `@earendil-works/pi-durable@0.99.2`: durable conversation/task/
   document runtime — immutable commits, `TaskGraph`
   (pending/running/waiting/completing), `defineTask/defineDoc`,
@@ -120,11 +128,11 @@ Covers checklist items 20 (approvals cross-ref), 24, 30, 31, 32, 33,
   WAL, one process per storage, no cross-process lock) or JSONL,
   `Harness.open/resume/close`, task-owned subagents, usage
   tracking. Design docs (`pico-v5*`), examples, benches.
-- Header: **"Experimental. The API changes without notice."**
-  HEAD commit itself is a durable vacation-planner demo. Use only
-  behind a flag + pinned `0.99.2` + eval gate; never the v0.1
-  durability story. Loom's own ledger/audit remains the durability
-  of record; durable is a candidate, not a dependency.
+- At that snapshot: **"Experimental. The API changes without notice."**
+  HEAD included a durable vacation-planner demo. The earlier recommendation
+  was to defer it from v0.1; the follow-up now recommends a bounded runtime
+  comparison before adapter implementation, not an automatic dependency or
+  production flag. Loom's own ledger/audit remains authoritative.
 
 Primary URLs: `packages/coding-agent/{docs/{rpc-commands,settings,
 json,sdk,extensions,session-format},src/modes/rpc/rpc-types.ts,

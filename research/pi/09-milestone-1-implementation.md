@@ -7,6 +7,9 @@ reviewable parts. Each part lists scope, files, tests, and done
 criteria. Research references point at the design docs; nothing here
 re-decides them.
 
+Product schedule: [ROADMAP.md](../../ROADMAP.md), P1 / G1. Week allocations
+are forecasts; this document's test/done criteria still gate completion.
+
 **2026-10-20 boundary update:** follow the [SPEC runtime decisions](../../SPEC.md#runtime-architecture-and-security-boundary-2026-10-20-decision)
 and [Pi execution findings](11-pi-1.3.0-execution-coverage.md). These parts
 prove core DB/admission invariants only. They do not certify Pi cancellation,

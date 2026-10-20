@@ -7,6 +7,11 @@ Loom is a separate runtime for mechanically enforcing the
 how they compose; Loom owns execution state and enforceable safety boundaries. This draft
 records design decisions and required behavior, not implemented production guarantees.
 
+Delivery sequencing, staffing assumptions, release scope and evidence gates are
+in [ROADMAP.md](ROADMAP.md). Its first production release precedes the planned
+second-runtime continuation; milestone 4 is not complete until both are qualified.
+The roadmap does not waive this spec's safety boundaries or authorize a build.
+
 ## Source of truth and readiness
 
 - Framework baseline for this draft: `/home/zeref/Dev/I2P` at commit

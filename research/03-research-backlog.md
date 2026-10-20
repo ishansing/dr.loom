@@ -245,3 +245,13 @@ Timing, triggers, and a record template: [watch-schedule.md](watch-schedule.md).
   (accuracy/latency/cost/offline), no on breadth/startup/out-of-box
   calibration; third R-35 arm, train only after labels exist. See
   `system-one/12-qlora-harness-classifier.md` (2026-10-03).
+- [x] **R-39 Pi Durable adoption assessment.** Separate published
+  `@earendil-works/pi-durable@1.3.0` from unreleased main; evaluate API/Bun
+  compatibility, runtime recovery, nested tasks/replay, storage ownership,
+  hook/cancellation limits and Loom fit. Recommend a bounded comparison
+  before freezing T-08, not replacement of the protected core or automatic
+  adoption. Main-only sleep/schema changes require explicit upgrade/rollback
+  planning; safe recovery bypasses pre-tool hook/schema checks, so live
+  authorization must remain inside the owned effect boundary. See [assessment](pi/12-pi-durable-adoption.md),
+  [recovery boundaries](pi/13-pi-durable-recovery-boundaries.md) and
+  [watch record](watches/2026-10-20-r29-pi-durable.md) (2026-10-20).

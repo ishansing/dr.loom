@@ -516,6 +516,10 @@ must make failure visible and provide tested recovery procedures.
 
 ### Definition of ready for a work package
 
+- Follow [AGENTS.md](AGENTS.md), update [SPEC's active phase](SPEC.md#active-phase-specification)
+  with the seven required sections before application/test code, and consult
+  [decisions.md](decisions.md). This preparation does not itself authorize
+  implementation, a pin change or production effects.
 - User outcome and scope; SPEC/source references; dependencies and owner.
 - Which fact/layer owns the state; final effect and trust boundary identified.
 - Acceptance cases including error, cancellation, concurrency and migration
@@ -524,6 +528,9 @@ must make failure visible and provide tested recovery procedures.
 
 ### Definition of done
 
+- Execute the phase's declared lint → typecheck → test/coverage → security
+  gates in order; record unavailable/N/A checks honestly and append significant
+  decisions when made. Use the commit/escalation policy in `AGENTS.md`.
 - Behavior and failure paths implemented in the responsible layer; callers,
   fixtures, config, exports and documentation updated together.
 - Strict types, lint and relevant tests pass; fresh evidence records pins/hash

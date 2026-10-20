@@ -1,5 +1,12 @@
 # Loom — handoff for a fresh OpenCode session
 
+**Historical handoff:** the original requests/state below are preserved, not
+current instructions or an implementation inventory. Start with [AGENTS.md](AGENTS.md),
+[SPEC.md](SPEC.md) (including the active phase), [decisions.md](decisions.md)
+and [ROADMAP.md](ROADMAP.md), then inspect Git and actual code. The old
+“no scaffold/no remote” descriptions are historical; they must not override
+the active user request or current repository state.
+
 ## What the user asked for
 
 The user wants the harness in a **separate local directory/repository** named `loom`, with

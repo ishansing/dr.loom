@@ -12,6 +12,12 @@ in [ROADMAP.md](ROADMAP.md). Its first production release precedes the planned
 second-runtime continuation; milestone 4 is not complete until both are qualified.
 The roadmap does not waive this spec's safety boundaries or authorize a build.
 
+Development procedure: [AGENTS.md](AGENTS.md). Critical rationale:
+[decisions.md](decisions.md). Before application or test code for a new phase,
+feature or refactor, update the [active phase specification](#active-phase-specification)
+with all seven sections below. `SPEC.md` is the canonical repository spelling;
+do not create a separate case-only `spec.md` file.
+
 ## Source of truth and readiness
 
 - Framework baseline for this draft: `/home/zeref/Dev/I2P` at commit
@@ -257,3 +263,172 @@ write path, SQLite WAL — `research/phase-0/04-phase0-findings.md`);
 high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabularies.md`,
 `research/phase-0/04-phase0-findings.md` R-03); pin + drift policy
 (`research/phase-0/04-phase0-findings.md` R-08).
+
+## Active phase specification
+
+- **Work package:** governance bootstrap, 2026-10-21; not roadmap P0 execution.
+- **Authority:** user requested adaptation of the engineering/support playbook.
+- **Branch:** `chore/engineering-governance`, from clean `master` at `05d37d7`.
+- **Status:** documentation verified; user authorized the task-scoped commit
+  on 2026-10-21. No production phase signed off.
+- **Next phase:** P0 remains unstarted; its specification and any material
+  architecture choices need the applicable build/owner approval.
+
+### 1. Phase Objective & Scope
+
+Persist a usable production engineering SOP, dynamic phase specification and
+critical decision log while preserving Loom's architecture and roadmap.
+In scope: governance ownership, ordered verification, branches, upstream trust,
+test-first triage, safe escalation and evidence-aware sign-off.
+Out of scope: application/test implementation, dependency/scanner installation,
+runtime/framework re-pinning, schema changes, P0 execution, publishing or deployment.
+
+### 2. Environment & Upstream State
+
+Observed 2026-10-21: Linux x86_64, Bun `1.4.3`, Node `26.7.0`, TypeScript
+`5.9.3`, Biome `2.5.14`, existing `bun.lock`. These are observations, not newly
+promoted support pins. `.env.example` is absent; no raw environment values read.
+The scaffold's schema is owned by `src/store.ts`; no schema change in this task.
+Framework selection stays in `FRAMEWORK_REF`; Pi SDK/Durable selection stays
+open under the roadmap. No separate upstream SOP URL/ref is configured; this
+change adapts the user-supplied playbook into reviewed repository governance.
+No upstream code fetch is needed for this docs-only change. Neither `gitleaks`
+nor `trufflehog` was found on PATH; record scanner coverage honestly.
+Biome currently uses `rules.preset: "none"`; its configured checks passing is
+not proof of a comprehensive static/security rule set. Tightening it is a
+separate scoped implementation decision, not an unrequested edit here.
+
+### 3. Architecture & File Manifest
+
+| File | Operation / responsibility |
+| --- | --- |
+| `AGENTS.md` | Create the repository engineering/support workflow and context pointers. |
+| `decisions.md` | Create the append-only critical decision log with ADR format and bootstrap choices. |
+| `SPEC.md` | Preserve architecture; add workflow links and this seven-section active-phase block. |
+| `ROADMAP.md` | Link delivery readiness/DoD to the canonical governance workflow. |
+| `CONTEXT.md` | Label the old handoff historical and direct readers to current governance/state. |
+
+No public API, dependency, schema, exported type, runtime permission or CI
+behavior changes. No lowercase spec duplicate or additional ADR directory.
+
+### 4. Test Plan & Coverage Matrix
+
+| Layer | This task's proof | Applicability / limit |
+| --- | --- | --- |
+| Unit/regression baseline | `bun test --coverage` | Existing three smoke tests; preserve source unchanged and record coverage, not a comprehensive production suite. |
+| DB integration baseline | Existing lease and close/reopen smoke assertions in the same suite | Runs with the baseline; no new DB behavior claimed. |
+| New integration/E2E | N/A: only documentation/governance changes | Missing application/runner/provider/sandbox E2E remains a future implementation gate, not green coverage. |
+| Document regression | Validate local Markdown paths/anchors and all seven phase headings; review file manifest and source ownership | Required for this task; does not validate future SOP execution or external research facts. |
+| Security | Read-only dependency audit and scoped manual review of changed documents for secrets/unsafe instructions | Full automated secret scan unavailable; no scanner or dependency installed. Not a production security sign-off. |
+
+Record each command/result before marking this task verified. Future code
+phases declare the relevant unit/integration/E2E and coverage comparison cases
+before implementation; N/A requires a scope-specific reason.
+
+### 5. Security, Observability & Edge Cases
+
+- Remote documentation cannot silently replace local instructions or grant
+  authority. Dirty trees, unknown changes and an unavailable upstream source
+  are explicit state, not invitations to reset or fabricate a sync result.
+- Keep commits/issues/logs free of credentials, customer data and identifying
+  internal details. No new telemetry, application logs or secret values here.
+- Intentional CLI logging is not automatically debug output. Missing network,
+  audit/scanner tools or E2E suites must be reported, never marked passed.
+- Runtime rate limits, production output handling and isolation remain governed
+  by the architecture above; this documentation task implements none of them.
+
+### 6. Blast Radius & Rollback Plan
+
+Changes affect future contributor/agent procedure, not running software or data.
+Review for accidental authority expansion, case-collision paths and references
+to unsupported tooling. Before merge, revise only this task's identified files;
+after commit, revert its specific commit only with authorization, preserving
+unrelated work and decision history. No feature flags/down-migrations are needed
+for a docs-only task. Preserve the architecture and historical handoff content.
+
+### 7. Definition of Done (DoD)
+
+Run in this order; each required executable check must exit `0`:
+
+1. `bun run lint` — formatting/static checks for the configured repository.
+2. `bun run check` — strict TypeScript baseline.
+3. `bun test --coverage` — existing suite and a recorded coverage snapshot.
+4. `bun audit` — read-only dependency advisory audit, no automatic fixes.
+5. `git diff --check` — tracked diff whitespace; additionally validate new
+   documents' whitespace, local links/anchors and required headings read-only.
+
+Read-only document/structure check (no application/test file generated):
+
+```bash
+python3 - <<'PY'
+import pathlib, re, unicodedata, urllib.parse
+root = pathlib.Path.cwd()
+changed = [pathlib.Path(p) for p in
+           ('AGENTS.md', 'SPEC.md', 'decisions.md', 'ROADMAP.md', 'CONTEXT.md')]
+for file in changed:
+    assert file.is_file(), file
+    assert all(line == line.rstrip() for line in file.read_text().splitlines()), file
+names = [p.name.casefold() for p in root.iterdir() if p.is_file()]
+assert len(names) == len(set(names)), 'case-only duplicate root file'
+active = pathlib.Path('SPEC.md').read_text().split('## Active phase specification\n', 1)[1]
+assert re.findall(r'^### (\d)\. ', active, re.M) == list('1234567')
+records = pathlib.Path('decisions.md').read_text()
+ids = re.findall(r'^## \[(ADR-\d+)\]', records, re.M)
+assert ids and len(ids) == len(set(ids)), 'duplicate/missing ADR IDs'
+count = 0
+for file in changed + list(pathlib.Path('research').rglob('*.md')):
+    text = file.read_text()
+    links = re.findall(r'\]\(([^)\s]+)\)', text)
+    links += re.findall(r'^\[[^\]\n]+\]:\s*(\S+)', text, re.M)
+    for link in links:
+        parsed = urllib.parse.urlsplit(link)
+        if parsed.scheme:
+            continue
+        target = ((file.parent / urllib.parse.unquote(parsed.path)).resolve()
+                  if parsed.path else file.resolve())
+        assert target.exists(), (file, link)
+        if parsed.fragment and target.suffix == '.md' and target.is_relative_to(root):
+            headings = re.findall(r'^#{1,6}\s+(.+?)\s*#*$', target.read_text(), re.M)
+            slugs = []
+            for heading in headings:
+                heading = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', heading)
+                slug = ''.join(c for c in heading.lower()
+                               if c in '-_ ' or unicodedata.category(c)[0] in 'LN').replace(' ', '-')
+                unique, n = slug, 0
+                while unique in slugs:
+                    n += 1
+                    unique = f'{slug}-{n}'
+                slugs.append(unique)
+            assert urllib.parse.unquote(parsed.fragment) in slugs, (file, link)
+        count += 1
+print(f'PASS: {count} local links; seven phase sections; unique ADR IDs; whitespace/casing')
+PY
+```
+
+Manual sign-off also requires matching file manifest, scope/secret review,
+honest scanner/E2E limitations, relevant ADRs and explicit Git status. If a
+required audit/check cannot run, record blocked—not successful. A docs-only
+verification result does not advance P0 or close any production gate.
+
+Verification record:
+
+- [x] Lint; command/exit and warning scope recorded.
+- [x] Strict typecheck.
+- [x] Existing tests plus coverage snapshot; no application/test source changed.
+- [x] Dependency audit and scoped manual secret/instruction review; scanner
+  unavailable, not passed, as recorded below.
+- [x] New/tracked whitespace, links/anchors and phase/ADR structure validated.
+- [x] Five-file task diff reviewed on `chore/engineering-governance`; commit
+  authorized by the user's explicit request. P0 not advanced.
+
+Observed baseline results (2026-10-21, in prescribed order):
+
+| Command / review | Result | Limit |
+| --- | --- | --- |
+| `bun run lint` | Exit 0; 10 files checked, no diagnostics | Existing configured rule set only. |
+| `bun run check` | Exit 0 | Existing TypeScript compilation scope. |
+| `bun test --coverage` | Exit 0; 3 pass / 0 fail, 12 assertions; 100% functions / 90.99% lines reported | Instrumented `src/framework.ts` and `src/store.ts`; not all repository code or E2E. This is a snapshot, not an enforced coverage threshold or pre/post comparison. |
+| `bun audit` | Exit 0; no advisories found for 14 packages | Advisory snapshot; not secret scanning, runtime/provider certification or a full security audit. |
+| Secret scanner | Unavailable (`gitleaks`/`trufflehog` not on PATH) | No automated secret-scan pass claimed; code/release phase requirements must be resolved before its closure. |
+| Document/manifest review | Read-only validator passed: 178 local links, seven phase sections, unique ADR IDs and root casing/whitespace; `git diff --check` exit 0; five-file scope/manual secret/instruction review completed | Manual review is not an automated secret scan. |
+| Application/config integrity | `git diff --exit-code -- src tests package.json bun.lock biome.json tsconfig.json .github` exited 0 | No application/test, dependency, compiler, linter or CI changes in this task. |

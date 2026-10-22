@@ -27,7 +27,7 @@ test("fixture sum", () => expect(sum(2, 3)).toBe(5));
 
 
 def command(workspace, executable, args, experiment=None, verification=None,
-            probe="p0-runtime-comparison.mjs"):
+            probe="p0-runtime-comparison.mjs", framework=None):
     binary = Path(shutil.which(executable)).resolve()
     cmd = ["bwrap", "--unshare-all", "--die-with-parent", "--new-session",
            "--cap-drop", "ALL", "--ro-bind", "/usr", "/usr",
@@ -46,6 +46,8 @@ def command(workspace, executable, args, experiment=None, verification=None,
                 f"/experiment/{probe}"]
     if verification:
         cmd += ["--ro-bind", str(verification), "/verification"]
+    if framework:
+        cmd += ["--ro-bind", str(framework), "/framework"]
     return cmd + [f"/runtime/{executable}", *args]
 
 
@@ -178,7 +180,7 @@ setInterval(() => {}, 1000);"""
     print("PASS: synthetic mount/env/loopback boundary; pidfd-confirmed startup/descendant teardown")
 
 
-def compare(experiment, engine, runtime):
+def compare(experiment, engine, runtime, version="1.3.0", framework=None):
     assert (experiment / "node_modules").is_dir(), "external pinned dependencies required"
     root = Path(tempfile.mkdtemp(prefix=f"loom-p0-{engine}-{runtime}-", dir="/tmp/opencode"))
     workspace = root / "workspace"
@@ -195,8 +197,11 @@ def compare(experiment, engine, runtime):
     effects = 0
     requests = []
     report = None
-    p, pidfd = spawn_domain(command(workspace, engine, ["/experiment/p0-runtime-comparison.mjs", runtime],
-                                    experiment=experiment), stdin=subprocess.PIPE,
+    args = ["/experiment/p0-runtime-comparison.mjs", runtime, version]
+    if framework:
+        args.append("skills")
+    p, pidfd = spawn_domain(command(workspace, engine, args,
+                                    experiment=experiment, framework=framework), stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     selector = selectors.DefaultSelector()
     selector.register(p.stdout, selectors.EVENT_READ, "stdout")
@@ -269,6 +274,7 @@ def compare(experiment, engine, runtime):
                 assert b"synthetic-output-sentinel" not in path.read_bytes()
         assert b"synthetic-output-sentinel" not in errors
         print(json.dumps({"engine": engine, "runtime": runtime, "result": "PASS",
+                          "version": version, "skills": bool(framework),
                           "test": "red-to-green; stale hash rejected", "effects": effects,
                           "candidate_sha256": candidate, "reopen": "clean only"}))
     finally:
@@ -285,10 +291,11 @@ if __name__ == "__main__":
     parser.add_argument("--experiment", type=Path)
     parser.add_argument("--engine", choices=["node", "bun"], default="node")
     parser.add_argument("--runtime", choices=["sdk", "durable"], default="sdk")
+    parser.add_argument("--version", choices=["1.3.0", "1.4.0"], default="1.3.0")
     args = parser.parse_args()
     if args.self_test:
         self_test()
     else:
         assert args.experiment, "--experiment required"
         self_test()  # Boundary failure blocks runtime launch; no host fallback.
-        compare(args.experiment.resolve(), args.engine, args.runtime)
+        compare(args.experiment.resolve(), args.engine, args.runtime, args.version)

@@ -115,13 +115,13 @@ def drive(workspace, experiment, engine, runtime, scenario, stage, state=None,
             stream.close()
 
 
-def crash_case(experiment, engine, runtime, scenario):
+def crash_case(experiment, engine, runtime, scenario, version="1.3.0"):
     root = Path(tempfile.mkdtemp(prefix=f"loom-p0-crash-{engine}-{runtime}-", dir="/tmp/opencode"))
     workspace = root / "workspace"
     workspace.mkdir()
     state = {"target": root / "protected-target.json", "mutations": 0,
              "outcome": "not-dispatched", "requests": [], "results": []}
-    first = drive(workspace, experiment, engine, runtime, scenario, "start", state)
+    first = drive(workspace, experiment, engine, runtime, scenario, "start", state, version=version)
     assert (workspace / "metadata.json").is_file(), "missing committed resume identity"
     if scenario == "before-effect":
         assert not state["target"].exists() and state["mutations"] == 0
@@ -129,7 +129,7 @@ def crash_case(experiment, engine, runtime, scenario):
         assert state["target"].exists() and state["mutations"] == 1
         if scenario != "committed":
             assert state["outcome"] == "unresolved"
-    resumed = drive(workspace, experiment, engine, runtime, scenario, "recover", state)
+    resumed = drive(workspace, experiment, engine, runtime, scenario, "recover", state, version=version)
     assert resumed[-1]["type"] == "terminal"
     if scenario in {"committed", "uncertain-unsafe"}:
         assert len(state["requests"]) == 1, "unsafe/completed effect was replayed"
@@ -156,12 +156,12 @@ def crash_case(experiment, engine, runtime, scenario):
         assert state["mutations"] == 1
         assert json.loads(state["target"].read_text()) == {"fixture-action": 7}
         reconciled = "observed-applied"
-    print(json.dumps({"engine": engine, "runtime": runtime, "scenario": scenario,
+    print(json.dumps({"engine": engine, "runtime": runtime, "version": version, "scenario": scenario,
                       "result": "PASS", "mutations": state["mutations"], "reconciled": reconciled}))
     return workspace
 
 
-def owner_case(experiment, engine, runtime):
+def owner_case(experiment, engine, runtime, version="1.3.0"):
     root = Path(tempfile.mkdtemp(prefix="loom-p0-owner-", dir="/tmp/opencode"))
     workspace = root / "workspace"
     workspace.mkdir()
@@ -181,11 +181,11 @@ sys.exit(0)
             assert p.returncode == 23
             # Deliberately bypass the fixture guard on this idle synthetic store:
             # runtime-native open is NOT a leadership fence.
-            assert drive(workspace, experiment, engine, runtime, "owner", "inspect") == [{"type": "opened"}]
-        drive(workspace, experiment, engine, runtime, "owner", "hold", ready=ready)
+            assert drive(workspace, experiment, engine, runtime, "owner", "inspect", version=version) == [{"type": "opened"}]
+        drive(workspace, experiment, engine, runtime, "owner", "hold", ready=ready, version=version)
     with lock_path.open("r+") as successor:
         fcntl.flock(successor, fcntl.LOCK_EX | fcntl.LOCK_NB)
-    print(json.dumps({"engine": engine, "runtime": runtime, "result": "PASS",
+    print(json.dumps({"engine": engine, "runtime": runtime, "version": version, "result": "PASS",
                       "native_dual_open": "allowed (negative evidence)",
                       "external_guard": "contender denied; release after domain exit"}))
 
@@ -231,12 +231,13 @@ if __name__ == "__main__":
     parser.add_argument("--upgrade-experiment", type=Path, required=True)
     parser.add_argument("--engine", choices=["node", "bun"])
     parser.add_argument("--runtime", choices=["sdk", "durable"])
+    parser.add_argument("--version", choices=["1.3.0", "1.4.0"], default="1.3.0")
     args = parser.parse_args()
     helpers["self_test"]()
     for engine in ([args.engine] if args.engine else ["node", "bun"]):
         for runtime in ([args.runtime] if args.runtime else ["sdk", "durable"]):
             for scenario in SCENARIOS:
-                workspace = crash_case(args.experiment.resolve(), engine, runtime, scenario)
-                if runtime == "durable" and scenario == "committed":
+                workspace = crash_case(args.experiment.resolve(), engine, runtime, scenario, args.version)
+                if runtime == "durable" and scenario == "committed" and args.version == "1.3.0":
                     migration_case(workspace, args.experiment.resolve(), args.upgrade_experiment.resolve(), engine)
-            owner_case(args.experiment.resolve(), engine, runtime)
+            owner_case(args.experiment.resolve(), engine, runtime, args.version)

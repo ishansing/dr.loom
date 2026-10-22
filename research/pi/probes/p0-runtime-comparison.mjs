@@ -1,4 +1,4 @@
-// Copy through p0-sandbox.py into a pinned external npm project; synthetic only.
+// Run through p0-sandbox.py with pinned external dependencies; synthetic only.
 import assert from "node:assert/strict";
 import { readFileSync, writeFileSync } from "node:fs";
 import { createInterface } from "node:readline";
@@ -8,12 +8,35 @@ import {
 	fauxProvider,
 	fauxToolCall,
 } from "@earendil-works/pi-ai/providers/faux";
+import { parse, stringify } from "yaml";
 
 assert.equal(process.env.PI_OFFLINE, "1");
 globalThis.fetch = () => {
 	throw new Error("Unexpected provider/network call");
 };
 const runtime = process.argv[2];
+const expectedVersion = process.argv[3] ?? "1.3.0";
+assert.ok(["1.3.0", "1.4.0"].includes(expectedVersion));
+const skillMode = process.argv[4] === "skills";
+const fixture = skillMode
+	? JSON.parse(readFileSync("/framework/fixture.json", "utf8"))
+	: undefined;
+const skillCalls = [];
+let adapterText;
+if (fixture) {
+	adapterText = readFileSync(
+		"/framework/.agents/skills/itp-verify/SKILL.md",
+		"utf8",
+	);
+	const yaml = adapterText.match(/```yaml\n(adapter_contract:[\s\S]*?)\n```/);
+	assert.ok(yaml);
+	const contract = parse(yaml[1]).adapter_contract;
+	assert.equal(contract.id, "itp-verify");
+	assert.deepEqual(contract.required_children, [
+		"verification-before-completion",
+	]);
+	assert.ok(contract.exits.includes("blocked"));
+}
 assert.ok(["sdk", "durable"].includes(runtime));
 const input = createInterface({ input: process.stdin });
 const replies = input[Symbol.asyncIterator]();
@@ -21,7 +44,12 @@ const results = [];
 const parameters = Type.Object(
 	{
 		op: Type.Union(
-			["effect", "patch", "output"].map((value) => Type.Literal(value)),
+			[
+				"effect",
+				"patch",
+				"output",
+				...(skillMode ? ["child", "missing", "contract"] : []),
+			].map((value) => Type.Literal(value)),
 		),
 	},
 	{ additionalProperties: false },
@@ -29,6 +57,37 @@ const parameters = Type.Object(
 const schema = Type.Object({ result: Type.String() });
 async function execute(args) {
 	let result;
+	if (skillMode && ["child", "missing", "contract"].includes(args.op)) {
+		skillCalls.push(args.op);
+		if (args.op === "child") {
+			return {
+				result: readFileSync(
+					"/framework/.agents/skills/verification-before-completion/SKILL.md",
+					"utf8",
+				),
+			};
+		}
+		if (args.op === "missing") {
+			assert.equal(fixture.skills.includes("tdd"), false);
+			return { result: "blocked:missing-pinned-child:tdd" };
+		}
+		const result = {
+			skill_result: {
+				skill: "itp-verify",
+				status: "pass",
+				summary: "synthetic transport only",
+				artifacts: [],
+				evidence: [],
+				findings: [],
+				open_questions: [],
+				recommended_next: [],
+				handoff: {},
+			},
+		};
+		assert.deepEqual(parse(stringify(result)), result);
+		assert.equal(result.skill_result.evidence.length > 0, false);
+		return { result: JSON.stringify(result) };
+	}
 	if (args.op === "patch") {
 		assert.equal(
 			readFileSync("/workspace/sum.ts", "utf8"),
@@ -55,6 +114,13 @@ async function execute(args) {
 }
 const fake = fauxProvider({ tokensPerSecond: 100000 });
 fake.setResponses([
+	...(skillMode
+		? ["child", "missing", "contract"].map((op) =>
+				fauxAssistantMessage(fauxToolCall("fixture", { op }), {
+					stopReason: "toolUse",
+				}),
+			)
+		: []),
 	...["effect", "effect", "effect", "patch", "output"].map((op) =>
 		fauxAssistantMessage(fauxToolCall("fixture", { op }), {
 			stopReason: "toolUse",
@@ -71,7 +137,21 @@ try {
 	if (runtime === "sdk") {
 		const pi = await import("@earendil-works/pi-coding-agent");
 		const { InMemoryCredentialStore } = await import("@earendil-works/pi-ai");
-		assert.equal(pi.VERSION, "1.3.0");
+		assert.equal(pi.VERSION, expectedVersion);
+		const loaded = skillMode
+			? pi.loadSkills({
+					cwd: "/workspace",
+					agentDir: "/workspace/agent",
+					skillPaths: ["/framework/.agents/skills"],
+					includeDefaults: false,
+				})
+			: { skills: [], diagnostics: [] };
+		assert.deepEqual(loaded.diagnostics, []);
+		if (skillMode)
+			assert.deepEqual(
+				loaded.skills.map((skill) => skill.name).sort(),
+				fixture.skills,
+			);
 		const models = await pi.ModelRuntime.create({
 			credentials: new InMemoryCredentialStore(),
 			modelsPath: null,
@@ -90,6 +170,7 @@ try {
 			settingsManager: settings,
 			noExtensions: true,
 			noSkills: true,
+			skillsOverride: () => loaded,
 			noPromptTemplates: true,
 			noThemes: true,
 			agentsFilesOverride: () => ({ agentsFiles: [] }),
@@ -129,7 +210,11 @@ try {
 		try {
 			await session.bindExtensions({});
 			assert.deepEqual(session.getActiveToolNames(), ["fixture"]);
-			await session.prompt("Run the shared synthetic fixture.");
+			await session.prompt(
+				skillMode
+					? "/skill:itp-verify Run the shared synthetic fixture."
+					: "Run the shared synthetic fixture.",
+			);
 			await session.waitForIdle();
 			assert.equal(
 				session.getLastAssistantText(),
@@ -139,6 +224,12 @@ try {
 			session.dispose();
 		}
 		const reopened = pi.SessionManager.open(manager.getSessionFile());
+		if (skillMode) {
+			const transcript = JSON.stringify(reopened.getEntries());
+			assert.ok(transcript.includes("adapter_contract:"));
+			assert.ok(transcript.includes("blocked:missing-pinned-child:tdd"));
+			assert.ok(transcript.includes("synthetic transport only"));
+		}
 		assert.deepEqual(
 			reopened.getEntries(),
 			JSON.parse(JSON.stringify(manager.getEntries())),
@@ -158,7 +249,7 @@ try {
 		const metadata = await import("@earendil-works/pi-durable/package.json", {
 			with: { type: "json" },
 		});
-		assert.equal(metadata.default.version, "1.3.0");
+		assert.equal(metadata.default.version, expectedVersion);
 		const models = createModels();
 		models.setProvider(fake.provider);
 		const registry = pi.createRegistry();
@@ -196,7 +287,12 @@ try {
 			conversationId = root.id;
 			const result = await (
 				await root.submit(
-					{ type: "input", content: "Run the shared synthetic fixture." },
+					{
+						type: "input",
+						content: skillMode
+							? `${adapterText}\nRun the shared synthetic fixture.`
+							: "Run the shared synthetic fixture.",
+					},
 					context,
 				)
 			).wait(context);
@@ -209,6 +305,14 @@ try {
 		try {
 			const root = await reopened.root(context);
 			assert.equal(root.id, conversationId);
+			if (skillMode) {
+				const transcript = JSON.stringify(
+					await root.entries({ order: "ascending" }, 100, undefined, context),
+				);
+				assert.ok(transcript.includes("adapter_contract:"));
+				assert.ok(transcript.includes("blocked:missing-pinned-child:tdd"));
+				assert.ok(transcript.includes("synthetic transport only"));
+			}
 			const answer = await root.commit(
 				(tx) => tx.entry(pi.AssistantEntry, answerId),
 				context,
@@ -227,6 +331,7 @@ try {
 		"deduplicated",
 		"safe-output-error",
 	]);
+	if (skillMode) assert.deepEqual(skillCalls, ["child", "missing", "contract"]);
 	process.stdout.write(
 		`${JSON.stringify({ type: "report", reopened: true, results })}\n`,
 	);

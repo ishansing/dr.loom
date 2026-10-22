@@ -171,3 +171,58 @@ before any workspace reuse. This uses native Linux identity/lifecycle primitives
 not PID-number guessing or a runtime ACK. A deterministic immediate-stop self-test
 and detached-writer test cover both windows; production quotas/seccomp and host
 failure behavior remain outside this experiment's certification.
+
+## [ADR-005] - 2026-10-22 (P0 runtime recommendation)
+
+**Title:** Prefer upstream Pi coding-agent SDK `1.4.0` for the first isolated adapter.
+
+**Status:** Accepted — owner approved 2026-10-22; not a dependency pin or G0 closure.
+
+**Context & Problem Statement:** The bounded comparison now has shared offline
+workload, process-crash/owned-effect, storage ownership/restore and pinned I2P
+skill/contract evidence. One runtime is needed before adapter implementation;
+maintaining two execution loops would add unsupported scope. Both runtimes still
+require Loom-owned authority, output handling, isolation and independent completion.
+
+**Options Evaluated:**
+
+1. Coding-agent SDK `1.4.0` at source tag commit
+   `4a080252f06caf63a525d7873c5d94d3c23887e0`: native Agent Skills discovery,
+   command expansion, session/tool APIs and the existing T-08–T-11 adapter shape.
+   Loom must explicitly own interrupted-work retry/reconciliation.
+2. Durable `1.4.0`: native saved-task/submission recovery and checkpointing, but
+   explicit owned skill-context integration, changed adapter/session-reader APIs
+   and a schema-2 upgrade/restore lifecycle. Its tasks need not duplicate Loom
+   state, but that separation must be designed and tested.
+3. Keep the tested SDK `1.3.0` baseline: less revision change now, but omits the
+   shipped resume/tool-activation fixes. Exact `1.4.0` shared/skill/crash checks
+   now provide direct evidence instead of assuming compatibility from changelogs.
+
+**Decision & Rationale:** Choose option 1 for the first supported adapter,
+following the owner's approval of the recommendation.
+Native skill handling reduces the initial integration surface and preserves the
+planned SDK/session-reader architecture. SDK `1.4.0` passes the selected synthetic
+contract and failure corpus on Node/Bun. This is architectural fit, not a measured
+model-quality, latency, security-superiority or engineering-hours claim. Durable's
+recovery advantages remain real; neither runtime eliminates the owned effect or
+external supervisor requirements. Use only one execution loop.
+
+**Consequences & Tech Debt:** Keep `FRAMEWORK_REF`, Loom manifest/lock and normative
+authority boundary unchanged until approved promotion work. Native SDK skill
+expansion passes unknown/missing skills through as text; Loom must validate
+revision, hashes, exact skill selection and required children before invocation.
+The snapshot's externally installed specialist children are not bundled/verified
+by this experiment; full workflows requiring them remain unsupported until
+provisioned against locks. SDK resume needs truthful committed-state recovery,
+no automatic replay of uncertain non-idempotent effects, and exact-hash trusted
+verification. Production backend/provider/MCP/output/usage qualification, secret
+scanning and independent review remain open. Owner: developer scopes dependency
+promotion and the adapter backlog for separate implementation approval.
+See the [comparison and proposed manifest](research/pi/17-p0-runtime-recommendation.md).
+
+**Status event — 2026-10-22:** Proposed → Accepted after the user explicitly
+approved the elaborated recommendation. The selected runtime is upstream
+`@earendil-works/pi-coding-agent@1.4.0` at source tag commit
+`4a080252f06caf63a525d7873c5d94d3c23887e0`. This accepts the design direction
+only: no Loom dependency installation, framework re-pin, paid call, deployment,
+commit/publication or G0/P1 advancement is authorized by this approval.

@@ -205,7 +205,9 @@ choices are exercised. P5/H1 dates are forecasts, not commitments.
 **Execution status (2026-10-22):** user authorized P0; days 1–2 preparation
 started in the [support profile and acceptance matrix](research/phase-0/05-p0-support-profile.md).
 Existing Bun/TypeScript workflow, Linux/local evaluation and offline-only calls
-confirmed. G0 remains open; no runtime/sandbox promotion or P1 authorization.
+confirmed. The owner accepted coding-agent SDK `1.4.0` in
+[ADR-005](decisions.md#adr-005---2026-10-22-p0-runtime-recommendation).
+G0 remains open; no dependency/sandbox promotion or P1 authorization.
 
 **Outcome:** the developer can build without guessing the product, support
 boundary or runtime. Target duration: two weeks; no open-ended research phase.

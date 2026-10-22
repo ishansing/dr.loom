@@ -266,28 +266,29 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
 
 ## Active phase specification
 
-- **Work package:** P0 runtime comparison — crash, ownership and rollback evidence, 2026-10-22.
+- **Work package:** P0 skill compatibility and runtime/revision recommendation, 2026-10-22.
 - **Authority:** user authorized starting P0 after PR #1 merged; confirmed existing
   TS repository, Linux/local evaluation and offline-only experiments.
-- **Branch:** `chore/p0-runtime-recovery`, from committed first evidence `af998f2`.
-- **Status:** P0 in progress; previous evidence committed at the user's request;
-  recovery increment verified within the stated research limits; the user's
-  subsequent request authorizes its task-scoped commit and next steps.
-  No push or runtime promotion implied. G0 remains open;
-  five-active-development-day comparison budget remains in force.
+- **Branch:** `chore/p0-runtime-recommendation`, from recovery commit `f08c7ec`.
+- **Status:** Skill/revision evidence verified within research limits;
+  owner accepted coding-agent SDK `1.4.0` in ADR-005 on 2026-10-22.
+  The user's subsequent request authorizes this task-scoped commit and next P0
+  steps, not Loom dependency promotion, framework re-pin or publication.
+  G0 remains open; a runtime design decision is not production certification.
 - **Next gate:** owner approval of the complete G0 evidence before P1. No paid
   calls, deployment, dependency promotion or phase advancement authorized here.
 
 ### 1. Phase Objective & Scope
 
-Extend the shared offline evidence with real external SIGKILL checkpoints before
-effect dispatch, after target mutation/before result commit and after terminal
-commit. Compare Durable saved-task recovery with explicit SDK supervisor retry;
-never attribute a new SDK prompt to automatic task replay. Revoke live policy,
-change final payload and preserve/reconcile uncertain non-idempotent effects.
-Exercise competing storage owners on synthetic stores and a standard-library
-external ownership guard; test backup/migration/rollback on copies only.
-Use reviewed synthetic code under the existing experimental bubblewrap boundary.
+Extract only tracked regular files at `FRAMEWORK_REF` into a read-only snapshot;
+check the vendored verification child hash and transport the actual adapter/
+child/result contract in both runtimes. Compare native SDK skill loading with
+owned explicit Durable context loading; missing external children fail closed.
+Reuse existing ordinary/crash probes on exact `1.4.0` in a separate external
+installation, retaining `1.3.0` regressions. Record the runtime/revision ADR,
+its explicit owner acceptance and a proposed adapter manifest, with remaining
+G0 choices named. No actual framework
+skills, shell commands from skill text or real model workflows are executed.
 Out of scope: application code, Loom dependency installation/promotion, paid
 calls, secrets, host configuration, production sandbox certification, framework
 re-pin, P1, publishing or deployment. Experiment-only pinned dependencies may
@@ -301,14 +302,16 @@ host, not a qualified deployment or sandbox. Bun `1.4.3`, Node `26.7.0`; existin
 `5.9.3`, Biome `2.5.14`, existing `bun.lock`. These are observations, not newly
 promoted support pins. `.env.example` is absent; no raw environment values read.
 The scaffold's schema is owned by `src/store.ts`; no schema change in this task.
-Framework selection stays in `FRAMEWORK_REF`; Pi SDK/Durable selection stays
-open under the roadmap. No separate upstream SOP URL/ref is configured; this
+Framework selection stays in `FRAMEWORK_REF`; ADR-005 selects coding-agent SDK
+`1.4.0`, with no runtime dependency added to Loom. No separate upstream SOP URL/ref is configured; this
 change adapts the user-supplied playbook into reviewed repository governance.
 Merged `master` was fetched read-only over HTTPS after verifying PR #1's merge.
-Existing external `1.3.0` experiment installation and integrity evidence may be
-reused if present and unchanged. Evaluate Durable `1.4.0` only in a separate
-external installation for schema migration, not as a Loom upgrade. Revalidate
-its published artifact and installed migration source before execution. Bubblewrap
+Existing external `1.3.0` and Durable migration installations remain unchanged.
+Revalidate/install both packages at exact `1.4.0` in a new external comparison
+directory with disabled lifecycle scripts; inspect shipped API/source first.
+The sibling framework is at `bd0cacc5` with unrelated untracked work: preserve it
+and read the pinned commit through Git, never substitute its working tree.
+No raw host skill/config directories are mounted. Bubblewrap
 `0.13.1` runs an empty unshared domain on this host. Docker reports seccomp and
 cgroup namespaces but not rootless mode; do not escalate to daemon privileges.
 Neither `gitleaks`
@@ -321,15 +324,17 @@ separate scoped implementation decision, not an unrequested edit here.
 
 | File | Operation / responsibility |
 | --- | --- |
-| `SPEC.md` | Declare recovery increment and results. |
-| `decisions.md` | Record recovery/retry and backup test strategy. |
-| `research/pi/16-p0-crash-recovery.md` | Exact crash/ownership/migration evidence, recommendation limits and next owner. |
-| `research/pi/probes/p0-runtime-recovery.mjs` | Runtime-specific start/recover/storage fixture modes; self-checking assertions. |
-| `research/pi/probes/p0-recovery.py` | External checkpoint driver, synthetic authority/reconciliation, ownership and copy-only migration assertions. |
-| `research/pi/probes/p0-sandbox.py` | Allow the additional reviewed probe file using the same mount/env boundary. |
-| `research/phase-0/05-p0-support-profile.md` | Link recovery evidence without rewriting acceptance gates. |
+| `SPEC.md` | Declare skill/revision comparison and results. |
+| `decisions.md` | Runtime/revision ADR and dated explicit owner-acceptance event. |
+| `research/pi/17-p0-runtime-recommendation.md` | Skill/contract evidence, revision deltas, choice rationale and proposed adapter file manifest. |
+| `research/pi/probes/p0-runtime-comparison.mjs` | Explicit expected-version and skill-fixture mode, reusing runtime setup. |
+| `research/pi/probes/p0-sandbox.py` | Optional read-only framework snapshot and explicit version/skill launch inputs. |
+| `research/pi/probes/p0-recovery.py` | Explicit expected-version propagation; keep downgrade experiment restricted to `1.3.0` source stores. |
+| `research/pi/probes/p0-framework.py` | Pinned Git extraction/hash checks, missing/tampered fixture self-check and shared skill runs. |
+| `research/phase-0/05-p0-support-profile.md` | Record recommendation/evidence and remaining G0 owner inputs. |
+| `ROADMAP.md` | Synchronize the accepted runtime direction; retain remaining G0 gates. |
 
-No public API, dependency, schema, exported type, runtime permission or CI
+No Loom public API, dependency, schema, exported type, production runtime permission or CI
 behavior changes. No lowercase spec duplicate or additional ADR directory.
 
 ### 4. Test Plan & Coverage Matrix
@@ -338,7 +343,7 @@ behavior changes. No lowercase spec duplicate or additional ADR directory.
 | --- | --- | --- |
 | Unit/regression baseline | `bun test --coverage` | Existing three smoke tests; preserve source unchanged and record coverage, not a comprehensive production suite. |
 | DB integration baseline | Existing lease and close/reopen smoke assertions in the same suite | Runs with the baseline; no new DB behavior claimed. |
-| Experiment integration | Real SIGKILL and persisted recovery scenarios on SDK/Durable under Node/Bun; ownership counterexample and external lock; copied SQLite upgrade and restore | Process crashes, not power/host loss; external synthetic authority is not Loom enforcement. |
+| Experiment integration | Ordinary/recovery cases at exact `1.4.0`, `1.3.0` regressions, pinned adapter/child loading on Node/Bun; missing/hash-tampered snapshot assertions | No real model skill execution, full I2P lifecycle, provider/MCP or production proof. |
 | Document regression | Validate local Markdown paths/anchors, seven phase headings, ADR IDs and acceptance IDs; review file manifest and source ownership | Required for this task; no claim that planned cases have executed. |
 | Security | Read-only dependency audit and scoped manual review of changed documents for secrets/unsafe instructions | Full automated secret scan unavailable; no scanner or dependency installed. Not a production security sign-off. |
 
@@ -370,6 +375,10 @@ before implementation; N/A requires a scope-specific reason.
   owner before launch and release only after the first domain is confirmed dead.
 - Preserve the source store and offline backup; migration and old-version
   rejection happen only on clones. No code rollback is called a DB downgrade.
+- Snapshot extraction rejects symlinks and verifies Git blobs/locked vendored
+  content; negative tamper tests use a fresh copy, not the sibling checkout.
+  Globally installed children are intentionally absent: report blocked, never
+  read current global files or auto-download/install missing skills.
 
 ### 6. Blast Radius & Rollback Plan
 
@@ -396,6 +405,9 @@ Run in this order; each required executable check must exit `0`:
    Recovery command: `python3 research/pi/probes/p0-recovery.py --experiment /tmp/opencode/loom-p0-comparison --upgrade-experiment /tmp/opencode/loom-p0-durable-140`;
    it runs both engines/runtimes and copy-only migration. Check recovery MJS
    with `node --check` and Python by in-memory `compile()` before test execution.
+   Repeat ordinary/crash probes with `--version 1.4.0` and the separate
+   `/tmp/opencode/loom-p0-comparison-140` directory. Skill command:
+   `python3 research/pi/probes/p0-framework.py --framework ../I2P --experiment /tmp/opencode/loom-p0-comparison-140 --version 1.4.0`.
 4. `bun audit` — read-only dependency advisory audit, no automatic fixes.
 5. `git diff --check` — tracked diff whitespace; additionally validate new
    documents' whitespace, local links/anchors and required headings read-only.
@@ -460,23 +472,33 @@ experiment's verification does not close G0 or any production gate.
 Verification record:
 
 - [x] Lint, strict typecheck and research syntax checks.
-- [x] Baseline coverage and four ordinary probe paths unchanged; 20 crash,
-  four ownership and two migration/restore cases pass with namespace-exit checks.
-- [x] Loom and both external tree audits; scanner unavailable, not passed.
-- [x] Links, phase/ADR structure, whitespace and seven-file task diff reviewed.
-- [x] G0 remains open; task-scoped commit explicitly authorized by the user's
-  subsequent request; no required checks waived.
+- [x] Baseline coverage unchanged; old regressions and new skill/revision matrix pass.
+- [x] Loom/three external tree audits; scanner unavailable, not passed.
+- [x] Links, phase/ADR structure, whitespace and task diff reviewed; approval-only
+  documentation follow-up included `ROADMAP.md` in the nine-file manifest.
+- [x] Accepted ADR-005 and remaining G0 owner inputs recorded; task-scoped commit
+  authorized by the user's subsequent explicit request.
 
 Baseline from governance (2026-10-21): lint/typecheck passed; 3 tests passed,
 100% functions / 90.99% instrumented lines; audit found no advisories across
-14 packages. Prior comparison verified/committed at `af998f2`; recovery results (2026-10-22):
+14 packages. Recovery verified/committed at `f08c7ec`; current results (2026-10-22):
 
 | Command / review | Result | Limit |
 | --- | --- | --- |
-| `bun run lint` | Exit 0; 12 files | Existing configured rules only; Python syntax/self-check separate. |
-| `bun run check` and research syntax checks | Exit 0; Node syntax and Python in-memory compilation passed | MJS/Python not claimed strictly typed. |
-| `bun test --coverage` and experiment assertions | Exit 0; 3 tests, 100% functions / 90.99% instrumented lines unchanged; four ordinary paths, 20 crash scenarios, four ownership cases and two migration/restore cases passed | Process-crash and synthetic-authority evidence, not power loss or full Loom enforcement. |
-| `bun audit` and external experiment dependency review | Exit 0 with no advisories across 14 Loom packages; external npm audits exit 0 with zero advisories in 121-/91-package trees; lock hashes unchanged; direct `1.4.0` tarball SHA-512 matched metadata | No full source/license/provenance review. |
+| `bun run lint` | Exit 0; 12 files | Existing configured rules only. |
+| `bun run check` and research syntax checks | Exit 0; both Node probe syntax checks and Python in-memory compilation passed | MJS/Python not claimed strictly typed. |
+| `bun test --coverage` and experiment assertions | Exit 0; 3 pass/0 fail, 100% functions / 90.99% instrumented lines unchanged; across both versions: eight ordinary paths, eight skill paths, 40 crash and eight ownership cases; two old-store upgrade/restore cases; snapshot tamper/missing/symlink guards pass | Baseline and research assertions reported separately; no real model/complete workflow claim. |
+| `bun audit` and external experiment dependency review | Exit 0; zero advisories across 14 Loom packages and 121-/91-/122-package external trees; recorded external lock hashes unchanged; both direct `1.4.0` tarball SHA-512 values matched metadata | No full source/license/provenance review. |
 | Secret scanner | Unavailable (`gitleaks`/`trufflehog` not on PATH) | No automated secret-scan pass claimed; code/release phase requirements must be resolved before its closure. |
-| Document/manifest review | Validator exit 0: 204 local links, seven phase sections, 12 unique acceptance IDs and unique ADR IDs; new-file whitespace/optimization guards and `git diff --check` passed; seven-file scoped manual review completed | Manual review is not an automated secret scan. |
-| Application/config integrity | `git diff --exit-code -- src tests package.json bun.lock biome.json tsconfig.json .github` exit 0 | No application/test, dependency, compiler, linter or CI changes. |
+| Document/manifest review | Validator exit 0: 215 local links, seven phase sections, 12 unique acceptance IDs and unique ADR IDs; new-file whitespace and mandatory-assertion guard passed; `git diff --check` exit 0; scoped manual review of eight files | Manual review is not an automated secret scan. |
+| Application/config integrity | `git diff --exit-code -- src tests package.json bun.lock biome.json tsconfig.json .github FRAMEWORK_REF` exit 0; sibling framework status/revision unchanged | No application/test, dependency, compiler, linter, CI or framework-pin changes. |
+
+Approval-only follow-up (2026-10-22): updated ADR status/event, active phase,
+support profile, recommendation and roadmap. Validate documents/whitespace and
+confirm probe bytes unchanged from the prior verified snapshot. No application
+or probe code changed; the earlier executable results above were not rerun or
+relabelled as fresh tests for this documentation-only follow-up.
+Observed: document validator passed 216 local links, phase/ADR structure and
+whitespace; `git diff --check` and application/config integrity checks exited 0.
+All probe bytes matched the pre-update SHA-256 snapshot. The user subsequently
+authorized committing this evidence and accepted decision.

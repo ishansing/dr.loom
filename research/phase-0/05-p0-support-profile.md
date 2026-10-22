@@ -9,16 +9,17 @@ Execution requirements: [active phase](../../SPEC.md#active-phase-specification)
 | Dimension | Initial scope | Approval/evidence still needed |
 | --- | --- | --- |
 | User/journey | Single trusted developer/operator; small fix in an existing Bun/strict TypeScript repository | Representative real repository and I2P runbook families |
-| First fixture | Disposable synthetic TS repository with one deterministic failing test, a bounded patch and a passing test | Fixture/test implementation in the next specified package |
+| First fixture | Disposable synthetic TS repository with one deterministic failing test, a bounded patch and a passing test | Synthetic red/green proof complete; real reference-repository qualification remains |
 | Host | Linux x86_64; local/private CLI | Supported distribution/kernel and minimum hardware, not just current workstation |
 | Isolation candidate | Evaluate rootless containers; no backend selected | Privilege, mount, egress and whole-domain cleanup proof; fallback decision if incompatible |
 | Deployment candidate | Local disposable staging destination | Concrete target/restore contract; no production deployment approval |
 | Provider/model | Offline synthetic responses only; zero paid-call budget | Exact provider/model, data policy and cap before live calls; G0 remains open |
-| Runtime | Compare upstream Pi coding-agent SDK and Durable; one winner | Release revalidation, same-workload evidence and explicit adoption decision |
+| Runtime | Coding-agent SDK `1.4.0` selected; owner accepted ADR-005 on 2026-10-22 | Scoped dependency-promotion/adapter implementation approval; no dependency added to Loom |
 | Framework | Retain current `FRAMEWORK_REF` unchanged during kickoff | Retain/revalidate versus re-pin review; previous readiness is not current compatibility proof |
 
 No real credentials, customer repositories or production data belong in fixtures.
-The owner has approved evaluation scope, not runtime adoption or production support.
+The owner has approved evaluation scope and the SDK runtime direction, not
+dependency installation or production support.
 
 ## Observed starting point
 
@@ -58,12 +59,13 @@ tests against implemented controls. A fake owner gate is not Loom enforcement.
 | P0-A11 | Operator decisions | Approval binds identity/action/payload/target/expiry; human-only kill/reset requires reconciliation and re-verification, no implicit lease regrant | P0 UX contract; G1/G2 integration |
 | P0-A12 | Unsupported workload | Unsupported stack, channel or deployment gets an explicit handoff rather than fallback execution or a false complete result | P0 scope; G3/G4 integration |
 
-## Shared runtime comparison — next bounded package
+## Shared runtime comparison — evidence and decision
 
 **2026-10-22 progress:** [first shared offline evidence](../pi/14-p0-runtime-comparison.md)
 now passes on both runtimes under Node and Bun, with synthetic namespace/mount/
 cleanup feasibility checks. [Release revalidation](../pi/15-p0-release-revalidation.md)
-records published `1.4.0` separately from tested `1.3.0`. No runtime selected.
+records published `1.4.0` separately from tested `1.3.0`. No runtime was selected
+at that first increment; the subsequent accepted decision is recorded below.
 Hard-crash/replay, storage ownership and upgrade/rollback cases remain open;
 the acceptance rows above still describe required qualification, not passed gates.
 
@@ -74,9 +76,19 @@ SQLite upgrade/old-backup restore. The research launcher now confirms namespace
 init exit through pidfds before reuse, including the startup window. These are
 synthetic process-failure results, not power-loss or production qualification.
 
-Budget: **five active development days total**, per roadmap; log actual effort,
-not calendar elapsed time. First increment executed; no active-hour/effort result
-was measured, and the five-day comparison is not declared complete.
+**Recommendation increment:** [pinned-skill and `1.4.0` evidence](../pi/17-p0-runtime-recommendation.md)
+supports **coding-agent SDK `1.4.0`**, accepted by the owner on 2026-10-22 in
+[ADR-005](../../decisions.md#adr-005---2026-10-22-p0-runtime-recommendation).
+Native loading discovers 12 tracked roots; actual adapter/child/result text
+persists in both runtime fixtures. Required non-vendored children still block
+full workflows. The comparison has reached an accepted runtime decision; next
+is the remaining G0 decision pack, not more open-ended runtime feature research.
+No dependency promotion, framework re-pin or P1 advancement is implied.
+
+Budget: **five active development days total**, per roadmap, not calendar elapsed
+time. The runtime direction is accepted; remaining G0 owner decisions are pending.
+No active-hour result was measured; no claim of five days worked or G0 closure.
+The protocol below records how to compare, not a request to repeat completed work.
 
 1. Inventory existing public API probes and recoverable temporary evidence.
    Revalidate the selected published source/artifact before executing it; keep
@@ -116,7 +128,7 @@ return is evidence of completion. See the [normative boundaries](../../SPEC.md#r
 | Item | Next owner/action | Closure evidence |
 | --- | --- | --- |
 | Representative repo/runbook families | Owner nominates one sanitized repo/task; developer maps pinned I2P entry points | Approved support matrix and task acceptance test |
-| Runtime/revision | Developer executes bounded comparison | Same-workload evidence and reviewed ADR choosing one runtime |
+| Runtime/revision | Design choice closed by accepted ADR-005; developer scopes later dependency promotion | SDK `1.4.0` direction accepted; implementation/support qualification remains gated |
 | Sandbox/host/deployment | Developer tests approved candidate; owner approves concrete profile | Mount/egress/cleanup and restore evidence; no implicit Docker privilege escalation |
 | Provider/model/data/spending | Owner specifies exact profile before any live call | Explicit approval; synthetic comparison alone cannot close this |
 | Framework drift | Developer reviews selected revision, contracts, registry/locks and readiness | Retain/revalidate or approved re-pin ADR; current pin unchanged meanwhile |
@@ -125,7 +137,7 @@ return is evidence of completion. See the [normative boundaries](../../SPEC.md#r
 | Independent review | Owner identifies reviewer/availability | Booking and named scope; not booked by this document or self-certified |
 | Next implementation package | Developer scopes T-01/T-03 after remaining decisions | Updated estimates and owner-approved P1 backlog only after G0 passes |
 
-Kickoff introduces no new architecture selection: the confirmed evaluation scope
-stays here; significant runtime, boundary and storage decisions belong in
+The initial kickoff introduced no architecture selection; runtime selection was
+subsequently accepted in ADR-005. Significant boundary and storage decisions belong in
 [decisions.md](../../decisions.md) when made. No commit/push/PR or paid evaluation
 is implied by starting P0.

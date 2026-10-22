@@ -422,8 +422,9 @@ applicable phase specification/review; no additional command is shipped here.
 **Title:** Evaluate SIWC direct for requested Codex subscription; exclude consumer
 Antigravity from Loom's provider path under its current terms.
 
-**Status:** Proposed recommendation — subscription candidate requested by owner;
-no provider adoption, account eligibility, implementation or live use approved.
+**Status:** Accepted disabled qualification direction after owner clarification;
+SIWC direct remains unqualified. No account eligibility, implementation or live
+use approved. Original proposal and research below are retained.
 
 **Context & Problem Statement:** Owner requested Codex subscription access and
 asked to consider Antigravity subscription. Loom keeps one isolated upstream Pi
@@ -462,6 +463,15 @@ verification remain provider/model-independent. Subscription tier,
 integration proof and independent review stay open. Vendor/legal duties and secret
 hygiene remain; unrelated personal/customer data is not authorized. No login,
 background automation, live allowance use, fallback or extra spending approved.
+
+**Closure clarification — 2026-10-22:** owner approved “Defer live qualification”
+for disabled SIWC with synthetic/offline, provider-independent P1 only. Tier
+preference was stated as “Plus tier + Free tier subject to availibility”; this
+is not independent billing/account evidence or permission for automatic fallback,
+rotation or switching on quota exhaustion. Training opt-out was confirmed earlier;
+owner now explicitly confirms account-level **Include environments: Off**.
+These are owner attestations, not CLI/API checks. No live use, login or allowance
+consumption is authorized. See ADR-012 for the gate boundary and pending slice.
 
 ## [ADR-011] - 2026-10-22 (Ishan review assistant)
 
@@ -504,3 +514,34 @@ not a direct signature or independently authenticated communication. The
 original report body is retained; R-001 stays open, no finding waiver or
 specific provider disposition was supplied, and G0/P1/live-use authorization
 remains separate. This event does not approve the uncommitted reviewer tooling.
+
+## [ADR-012] - 2026-10-22 (G0 closure boundary)
+
+**Title:** Separate provider-independent core readiness from live integration qualification.
+
+**Status:** Accepted scope boundary at owner request; G0 closure and the proposed
+first T-01 slice still require final human disposition. No P1 execution authorized.
+
+**Context & Problem Statement:** the G0 review found a restore-target mismatch
+and asked whether unresolved provider eligibility changes core ownership. The
+core ledger/admission/recovery design is provider-independent; the owner approved
+deferring live qualification with SIWC disabled rather than doing live tests now.
+
+**Options Evaluated:** block core readiness on live qualification; prepare the
+synthetic-only core with an explicitly disabled, separately gated integration.
+
+**Decision & Rationale:** use the latter. Keep ADR-005–009's ownership, isolation,
+operator and durability boundaries unchanged. Correct R-001 to ADR-008's accepted
+one-hour restore target; the roadmap's 30-minute proposal is superseded, not a
+different hidden SLO. Prepare T-01 first; do not promote Pi or implement the broker
+as part of closing planning. The closure packet assigns later proof obligations.
+
+**Consequences & Tech Debt:** eligibility/own app identity, data handling, explicit
+run-scoped tier/model selection, quota/cost accounting, broker and live access
+must pass qualification/approval before any real inference or private-data use.
+Plus and Free are candidates subject to availability, never implicit substitutes.
+Backup destination/protection, final host/image/mount/log/egress/startup/cleanup,
+locked framework children and production restore remain their implementation-gate
+obligations with named owners. No safety test or scanner gate is waived. The first
+core package must have an approved exact migration contract and fresh baseline
+before code; this planning decision neither implements it nor approves release.

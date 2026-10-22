@@ -13,8 +13,8 @@ Execution requirements: [active phase](../../SPEC.md#active-phase-specification)
 | Host | Current Linux x86_64/Omarchy snapshot selected for lab qualification; local/private CLI | Rootless setup/resource proof and production-host support remain separate gates |
 | Isolation target | Rootless Docker selected in accepted ADR-006 | Separate setup approval and rootless identity/resource/mount/egress/cleanup qualification; no rootful fallback |
 | Deployment candidate | Local disposable staging destination | Concrete target/restore contract; no production deployment approval |
-| Provider/model | Initial qualification: personal OpenAI account, Codex/ChatGPT subscription via conditional SIWC direct route; GPT-6.1 Sol candidate (`gpt-6.1-sol`), owner-confirmed available on that account. Antigravity consumer route blocked by terms | Subscription tier and qualified broker still needed; availability is owner-attested, not API-verified; no live quota use, paid budget zero; [review](08-subscription-provider-review.md) |
-| Provider data policy | Owner permits private source alongside synthetic/public inputs and requires a training/improvement opt-out for the personal account; no additional retention/residency restrictions for now | Owner must apply/confirm **Improve the model for everyone** off (or Privacy Portal) and verify Codex **Include environments**; installed `codex-cli 0.163.0` exposes no account data-control setting, and its local `include_environment_context=true` default is not proof of the account state; opt-out covers new tasks only and is not zero retention; vendor/legal duties and secret hygiene remain; unrelated customer/personal data not authorized |
+| Provider/model | Personal OpenAI account; owner preference “Plus tier + Free tier subject to availibility”; GPT-6.1 Sol candidate (`gpt-6.1-sol`), owner-confirmed available. SIWC is disabled pending qualification; Antigravity consumer route excluded | Owner approved deferred live qualification for synthetic-only P1. Tier/model eligibility, own app identity and broker proof required before live use; no auto-fallback/rotation, no live quota use, paid budget zero; [review](08-subscription-provider-review.md) |
+| Provider data policy | Private source permitted as a data class; training opt-out confirmed and account-level **Include environments: off**, both owner-attested; no additional retention/residency restrictions | Not independently verified; no zero-retention claim. Local CLI flag is unrelated; no credentials/customer data/live submission authorized; opt-out covers new tasks only; vendor/legal duties remain |
 | Runtime | Coding-agent SDK `1.4.0` selected; owner accepted ADR-005 on 2026-10-22 | Scoped dependency-promotion/adapter implementation approval; no dependency added to Loom |
 | Framework | Retain/revalidate current `2.1.0` pin, accepted ADR-007 | Required children and fresh full-workflow qualification; no re-pin or compatibility claim by historical readiness |
 
@@ -29,14 +29,16 @@ envelope. Framework retention, operator/transport and durability design were
 accepted in ADR-007–009. The owner subsequently requested Codex subscription and
 consideration of Antigravity; [subscription review](08-subscription-provider-review.md)
 records conditional SIWC feasibility and the consumer Antigravity restriction.
-Personal account, initial model candidate, private-code permission and required
-training opt-out are now specified; subscription tier, owner confirmation of the
-opt-out and account/model qualification remain open. Loom's
+Personal account, initial model candidate, Plus/Free qualification preference,
+private-code permission, confirmed training opt-out and explicit Include
+environments off are recorded as owner attestations. Actual account/model
+qualification remains open but is deferred with SIWC disabled. Loom's
 authority/workflow/verification stay provider/model-independent; this is only the
 first qualification profile. No live allowance consumption is authorized, paid
 budget stays zero. Owner relayed Ishan Singh's approval of the `fc0e05e` review
-report on 2026-10-22; no direct signature claimed. R-001 and separate gate
-decisions remain open; G0 remains open.
+report on 2026-10-22; no direct signature claimed. R-001 is corrected in the new
+document candidate; follow-up disposition and first-slice approval are separate.
+G0 remains open; [closure preparation](09-g0-closure-readiness.md) is not P1 execution.
 
 ## Observed starting point
 
@@ -146,13 +148,13 @@ return is evidence of completion. See the [normative boundaries](../../SPEC.md#r
 | --- | --- | --- |
 | Representative repo/runbook families | Disposable Loom checkout selected; developer specifies the bounded first golden and required framework inputs | Approved small TS-fix matrix and task acceptance test; no full workflow proof yet |
 | Runtime/revision | Design choice closed by accepted ADR-005; developer scopes later dependency promotion | SDK `1.4.0` direction accepted; implementation/support qualification remains gated |
-| Sandbox/host/deployment | Rootless Docker target accepted in ADR-006; owner reviews concrete profile/setup plan | Mount/resource/egress/cleanup and restore evidence; current daemon is not rootless; no implicit escalation |
-| Provider/model/data/spending | Owner specifies exact profile before any live call | Explicit approval; synthetic comparison alone cannot close this |
+| Sandbox/host/deployment | Rootless Docker target accepted and separate rootless lab installed/tested; rootful default preserved | Mount/log/startup/egress/production qualification assigned to later gates; not a setup blocker for synthetic core planning |
+| Provider/model/data/spending | Disabled SIWC with Plus/Free candidates and data-control attestations recorded; owner approved deferred live qualification | ADR-012 boundary accepted; actual eligibility and separate live-use approval still required |
 | Framework drift | Retain/revalidate design closed in ADR-007; developer scopes required-child/full-workflow qualification | Current pin unchanged; source delta reviewed, no real-workflow certificate |
 | Operator controls/transport | Local CLI/runner design accepted in ADR-009; concrete schemas/auth details and proof remain phase work | Approval/kill/reset/recovery walkthrough; no invented shipped commands |
 | Durability/capacity/recovery | WAL/FULL, backup/restore targets and lab envelope accepted; operator supplies setup/storage/backup particulars | Process/host/power-loss distinction, enforced limits and restore drill; no achieved SLO claim |
 | Independent review | Ishan Singh, Principal Developer; owner-stated availability “always available”; owner relayed report approval on 2026-10-22 | Approval applies to the `fc0e05e` report; no direct signature claimed; R-001 and G0/P1 decisions remain open; not self-certified |
-| Next implementation package | Developer scopes T-01/T-03 after remaining decisions | Updated estimates and owner-approved P1 backlog only after G0 passes |
+| Next implementation package | T-01 proposed first, T-03 next; scope, caller trace, tests and estimates in closure packet | Final owner approval of that specific slice and G0 package remains required before P1 |
 
 The initial kickoff introduced no architecture selection; runtime selection was
 subsequently accepted in ADR-005. Significant boundary and storage decisions belong in

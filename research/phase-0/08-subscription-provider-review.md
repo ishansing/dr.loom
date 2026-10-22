@@ -243,6 +243,16 @@ quota consumption without express authorization.
 
 ## Required inputs and remaining proof
 
+**Closure update — 2026-10-22:** owner approved deferring live qualification with
+SIWC disabled for the provider-independent, synthetic/offline P1 core. Tier
+preference: “Plus tier + Free tier subject to availibility”; neither eligibility
+nor multiple-account use is inferred. Training opt-out is confirmed; owner now
+explicitly attests account-level **Include environments: Off**. These are owner
+attestations, not local CLI/API verification. The requirements below still gate
+live use, but do not require a live integration to implement the isolated core.
+Each future tier/model must qualify and be selected explicitly; no fallback,
+rotation, login, live allowance consumption or additional spend is authorized.
+
 **Owner clarification — 2026-10-22:** personal OpenAI account; GPT-6.1 Sol as the
 initial model candidate (`gpt-6.1-sol`), confirmed available by the owner on that
 account (owner attestation; no API check or live call performed). The identifier
@@ -261,13 +271,15 @@ personal-plan no-training or zero-retention guarantee is inferred.
    whether any other user's work can trigger inference.
 2. Developer: verify applicable personal-account agreement and SIWC eligibility,
    exact model availability and document actual data handling before live use.
-   Model availability is owner-attested; plan tier and data handling are not.
+   Model availability and Plus/Free tier preference are owner-attested; actual
+   eligibility, data handling and account-specific applicability are not proven.
    Synthetic/public inputs and owner-authorized private source are allowed data
    classes; secrets and unrelated personal/customer data remain excluded. No
    extra owner-imposed data restrictions does not waive vendor or legal duties.
-3. Owner: apply and confirm the training/improvement opt-out in ChatGPT Data
-   controls or the Privacy Portal, and verify Codex **Include environments** is
-   off before private environment context is sent. This is an account action;
+3. Owner: maintain the confirmed training/improvement opt-out in ChatGPT Data
+   controls or the Privacy Portal and the now-attested Codex **Include environments:
+   off** state; re-confirm after account/workspace changes before private context
+   is sent. This is an account action;
    Loom must not log in or toggle it. The installed `codex-cli 0.163.0` check
    found no account data-control setting; local `include_environment_context=true`
    is a prompt-context flag, not proof of the account state. Opt-out does not

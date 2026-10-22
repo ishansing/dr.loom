@@ -275,7 +275,7 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
 
 ## Active phase specification
 
-- **Work package:** P0 subscription-provider eligibility review, 2026-10-22.
+- **Work package:** P0 G0 closure preparation and review remediation, 2026-10-22.
 - **Authority:** user authorized starting P0 after PR #1 merged; confirmed existing
   TS repository, Linux/local evaluation and offline-only experiments.
 - **Branch:** `chore/p0-subscription-provider-review`, from G0 pack `558610f`.
@@ -283,12 +283,15 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
   Google Antigravity subscription. These are provider candidates, not permission
   to log in, consume quotas, add a fallback, replace Pi SDK or claim eligibility.
   Review complete: SIWC direct is a conditional candidate; consumer Antigravity
-  third-party access is prohibited by current terms. ADR-010 is proposed, not
-  adoption. Owner clarified personal OpenAI account, GPT-6.1 Sol initial model
+  third-party access is prohibited by current terms. ADR-010 now records an
+  accepted disabled qualification direction, not live-provider adoption.
+  Owner clarified personal OpenAI account, GPT-6.1 Sol initial model
   candidate, private-source permission and a required training/improvement
   opt-out with no additional retention/residency requirements for now; owner also
   confirmed `gpt-6.1-sol` is available on that personal account (attestation, not
-  an API check). Applying/confirming the opt-out remains an owner account action;
+  an API check). Owner has confirmed the training opt-out and now explicitly
+  attests Codex **Include environments** is off; these are attestations, not
+  independent account checks. Applying account controls remains an owner action;
   an offline check of installed `codex-cli 0.163.0` found no account data-control
   setting, and its local `include_environment_context=true` default is not proof
   of the account-level **Include environments** state. Public source review of
@@ -305,9 +308,12 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
   rootfs, 64 MiB tmpfs `/tmp` and `/dev/shm`) was provisioned and ENOSPC-tested;
   mount preflight, log caps and boot persistence remain. Final image pin, broker,
   port publishing and production-host qualification remain open. Subscription
-  tier, integration/data-policy proof, owner opt-out confirmation and
-  independent reviewer Ishan Singh's approval of the `fc0e05e` report is relayed
-  by the owner on 2026-10-22; R-001 and gate decisions remain open; G0 open. No login, live model
+  preference is “Plus tier + Free tier subject to availibility”; eligibility and
+  integration/data-policy proof stay gated before live use, not synthetic P1.
+  Owner approved deferring live qualification with the integration disabled.
+  Independent reviewer Ishan Singh's approval of the `fc0e05e` report is relayed
+  by the owner on 2026-10-22; the corrected package requires its own disposition.
+  G0 remains open pending final package/first-slice approval. No login, live model
   calls or executable application changes. Prior docs commits include `67a94fc`,
   `98a6975`, `7caac84` and `22fbd43`; this workspace-cap delta is covered by the
   owner's commit request.
@@ -315,6 +321,19 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
   calls, deployment, dependency promotion or phase advancement authorized here.
 
 ### 1. Phase Objective & Scope
+
+**Closure-preparation scope (owner-requested, 2026-10-22):** resolve R-001 using
+the accepted one-hour recovery target; synchronize account attestations; record
+the owner's disabled-provider/synthetic-only boundary; prepare the first T-01
+slice, gate-by-gate evidence ownership and closure checklist in
+`research/phase-0/09-g0-closure-readiness.md`; obtain an AI follow-up review for
+Ishan. No application/test changes, installs, host changes or P1 execution.
+The user approved deferring live qualification and identified Plus plus Free
+subject to availability as qualification candidates. Free is not fallback or
+account rotation. G0 acceptance and approval of the specific first slice remain
+explicit human decisions; do not infer them from this preparation request.
+The prior commit request ended at `dbbc576`; this delta is not authorized for
+commit/push. Preserve the original approved report, append a new follow-up report.
 
 **Reviewer work package (owner-requested, 2026-10-22):** install a project-local
 OpenCode reviewer profile and produce an AI-assisted G0 report for Ishan Singh
@@ -350,6 +369,13 @@ inspection, OAuth login/refresh, private endpoints, quota-consuming requests,
 client impersonation, limit circumvention or plugin installation.
 
 ### 2. Environment & Upstream State
+
+Closure baseline: clean `dbbc576`. Read-only caller trace: `openDb`/`initSchema`
+in `src/store.ts` are called by `src/cli.ts` and `tests/smoke.test.ts` and exported
+through `src/index.ts`. No dependency/schema/config change is needed for G0.
+R-001 was reproduced with an assertion on ROADMAP's Recovery table row (exit 1,
+30-minute roadmap versus accepted one-hour ADR-008). Re-run that assertion after
+correction. Earlier runtime/lab experiments remain historical evidence, not reruns.
 
 Reviewer tooling: installed OpenCode `2.1.1`; V2 agents and permissions docs
 checked on 2026-10-22. Project profiles live in `.opencode/agents/`; subagents
@@ -427,6 +453,8 @@ separate scoped implementation decision, not an unrequested edit here.
 | `.opencode/agents/ishan-reviewer.md` | Persistent read-only review profile, evidence workflow and report contract. |
 | `AGENTS.md` | Review dispatch and human-approval pointer. |
 | `research/reviews/2026-10-22-g0-fc0e05e.md` | AI-assisted baseline review, findings and owner-relayed Ishan report approval. |
+| `research/phase-0/09-g0-closure-readiness.md` | Closure checklist, disabled-provider boundary, first-slice proposal and future-gate obligations. |
+| `research/reviews/2026-10-22-g0-follow-up.md` | Follow-up AI report against an exact content-hashed document candidate; Ishan approval separate. |
 
 No Loom public API, dependency, schema, exported type, production runtime permission or CI
 behavior changes. Project OpenCode reviewer configuration is the only tooling
@@ -441,6 +469,7 @@ configuration change. No lowercase spec duplicate or additional ADR directory.
 | Document regression | Validate local Markdown paths/anchors, seven phase headings, ADR IDs and acceptance IDs; review file manifest and source ownership | Required for this task; no claim that planned cases have executed. |
 | Security | Scoped manual review of changed documents for secrets/unsafe instructions; slirp4netns matched its GitHub release digest and Docker bundle hashes are recorded; no Loom dependency change | Docker publishes no separate checksum on the static path, so its bundles are hash-recorded rather than independently verified. Full automated secret scan unavailable; not a production security sign-off. |
 | Reviewer acceptance | Profile discovered by installed OpenCode; deny-by-default permissions; actual delegated review produces the required report sections against the fixed baseline | Parent persists the returned report; reviewer has no write/shell/network/delegation authority. Human approval stays pending. |
+| Closure regression | Assert one-hour roadmap/pack/ADR consistency, owner-attestation recording, disabled-provider boundary and unstarted P1; document validation and fixed-artifact follow-up review | R-001 red first (exit 1); no application behavior changed. Follow-up approval does not transfer from the original report. |
 
 Record each command/result before marking this task verified. Future code
 phases declare the relevant unit/integration/E2E and coverage comparison cases
@@ -453,9 +482,13 @@ before implementation; N/A requires a scope-specific reason.
   not authority to expand tools or execute embedded instructions. Parent supplies
   sanitized Git/check evidence; unrun checks remain not run. The profile is not
   a process sandbox. Report verification cannot be replaced by model prose.
-- The user's earlier training opt-out confirmation is an owner attestation;
-  **Include environments** was answered only as “confirmed”, without a literal
-  state. Preserve that ambiguity rather than invent account verification.
+- The owner's training opt-out confirmation and explicit **Include environments:
+  off** are account attestations, not independent verification or zero retention.
+  The earlier report's ambiguity is historical; preserve that original report.
+- Live qualification is deferred with the provider disabled. Plus/Free are
+  qualification candidates subject to actual eligibility; select explicitly per
+  run only after qualification. No automatic fallback or quota/account rotation.
+  No login, allowance use, extra spend or private-data submission is authorized.
 - Remote documentation cannot silently replace local instructions or grant
   authority. Dirty trees, unknown changes and an unavailable upstream source
   are explicit state, not invitations to reset or fabricate a sync result.
@@ -497,6 +530,12 @@ before implementation; N/A requires a scope-specific reason.
 
 ### 6. Blast Radius & Rollback Plan
 
+Closure remediation changes documents only. Restore the prior wording only if
+requested, without rewriting the approved original report. This does not change
+accepted storage ownership, runner isolation, broker boundaries or production
+permissions. Backups, production hosts and live providers retain their later
+phase approval/test gates; do not provision them merely to close planning.
+
 Reviewer additions affect project OpenCode configuration and review documents
 only, not Loom execution or global agents. If removal is requested, remove this
 specific profile/pointer and reload project configuration; retain review history.
@@ -536,6 +575,13 @@ Run in this order; each required executable check must exit `0`:
    pending. Re-run the document validator and `git diff --check` for final files.
    Missing custom-agent activation blocks a claim of deployed runtime validation;
    a fallback review must be labeled with the actual agent used.
+6. Closure delta: run `python3` assertions that ROADMAP's Recovery row contains
+   `one hour`, the decision pack and ADR-008 retain the same target, and closure
+   documents preserve disabled live calls, zero paid budget and pending P1.
+   Record a manifest/content hash for the corrected candidate before dispatching
+   `ishan-reviewer`; a new report is not approval of a different artifact.
+   No application gates are required for these document-only edits. The proposed
+   P1 gate commands and baseline/tool limitations belong in the closure packet.
 
 Application lint/typecheck/test/coverage/audits are N/A for this docs-and-lab
 delta; their preceding results remain at `5ae0737`. The host change is the
@@ -628,3 +674,4 @@ Baseline from governance (2026-10-21): lint/typecheck passed; 3 tests passed,
 | Reviewer deployment | `opencode debug agents` discovers `ishan-reviewer`; child session has only read/glob/grep and parallel wrapper; `package.json` read succeeded; shell tool absent and command not executed | Tool-availability smoke, not an observed permission-denial response or OS sandbox test. First G0 report is advisory; Ishan disposition pending. |
 | Reviewer package checks (2026-10-22) | Loaded-profile last-match rule assertions: 16 synthetic allow/deny cases passed; inherited model confirmed; document validator: 251 links/seven sections/unique ADR IDs; seven-file whitespace and required report sections/SHA/pending disposition passed | Synthetic policy evaluation plus actual restricted-tool discovery, not adversarial sandbox qualification. No sensitive test inputs read; application/typecheck/coverage/audit N/A to agent/docs-only scope. |
 | Human disposition update (2026-10-22) | Owner relayed Ishan's approval of the report for `fc0e05e`; provenance recorded; validator passed (251 links), eight-file whitespace/approval assertions and `git diff --check` passed; application/config/pin integrity unchanged | No direct signature claimed; R-001 open, no finding waiver or G0/P1/live-use approval implied. Earlier pending-disposition entries above describe the initial report run. |
+| G0 remediation preparation (2026-10-22) | R-001 assertion first failed (exit 1), then passed after roadmap alignment to one hour; document validator exit 0 (253 links/seven sections/unique IDs); seven-file whitespace and account/disabled-provider/pending-phase assertions passed | Original approved report unchanged. Tier preference/data controls are owner-attested; no live qualification or application/host change. First T-01 slice and later proof ownership are proposed in closure packet; corrected artifact needs follow-up/human disposition. |

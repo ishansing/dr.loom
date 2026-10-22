@@ -15,11 +15,11 @@ Accepting a target does not install it or certify production support.
 | Reference repository | Owner selected | Disposable Loom checkout with synthetic fault injection and deterministic tests. Never expose the live control-plane checkout, authoritative DB or credentials. |
 | Backend | Accepted target [ADR-006](../../decisions.md#adr-006---2026-10-22-p0-support-profile) | Rootless Docker; operator setup permission, exact host/profile and qualification remain separate. No rootful/privileged fallback. |
 | Framework | Accepted [ADR-007](../../decisions.md#adr-007---2026-10-22-p0-framework-baseline-proposal) | Owner selected retain/revalidate current `2.1.0` pin for the first small conflict-free TS fix; no re-pin or skill installation. |
-| Provider/model/data | Initial profile specified; qualification OPEN | Personal OpenAI subscription; GPT-6.1 Sol candidate, owner-confirmed available on that account; private source allowed; required training/improvement opt-out (owner-applied; confirmation pending; installed CLI exposes no account data-control setting); no additional retention/residency restrictions for now. Owner’s “codex api” restatement maps to this subscription/SIWC candidate, not the legacy backend or Platform API-key billing. [Review](08-subscription-provider-review.md): SIWC direct conditional candidate; consumer Antigravity blocked by terms. Subscription tier and broker/data-handling proof open; no live allowance consumption, paid budget **zero**. |
+| Provider/model/data | Disabled qualification direction accepted | Personal OpenAI account; owner preference Plus plus Free subject to availability; `gpt-6.1-sol` availability, training opt-out and Include environments off are owner attestations. Owner approved deferred live qualification for synthetic-only P1 (ADR-012). SIWC stays disabled, eligibility/data/broker proof remain required before live use; no automatic fallback/rotation, allowance use or paid spend. Consumer Antigravity excluded. |
 | Operator/transport | Accepted design [ADR-009](../../decisions.md#adr-009---2026-10-22-p0-operatortransport-proposal) | Trusted local operator channel, narrow runner pipe and command-family contract below; concrete schemas/auth implementation/review still required. |
 | Durability/retention | Accepted design [ADR-008](../../decisions.md#adr-008---2026-10-22-p0-durability-proposal) | Explicit authoritative WAL/FULL, consistent backups and recovery targets below; destination/protection and drills not implemented. |
 | Host/capacity/deployment | Lab target accepted; rootless setup installed | Owner authorized the user-level rootless lab install on 2026-10-22; CPU/memory/PID limits and whole-container cleanup were observed. A fixed 2 GiB ext4 workspace cap was provisioned and ENOSPC-tested; mount/log integration and boot persistence remain. Final image pin, port publishing, broker and production qualification remain open. Not production support. |
-| Independent review | Report approved; owner-relayed | Ishan Singh, Principal Developer; owner-stated availability “always available”. Owner relayed approval of the `fc0e05e` report on 2026-10-22; provenance in the report below. No direct signature claimed; R-001 open and G0/P1 approval separate. |
+| Independent review | Original report approved; follow-up separate | Ishan Singh, Principal Developer; owner relayed approval of the `fc0e05e` report. R-001 is corrected in the new document candidate; original report preserved. Follow-up review/disposition applies to the corrected artifact, not inherited approval. |
 | Build authorization | OPEN | Complete G0 decision/evidence review, then explicitly authorize P1. No G0 exception or phase advancement is granted here. |
 
 ## 2. First qualification journey
@@ -296,8 +296,8 @@ not completed P1/P2 implementation (which would be circular). Required before P1
 - Named owner/booking for independent boundary/recovery review; reviewer availability
   is a real dependency, not an AI self-review checkbox. Named: Ishan Singh,
   Principal Developer; owner-stated availability “always available”; owner relayed
-  report approval for `fc0e05e` on 2026-10-22. Remaining gate decisions and R-001
-  are not closed by this approval.
+  report approval for `fc0e05e` on 2026-10-22. R-001 correction is prepared for
+  follow-up review; approval does not transfer to the corrected artifact.
 - Version/profile evidence and setup/qualification owners, no unresolved choice
   changing state ownership or credential/deployment boundaries; approvals recorded
   in ADRs and the support matrix. User-level rootless setup is installed; one
@@ -335,22 +335,25 @@ The owner accepted retained `2.1.0`, ADR-008/009's operator/durability design an
 the current Linux reference/qualification envelope. Those design decisions are
 closed; setup, precise implementation contracts and evidence are not implied.
 
-1. **Initial profile recorded; eligibility still open:** personal OpenAI account,
-   GPT-6.1 Sol candidate (owner-confirmed available on the account), and
-   private-source permission; training/improvement opt-out required and
-   owner-applied (confirmation pending); no additional owner-imposed
-   retention/residency restrictions for now. **Offline Codex check
+1. **Disabled-provider boundary accepted; live eligibility deferred:** personal
+   OpenAI account; owner preference “Plus tier + Free tier subject to availibility”;
+   `gpt-6.1-sol` owner-confirmed available. Training opt-out is confirmed and
+   account-level Include environments is explicitly off (owner attestations,
+   no independent verification). Private-source permission does not authorize
+   submission now; no additional retention/residency limits. **Offline Codex check
    (2026-10-22):** installed `codex-cli 0.163.0` exposes no settings/config
    command for either account control; `features list` has no
    `include_environments`; local `config/read` reports
    `include_environment_context=true` and `include_environment_context_time=true`
    as built-in defaults. The CLI training banner points to ChatGPT settings. The
-   account-level **Include environments** state is not proven by this local flag,
-   so owner attestation remains required. A public-source review of official Codex
+   account-level **Include environments** state is not proven by this local flag;
+   the separate owner attestation above supplies that state. Public-source review of official Codex
    (`9a8a85b`) and three third-party Codex-auth/account tools found no supported
    account-control query; they implement OAuth, account rotation and usage, not
-   training/Include environments verification. Supply subscription tier; verify
-   applicable agreement, actual data handling and integration. This profile does
+   training/Include environments verification. Verify applicable tier/model
+   eligibility, agreement, actual data handling and integration before live use.
+   Owner approved deferring these with SIWC disabled during synthetic-only P1;
+   Free is a separately qualified explicit choice, not fallback/rotation. This profile does
    not make Loom's authority/workflow/verification model-dependent. Qualify SIWC direct
    with Loom's own identity and a narrow local broker; do not use legacy private
    endpoints or consumer Antigravity as a fallback. [Evidence and required inputs](08-subscription-provider-review.md).
@@ -360,13 +363,19 @@ closed; setup, precise implementation contracts and evidence are not implied.
    owner-stated availability “always available”. Owner attributed report approval
    to Ishan on 2026-10-22; no direct signature or independent identity check claimed.
    An [AI-assisted report for `fc0e05e`](../reviews/2026-10-22-g0-fc0e05e.md)
-   records scope, evidence and that disposition. The restore-target mismatch
-   R-001 remains open; no waiver, G0 closure or P1 authorization was supplied.
+   records scope, evidence and that disposition. R-001's mismatch is corrected
+   to the accepted one-hour target; the new candidate needs follow-up disposition.
+   No waiver, G0 closure or P1 authorization is inferred.
 3. Operator has authorized the user-level rootless lab setup; remaining operator
    decisions cover workspace-cap integration/boot persistence, backup
    destination/protection, production host and any boot/linger policy. Review
    concrete transport/schema/auth details in their phase spec; no broad production
    setup approval.
+
+The [closure packet](09-g0-closure-readiness.md) maps each remaining task to its
+gate/owner and proposes T-01 as the first slice. Final package acceptance and
+specific slice approval remain human decisions; later implementation proof is
+not circularly required before core planning can close.
 
 Until these and the G0 checklist are resolved, continue planning or hand off;
 do not call P1 started, certify support or improvise authority. This pack is a

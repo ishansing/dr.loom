@@ -202,6 +202,32 @@ choices are exercised. P5/H1 dates are forecasts, not commitments.
 
 ### P0 — Product contract and irreversible decisions
 
+**Execution status (2026-10-22):** user authorized P0; days 1–2 preparation
+started in the [support profile and acceptance matrix](research/phase-0/05-p0-support-profile.md).
+Existing Bun/TypeScript workflow, Linux/local evaluation and offline-only calls
+confirmed. The owner accepted coding-agent SDK `1.4.0` in
+[ADR-005](decisions.md#adr-005---2026-10-22-p0-runtime-recommendation).
+G0 remains open; no dependency/sandbox promotion or P1 authorization.
+The [remaining G0 decision pack](research/phase-0/06-g0-decision-pack.md) records
+the accepted disposable Loom reference/rootless Docker lab target, accepted
+framework/operator/recovery design and blocked T-01/T-03 backlog. A provider/model
+profile is now recorded (personal OpenAI account, `gpt-6.1-sol`, Plus plus Free
+subject to availability, training opt-out confirmed and Include environments off,
+both owner-attested). Owner approved deferring live qualification while SIWC
+remains disabled; no live allowance use or automatic tier/account fallback.
+A user-level rootless Docker lab was installed on 2026-10-22 with
+tested CPU/memory/PID limits, whole-container cleanup, and a provisioned fixed
+2 GiB ext4 workspace that hit `ENOSPC` under a read-only rootfs; `/tmp` and
+`/dev/shm` are capped at 64 MiB. Workspace mount preflight, log caps, boot
+persistence, final image pin, port publishing and broker qualification remain.
+Independent review is assigned to Ishan Singh (Principal Developer;
+owner-stated availability “always available”). Owner relayed his approval of the
+[AI-assisted G0 report for `fc0e05e`](research/reviews/2026-10-22-g0-fc0e05e.md)
+on 2026-10-22. R-001's roadmap target is corrected to accepted ADR-008's one hour;
+the original report is retained and follow-up review is separate. The
+[closure packet and proposed T-01 slice](research/phase-0/09-g0-closure-readiness.md)
+await final disposition. G0 remains open; P1 is not started or authorized.
+
 **Outcome:** the developer can build without guessing the product, support
 boundary or runtime. Target duration: two weeks; no open-ended research phase.
 
@@ -493,7 +519,7 @@ to accommodate hardware or model performance.
 | Workflow usefulness | Record verified end-to-end completion and human intervention rate separately from valid refusal/handoff | P3 baseline and the full P6 attempt set; approve workload-specific target before pilot |
 | Operator orientation | Fresh operator locates last committed state, kill/lease and unresolved actions within five minutes on the scripted scenario | Timed runbook, without conversation history |
 | Local status performance | Proposed p95 ≤1 s with 100,000 audit records on the declared reference hardware | Recorded dataset, hardware, concurrency and repeat count; not an internet SLA |
-| Recovery | No acknowledged local commit loss in tested process-crash cases; restore procedure targets ≤30 min on the reference profile | Process-kill/restore drills; state and evidence reconciliation |
+| Recovery | No acknowledged local commit loss in tested process-crash cases; restore procedure targets one hour on the reference profile, per accepted ADR-008 | Process-kill/restore drills; state and evidence reconciliation; target, not achieved SLO |
 | Host/power failure | State the actual durability configuration and backup loss window; no zero-loss claim without matching fault evidence | P0 failure model, storage configuration, restore and effect reconciliation |
 | Cost | Attribute every model attempt/usage arrival to one owner; missing/unpriced usage visible; prevent new admission on configured breach | Provider reconciliation, double-count/late-usage tests and measured in-flight overshoot |
 | Operational defects | No open release-blocking security/data-loss/false-completion/control defects | Release defect register and reproducible evidence |
@@ -511,7 +537,7 @@ must make failure visible and provide tested recovery procedures.
 | Product scope and priority | Project owner (user) | Draft options, trace requirements, identify tradeoffs |
 | Implementation and evidence quality | Solo developer | Produce reviewed code/tests/docs; run bounded experiments |
 | Policy/credential/production authorization | Deployment operator/human approver | Prepare immutable proposals; never self-grant authority |
-| Independent trust-boundary review | Named security/platform reviewer, booked in P0 | Supply evidence/cases, not replace independent sign-off |
+| Independent trust-boundary review | Named independent reviewer (Ishan Singh, Principal Developer), owner-stated availability; review/sign-off pending | Supply evidence/cases, not replace independent sign-off |
 | Release decision | Project owner with deployment operator | Assemble readiness packet; no automatic release on model confidence |
 
 ### Definition of ready for a work package

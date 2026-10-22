@@ -19,7 +19,7 @@ Accepting a target does not install it or certify production support.
 | Operator/transport | Accepted design [ADR-009](../../decisions.md#adr-009---2026-10-22-p0-operatortransport-proposal) | Trusted local operator channel, narrow runner pipe and command-family contract below; concrete schemas/auth implementation/review still required. |
 | Durability/retention | Accepted design [ADR-008](../../decisions.md#adr-008---2026-10-22-p0-durability-proposal) | Explicit authoritative WAL/FULL, consistent backups and recovery targets below; destination/protection and drills not implemented. |
 | Host/capacity/deployment | Lab target accepted; rootless setup installed | Owner authorized the user-level rootless lab install on 2026-10-22; CPU/memory/PID limits and whole-container cleanup were observed. A fixed 2 GiB ext4 workspace cap was provisioned and ENOSPC-tested; mount/log integration and boot persistence remain. Final image pin, port publishing, broker and production qualification remain open. Not production support. |
-| Independent review | Named; review pending | Owner named Ishan Singh, Principal Developer, with owner-stated availability “always available”. Review output/sign-off is not yet provided; no contact details are recorded. |
+| Independent review | Report approved; owner-relayed | Ishan Singh, Principal Developer; owner-stated availability “always available”. Owner relayed approval of the `fc0e05e` report on 2026-10-22; provenance in the report below. No direct signature claimed; R-001 open and G0/P1 approval separate. |
 | Build authorization | OPEN | Complete G0 decision/evidence review, then explicitly authorize P1. No G0 exception or phase advancement is granted here. |
 
 ## 2. First qualification journey
@@ -295,8 +295,9 @@ not completed P1/P2 implementation (which would be circular). Required before P1
   target host/deployment/capacity, operator/transport and durability assumptions.
 - Named owner/booking for independent boundary/recovery review; reviewer availability
   is a real dependency, not an AI self-review checkbox. Named: Ishan Singh,
-  Principal Developer; owner-stated availability “always available”; review/sign-off
-  still pending.
+  Principal Developer; owner-stated availability “always available”; owner relayed
+  report approval for `fc0e05e` on 2026-10-22. Remaining gate decisions and R-001
+  are not closed by this approval.
 - Version/profile evidence and setup/qualification owners, no unresolved choice
   changing state ownership or credential/deployment boundaries; approvals recorded
   in ADRs and the support matrix. User-level rootless setup is installed; one
@@ -355,10 +356,12 @@ closed; setup, precise implementation contracts and evidence are not implied.
    endpoints or consumer Antigravity as a fallback. [Evidence and required inputs](08-subscription-provider-review.md).
    Login/background automation/live allowance consumption require separate express
    authorization; live calls remain prohibited at the current zero paid budget.
-2. **Independent review is named, not completed:** Ishan Singh, Principal
-   Developer; owner-stated availability “always available”. Provide the review
-   scope/output and sign-off; no credentials, private URLs, personal contact details
-   or raw `.env` values are needed.
+2. **Report approved, as relayed by owner:** Ishan Singh, Principal Developer;
+   owner-stated availability “always available”. Owner attributed report approval
+   to Ishan on 2026-10-22; no direct signature or independent identity check claimed.
+   An [AI-assisted report for `fc0e05e`](../reviews/2026-10-22-g0-fc0e05e.md)
+   records scope, evidence and that disposition. The restore-target mismatch
+   R-001 remains open; no waiver, G0 closure or P1 authorization was supplied.
 3. Operator has authorized the user-level rootless lab setup; remaining operator
    decisions cover workspace-cap integration/boot persistence, backup
    destination/protection, production host and any boot/linger policy. Review

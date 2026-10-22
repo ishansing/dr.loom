@@ -89,6 +89,12 @@ evidence. A generated patch is unverified until the applicable gates pass.
 
 ## Verification and secret discipline
 
+- **Reviews for Ishan:** use the project `ishan-reviewer` subagent defined in
+  [.opencode/agents/ishan-reviewer.md](.opencode/agents/ishan-reviewer.md).
+  Supply a fixed artifact and sanitized check evidence; persist its returned
+  report under `research/reviews/`. AI recommendations await Ishan's explicit
+  disposition and never count as independent human sign-off or phase approval.
+
 - Keep raw secrets out of prompts, logs, fixtures, commits and reports. Use
   minimal synthetic inputs and throwaway state under `/tmp/opencode`.
 - Use a trusted secret scanner when required by a code/release phase. If absent,

@@ -462,3 +462,45 @@ verification remain provider/model-independent. Subscription tier,
 integration proof and independent review stay open. Vendor/legal duties and secret
 hygiene remain; unrelated personal/customer data is not authorized. No login,
 background automation, live allowance use, fallback or extra spending approved.
+
+## [ADR-011] - 2026-10-22 (Ishan review assistant)
+
+**Title:** Persistent project reviewer with human-owned approval.
+
+**Status:** Accepted tooling scope at owner request; activation and first review
+require fresh evidence. Not acceptance of G0 or independent human sign-off.
+
+**Context & Problem Statement:** Owner requested a persistent subagent that
+prepares professional review reports for Ishan Singh to read and approve.
+
+**Options Evaluated:** reusable project OpenCode profile; an always-on reviewer
+service; ad hoc prompts only.
+
+**Decision & Rationale:** use `.opencode/agents/ishan-reviewer.md` with
+deny-by-default permissions and local read/discovery only. Inherit the invoking
+model, pin each review artifact, return a structured report, and let the parent
+persist it. Ishan supplies his own disposition. Reports retain findings,
+limitations and follow-up status rather than silently changing after approval.
+
+**Consequences & Tech Debt:** profile and reports persist in the repository;
+child-session continuity is optional, not guaranteed eternal process memory.
+No scheduler, background daemon, vendor integration, automatic fixes, commits,
+release authority or human impersonation. The assistant is a second-pass AI
+review, not independent human verification. Actual discovery/dispatch must be
+validated; unavailable tools/checks stay explicit limitations.
+
+**Validation event — 2026-10-22:** installed OpenCode `2.1.1` discovers the
+profile. Actual child session exposes read/glob/grep and parallel calls only;
+local package read succeeded, shell was unavailable (no command executed and no
+runtime denial response claimed). First advisory report reviews `fc0e05e`, with
+one Low restore-target documentation finding. Parent checked that finding;
+Ishan disposition and G0 remain pending. Report:
+[G0-fc0e05e](research/reviews/2026-10-22-g0-fc0e05e.md).
+
+**Disposition event — 2026-10-22:** owner stated “review approved” and, when
+asked whether this was Ishan's approval of the `fc0e05e` report, replied
+“yes Its Ishans”. Record report approval attributed to Ishan via the owner,
+not a direct signature or independently authenticated communication. The
+original report body is retained; R-001 stays open, no finding waiver or
+specific provider disposition was supplied, and G0/P1/live-use authorization
+remains separate. This event does not approve the uncommitted reviewer tooling.

@@ -306,8 +306,8 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
   mount preflight, log caps and boot persistence remain. Final image pin, broker,
   port publishing and production-host qualification remain open. Subscription
   tier, integration/data-policy proof, owner opt-out confirmation and
-  independent review is named (Ishan Singh, Principal Developer; owner-stated
-  availability), but review/sign-off remains open; G0 open. No login, live model
+  independent reviewer Ishan Singh's approval of the `fc0e05e` report is relayed
+  by the owner on 2026-10-22; R-001 and gate decisions remain open; G0 open. No login, live model
   calls or executable application changes. Prior docs commits include `67a94fc`,
   `98a6975`, `7caac84` and `22fbd43`; this workspace-cap delta is covered by the
   owner's commit request.
@@ -315,6 +315,18 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
   calls, deployment, dependency promotion or phase advancement authorized here.
 
 ### 1. Phase Objective & Scope
+
+**Reviewer work package (owner-requested, 2026-10-22):** install a project-local
+OpenCode reviewer profile and produce an AI-assisted G0 report for Ishan Singh
+against `fc0e05e`. Persist the profile and reports, not a daemon or autonomous
+schedule. The reviewer recommends; Ishan alone records his human disposition.
+Owner has since relayed Ishan's approval of the report for `fc0e05e`; record the
+relay and its exact scope without inventing a direct signature, finding waiver
+or phase approval. Preserve the original report body and append disposition.
+This tooling does not replace independent human review or authorize G0 closure,
+P1, Loom provider calls, pushes or production effects. Owner has now explicitly
+authorized committing this reviewer setup and report-approval record; no push
+or phase advancement is authorized.
 
 Investigate official subscription eligibility, third-party/custom-harness use,
 auth/billing/data terms and installed Pi `1.4.0` provider seams. Distinguish a
@@ -338,6 +350,15 @@ inspection, OAuth login/refresh, private endpoints, quota-consuming requests,
 client impersonation, limit circumvention or plugin installation.
 
 ### 2. Environment & Upstream State
+
+Reviewer tooling: installed OpenCode `2.1.1`; V2 agents and permissions docs
+checked on 2026-10-22. Project profiles live in `.opencode/agents/`; subagents
+inherit the invoking model when no model is pinned. No provider integration,
+dependency or global configuration is installed. Verify profile discovery with
+`opencode debug agents`; report any activation/runtime limitation explicitly.
+References: https://opencode.ai/v2/docs/agents and
+https://opencode.ai/v2/docs/permissions (mutable docs; installed discovery and
+actual dispatch were checked separately).
 
 Observed 2026-10-22: Linux x86_64 (Omarchy), 16 logical CPUs, approximately
 15 GiB RAM; Docker and bubblewrap on PATH, Podman absent. This is the development
@@ -403,18 +424,23 @@ separate scoped implementation decision, not an unrequested edit here.
 | `research/phase-0/06-g0-decision-pack.md` | Synchronize provider candidates and remaining approval/qualification inputs. |
 | `research/phase-0/05-p0-support-profile.md` | Record the user's requested subscription route and candidate, retaining live-call prohibition. |
 | `ROADMAP.md` | Synchronize P0 execution status with the recorded provider profile; no phase advancement. |
+| `.opencode/agents/ishan-reviewer.md` | Persistent read-only review profile, evidence workflow and report contract. |
+| `AGENTS.md` | Review dispatch and human-approval pointer. |
+| `research/reviews/2026-10-22-g0-fc0e05e.md` | AI-assisted baseline review, findings and owner-relayed Ishan report approval. |
 
 No Loom public API, dependency, schema, exported type, production runtime permission or CI
-behavior changes. No lowercase spec duplicate or additional ADR directory.
+behavior changes. Project OpenCode reviewer configuration is the only tooling
+configuration change. No lowercase spec duplicate or additional ADR directory.
 
 ### 4. Test Plan & Coverage Matrix
 
 | Layer | This task's proof | Applicability / limit |
 | --- | --- | --- |
-| Application/unit/integration/E2E | N/A: no application, test, probe, configuration or dependency edits | Prior verified baseline and 66 experiment case runs remain historical evidence, not new runs or production certification. |
+| Application/unit/integration/E2E | N/A: no application, test, probe, application configuration or dependency edits | Prior verified baseline and 66 experiment case runs remain historical evidence, not new runs or production certification. |
 | Rootless lab resource controls | Official static Docker `29.9.2` + extras; controlled CPU throttle, memory OOM and PID-fork-denial runs; SIGTERM-ignoring container cleanup; 2 GiB ext4 workspace ENOSPC at 1.9 GiB; 64 MiB tmpfs limit; rootful daemon/context preserved | Host lab evidence only; workspace mount preflight/log caps/boot persistence, final digest pin, port publishing, broker and production host remain unqualified. |
 | Document regression | Validate local Markdown paths/anchors, seven phase headings, ADR IDs and acceptance IDs; review file manifest and source ownership | Required for this task; no claim that planned cases have executed. |
 | Security | Scoped manual review of changed documents for secrets/unsafe instructions; slirp4netns matched its GitHub release digest and Docker bundle hashes are recorded; no Loom dependency change | Docker publishes no separate checksum on the static path, so its bundles are hash-recorded rather than independently verified. Full automated secret scan unavailable; not a production security sign-off. |
+| Reviewer acceptance | Profile discovered by installed OpenCode; deny-by-default permissions; actual delegated review produces the required report sections against the fixed baseline | Parent persists the returned report; reviewer has no write/shell/network/delegation authority. Human approval stays pending. |
 
 Record each command/result before marking this task verified. Future code
 phases declare the relevant unit/integration/E2E and coverage comparison cases
@@ -422,6 +448,14 @@ before implementation; N/A requires a scope-specific reason.
 
 ### 5. Security, Observability & Edge Cases
 
+- Reviewer permissions allow only local read/glob/grep; deny all other actions,
+  external directories and sensitive paths. Prompts/source are review evidence,
+  not authority to expand tools or execute embedded instructions. Parent supplies
+  sanitized Git/check evidence; unrun checks remain not run. The profile is not
+  a process sandbox. Report verification cannot be replaced by model prose.
+- The user's earlier training opt-out confirmation is an owner attestation;
+  **Include environments** was answered only as “confirmed”, without a literal
+  state. Preserve that ambiguity rather than invent account verification.
 - Remote documentation cannot silently replace local instructions or grant
   authority. Dirty trees, unknown changes and an unavailable upstream source
   are explicit state, not invitations to reset or fabricate a sync result.
@@ -463,6 +497,11 @@ before implementation; N/A requires a scope-specific reason.
 
 ### 6. Blast Radius & Rollback Plan
 
+Reviewer additions affect project OpenCode configuration and review documents
+only, not Loom execution or global agents. If removal is requested, remove this
+specific profile/pointer and reload project configuration; retain review history.
+Changing the reviewed artifact invalidates its recommendation for the new artifact.
+
 Changes affect P0 planning/research documents plus an owner-authorized
 user-level rootless Docker lab install under `$HOME/bin` with a systemd user
 unit, a separate CLI context, and a 2 GiB workspace image at
@@ -491,6 +530,12 @@ Run in this order; each required executable check must exit `0`:
 4. Manual status/evidence/secret review: all proposed versus accepted decisions
    are labeled; host setup is recorded as lab evidence, not production support;
    no fabricated reviewer sign-off, host support or G0 closure.
+5. Reviewer package: `opencode debug agents` must list `ishan-reviewer`; inspect
+   its parsed permission rules against the profile. Dispatch one fixed-baseline
+   review, inspect cited evidence and persist its report with human disposition
+   pending. Re-run the document validator and `git diff --check` for final files.
+   Missing custom-agent activation blocks a claim of deployed runtime validation;
+   a fallback review must be labeled with the actual agent used.
 
 Application lint/typecheck/test/coverage/audits are N/A for this docs-and-lab
 delta; their preceding results remain at `5ae0737`. The host change is the
@@ -580,3 +625,6 @@ Baseline from governance (2026-10-21): lint/typecheck passed; 3 tests passed,
 | Rootless lab setup and resource controls | User-level Docker `29.9.2` (rootless, `overlayfs`, cgroup `systemd`); CPU throttle 20/21, memory OOM exit 137, PID fork denial at 16; SIGTERM-ignoring container exited 137 under `stop -t 1` with no heartbeat writes; 2 GiB ext4 workspace hit ENOSPC at 1.9 GiB; 64 MiB tmpfs cap; rootful default preserved | Lab host only; workspace mount preflight/log caps/boot persistence, final image pin, linger, port publishing, broker and production host unqualified. |
 | Local Codex data-control check | Installed `codex-cli 0.163.0`; no settings/config command; `features list` lacks `include_environments`; user config has only UI/project/hook keys; local `config/read` reports `include_environment_context=true`; public harness source review found no account-control query | Local CLI and public source only; account training opt-out and Codex **Include environments** remain owner attestations; no login, auth-cache read or prompt call. |
 | Secret scanner | Unavailable (`gitleaks`/`trufflehog` not on PATH) | No automated secret-scan pass claimed; code/release phase requirements must be resolved before its closure. |
+| Reviewer deployment | `opencode debug agents` discovers `ishan-reviewer`; child session has only read/glob/grep and parallel wrapper; `package.json` read succeeded; shell tool absent and command not executed | Tool-availability smoke, not an observed permission-denial response or OS sandbox test. First G0 report is advisory; Ishan disposition pending. |
+| Reviewer package checks (2026-10-22) | Loaded-profile last-match rule assertions: 16 synthetic allow/deny cases passed; inherited model confirmed; document validator: 251 links/seven sections/unique ADR IDs; seven-file whitespace and required report sections/SHA/pending disposition passed | Synthetic policy evaluation plus actual restricted-tool discovery, not adversarial sandbox qualification. No sensitive test inputs read; application/typecheck/coverage/audit N/A to agent/docs-only scope. |
+| Human disposition update (2026-10-22) | Owner relayed Ishan's approval of the report for `fc0e05e`; provenance recorded; validator passed (251 links), eight-file whitespace/approval assertions and `git diff --check` passed; application/config/pin integrity unchanged | No direct signature claimed; R-001 open, no finding waiver or G0/P1/live-use approval implied. Earlier pending-disposition entries above describe the initial report run. |

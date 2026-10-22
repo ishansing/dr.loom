@@ -219,8 +219,10 @@ tested CPU/memory/PID limits, whole-container cleanup, and a provisioned fixed
 `/dev/shm` are capped at 64 MiB. Workspace mount preflight, log caps, boot
 persistence, final image pin, port publishing and broker qualification remain.
 Independent review is assigned to Ishan Singh (Principal Developer;
-owner-stated availability “always available”), with review/sign-off pending, and
-G0/P1 remain blocked.
+owner-stated availability “always available”). Owner relayed his approval of the
+[AI-assisted G0 report for `fc0e05e`](research/reviews/2026-10-22-g0-fc0e05e.md)
+on 2026-10-22. R-001 remains open; this report approval does not close G0 or
+authorize P1. G0/P1 remain blocked.
 
 **Outcome:** the developer can build without guessing the product, support
 boundary or runtime. Target duration: two weeks; no open-ended research phase.

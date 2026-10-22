@@ -34,8 +34,9 @@ training opt-out are now specified; subscription tier, owner confirmation of the
 opt-out and account/model qualification remain open. Loom's
 authority/workflow/verification stay provider/model-independent; this is only the
 first qualification profile. No live allowance consumption is authorized, paid
-budget stays zero, and independent review is named (Ishan Singh, Principal
-Developer; owner-stated availability) but not completed. G0 remains open.
+budget stays zero. Owner relayed Ishan Singh's approval of the `fc0e05e` review
+report on 2026-10-22; no direct signature claimed. R-001 and separate gate
+decisions remain open; G0 remains open.
 
 ## Observed starting point
 
@@ -150,7 +151,7 @@ return is evidence of completion. See the [normative boundaries](../../SPEC.md#r
 | Framework drift | Retain/revalidate design closed in ADR-007; developer scopes required-child/full-workflow qualification | Current pin unchanged; source delta reviewed, no real-workflow certificate |
 | Operator controls/transport | Local CLI/runner design accepted in ADR-009; concrete schemas/auth details and proof remain phase work | Approval/kill/reset/recovery walkthrough; no invented shipped commands |
 | Durability/capacity/recovery | WAL/FULL, backup/restore targets and lab envelope accepted; operator supplies setup/storage/backup particulars | Process/host/power-loss distinction, enforced limits and restore drill; no achieved SLO claim |
-| Independent review | Owner named Ishan Singh, Principal Developer; owner-stated availability “always available” | Review scope/output and sign-off pending; not self-certified |
+| Independent review | Ishan Singh, Principal Developer; owner-stated availability “always available”; owner relayed report approval on 2026-10-22 | Approval applies to the `fc0e05e` report; no direct signature claimed; R-001 and G0/P1 decisions remain open; not self-certified |
 | Next implementation package | Developer scopes T-01/T-03 after remaining decisions | Updated estimates and owner-approved P1 backlog only after G0 passes |
 
 The initial kickoff introduced no architecture selection; runtime selection was

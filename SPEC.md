@@ -266,33 +266,42 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
 
 ## Active phase specification
 
-- **Work package:** governance bootstrap, 2026-10-21; not roadmap P0 execution.
-- **Authority:** user requested adaptation of the engineering/support playbook.
-- **Branch:** `chore/engineering-governance`, from clean `master` at `05d37d7`.
-- **Status:** documentation verified; user authorized the task-scoped commit
-  on 2026-10-21. No production phase signed off.
-- **Next phase:** P0 remains unstarted; its specification and any material
-  architecture choices need the applicable build/owner approval.
+- **Work package:** P0 kickoff — support profile and acceptance matrix, 2026-10-22.
+- **Authority:** user authorized starting P0 after PR #1 merged; confirmed existing
+  TS repository, Linux/local evaluation and offline-only experiments.
+- **Branch:** `chore/p0-support-profile`, from merged `master` at `f10ebb9`.
+- **Status:** P0 in progress; kickoff documents verified; user authorized the
+  task-scoped commit on 2026-10-22. G0 open.
+  This package covers days 1–2 preparation,
+  not completion of the five-development-day runtime comparison or all of P0.
+- **Next gate:** owner approval of the complete G0 evidence before P1. No paid
+  calls, deployment, dependency promotion or phase advancement authorized here.
 
 ### 1. Phase Objective & Scope
 
-Persist a usable production engineering SOP, dynamic phase specification and
-critical decision log while preserving Loom's architecture and roadmap.
-In scope: governance ownership, ordered verification, branches, upstream trust,
-test-first triage, safe escalation and evidence-aware sign-off.
-Out of scope: application/test implementation, dependency/scanner installation,
-runtime/framework re-pinning, schema changes, P0 execution, publishing or deployment.
+Record the selected evaluation scope, reference environment, named acceptance
+cases and remaining decisions in [P0 support profile](research/phase-0/05-p0-support-profile.md).
+Reuse the scaffold and existing release-specific research. Define a shared
+offline comparison workload before adding probes in the next package.
+Out of scope for this kickoff: application/test changes, dependency/scanner
+installation, runtime/framework adoption, schema changes, live model calls,
+credential access, provisioning, deployment or publication. The subsequent
+explicit user request authorizes committing these kickoff documents only.
 
 ### 2. Environment & Upstream State
 
-Observed 2026-10-21: Linux x86_64, Bun `1.4.3`, Node `26.7.0`, TypeScript
+Observed 2026-10-22: Linux x86_64 (Omarchy), 16 logical CPUs, approximately
+15 GiB RAM; Docker and bubblewrap on PATH, Podman absent. This is the development
+host, not a qualified deployment or sandbox. Bun `1.4.3`, Node `26.7.0`; existing TypeScript
 `5.9.3`, Biome `2.5.14`, existing `bun.lock`. These are observations, not newly
 promoted support pins. `.env.example` is absent; no raw environment values read.
 The scaffold's schema is owned by `src/store.ts`; no schema change in this task.
 Framework selection stays in `FRAMEWORK_REF`; Pi SDK/Durable selection stays
 open under the roadmap. No separate upstream SOP URL/ref is configured; this
 change adapts the user-supplied playbook into reviewed repository governance.
-No upstream code fetch is needed for this docs-only change. Neither `gitleaks`
+Merged `master` was fetched read-only over HTTPS after verifying PR #1's merge.
+Runtime upstream revalidation is deferred to the comparison package; no runtime
+source change is assumed from the previous research. Neither `gitleaks`
 nor `trufflehog` was found on PATH; record scanner coverage honestly.
 Biome currently uses `rules.preset: "none"`; its configured checks passing is
 not proof of a comprehensive static/security rule set. Tightening it is a
@@ -302,11 +311,9 @@ separate scoped implementation decision, not an unrequested edit here.
 
 | File | Operation / responsibility |
 | --- | --- |
-| `AGENTS.md` | Create the repository engineering/support workflow and context pointers. |
-| `decisions.md` | Create the append-only critical decision log with ADR format and bootstrap choices. |
-| `SPEC.md` | Preserve architecture; add workflow links and this seven-section active-phase block. |
-| `ROADMAP.md` | Link delivery readiness/DoD to the canonical governance workflow. |
-| `CONTEXT.md` | Label the old handoff historical and direct readers to current governance/state. |
+| `SPEC.md` | Replace the completed governance work package with this seven-section P0 kickoff specification. |
+| `research/phase-0/05-p0-support-profile.md` | Create the evaluation profile, acceptance matrix, comparison plan and open G0 register. |
+| `ROADMAP.md` | Record P0 authorization/start and link the live profile; preserve remaining gates and estimates. |
 
 No public API, dependency, schema, exported type, runtime permission or CI
 behavior changes. No lowercase spec duplicate or additional ADR directory.
@@ -318,7 +325,7 @@ behavior changes. No lowercase spec duplicate or additional ADR directory.
 | Unit/regression baseline | `bun test --coverage` | Existing three smoke tests; preserve source unchanged and record coverage, not a comprehensive production suite. |
 | DB integration baseline | Existing lease and close/reopen smoke assertions in the same suite | Runs with the baseline; no new DB behavior claimed. |
 | New integration/E2E | N/A: only documentation/governance changes | Missing application/runner/provider/sandbox E2E remains a future implementation gate, not green coverage. |
-| Document regression | Validate local Markdown paths/anchors and all seven phase headings; review file manifest and source ownership | Required for this task; does not validate future SOP execution or external research facts. |
+| Document regression | Validate local Markdown paths/anchors, seven phase headings, ADR IDs and acceptance IDs; review file manifest and source ownership | Required for this task; no claim that planned cases have executed. |
 | Security | Read-only dependency audit and scoped manual review of changed documents for secrets/unsafe instructions | Full automated secret scan unavailable; no scanner or dependency installed. Not a production security sign-off. |
 
 Record each command/result before marking this task verified. Future code
@@ -339,7 +346,7 @@ before implementation; N/A requires a scope-specific reason.
 
 ### 6. Blast Radius & Rollback Plan
 
-Changes affect future contributor/agent procedure, not running software or data.
+Changes affect P0 planning, not running software or data.
 Review for accidental authority expansion, case-collision paths and references
 to unsupported tooling. Before merge, revise only this task's identified files;
 after commit, revert its specific commit only with authorization, preserving
@@ -365,6 +372,10 @@ import pathlib, re, unicodedata, urllib.parse
 root = pathlib.Path.cwd()
 changed = [pathlib.Path(p) for p in
            ('AGENTS.md', 'SPEC.md', 'decisions.md', 'ROADMAP.md', 'CONTEXT.md')]
+profile = pathlib.Path('research/phase-0/05-p0-support-profile.md').read_text()
+assert all(line == line.rstrip() for line in profile.splitlines()), 'profile whitespace'
+cases = re.findall(r'^\| (P0-A\d{2}) \|', profile, re.M)
+assert len(cases) == 12 and len(set(cases)) == 12, 'missing/duplicate acceptance IDs'
 for file in changed:
     assert file.is_file(), file
     assert all(line == line.rstrip() for line in file.read_text().splitlines()), file
@@ -408,27 +419,28 @@ PY
 Manual sign-off also requires matching file manifest, scope/secret review,
 honest scanner/E2E limitations, relevant ADRs and explicit Git status. If a
 required audit/check cannot run, record blocked—not successful. A docs-only
-verification result does not advance P0 or close any production gate.
+verification result does not close G0 or any production gate.
 
 Verification record:
 
-- [x] Lint; command/exit and warning scope recorded.
-- [x] Strict typecheck.
-- [x] Existing tests plus coverage snapshot; no application/test source changed.
+- [x] Lint and strict typecheck.
+- [x] Existing tests/coverage compared with the recorded governance baseline.
 - [x] Dependency audit and scoped manual secret/instruction review; scanner
-  unavailable, not passed, as recorded below.
-- [x] New/tracked whitespace, links/anchors and phase/ADR structure validated.
-- [x] Five-file task diff reviewed on `chore/engineering-governance`; commit
-  authorized by the user's explicit request. P0 not advanced.
+  unavailable, not passed.
+- [x] Links, acceptance/ADR IDs, phase structure and whitespace validated.
+- [x] Three-file task diff and manifest reviewed; G0 remains open; task-scoped
+  commit authorized by the user's explicit request.
 
-Observed baseline results (2026-10-21, in prescribed order):
+Baseline from governance (2026-10-21): lint/typecheck passed; 3 tests passed,
+100% functions / 90.99% instrumented lines; audit found no advisories across
+14 packages. Current kickoff results (2026-10-22, in prescribed order):
 
 | Command / review | Result | Limit |
 | --- | --- | --- |
-| `bun run lint` | Exit 0; 10 files checked, no diagnostics | Existing configured rule set only. |
+| `bun run lint` | Exit 0; 10 files checked | Existing configured rule set only. |
 | `bun run check` | Exit 0 | Existing TypeScript compilation scope. |
-| `bun test --coverage` | Exit 0; 3 pass / 0 fail, 12 assertions; 100% functions / 90.99% lines reported | Instrumented `src/framework.ts` and `src/store.ts`; not all repository code or E2E. This is a snapshot, not an enforced coverage threshold or pre/post comparison. |
-| `bun audit` | Exit 0; no advisories found for 14 packages | Advisory snapshot; not secret scanning, runtime/provider certification or a full security audit. |
+| `bun test --coverage` | Exit 0; 3 pass / 0 fail; 100% functions / 90.99% instrumented lines, unchanged from governance baseline | Instrumented framework/store only, not all code or E2E. |
+| `bun audit` | First attempt exceeded 120-second command timeout; separate retry exited 0, no advisories across 14 packages | Advisory snapshot only; first attempt is not counted as a pass. |
 | Secret scanner | Unavailable (`gitleaks`/`trufflehog` not on PATH) | No automated secret-scan pass claimed; code/release phase requirements must be resolved before its closure. |
-| Document/manifest review | Read-only validator passed: 178 local links, seven phase sections, unique ADR IDs and root casing/whitespace; `git diff --check` exit 0; five-file scope/manual secret/instruction review completed | Manual review is not an automated secret scan. |
-| Application/config integrity | `git diff --exit-code -- src tests package.json bun.lock biome.json tsconfig.json .github` exited 0 | No application/test, dependency, compiler, linter or CI changes in this task. |
+| Document/manifest review | Validator exit 0: 186 local links, seven sections, 12 unique acceptance IDs and unique ADR IDs; `git diff --check` exit 0; three-file manual scope/secret review | Manual review is not an automated secret scan; acceptance cases are planned, not executed. |
+| Application/config integrity | `git diff --exit-code -- src tests package.json bun.lock biome.json tsconfig.json .github` exit 0 | No application/test, dependency, compiler, linter or CI changes. |

@@ -202,6 +202,11 @@ choices are exercised. P5/H1 dates are forecasts, not commitments.
 
 ### P0 — Product contract and irreversible decisions
 
+**Execution status (2026-10-22):** user authorized P0; days 1–2 preparation
+started in the [support profile and acceptance matrix](research/phase-0/05-p0-support-profile.md).
+Existing Bun/TypeScript workflow, Linux/local evaluation and offline-only calls
+confirmed. G0 remains open; no runtime/sandbox promotion or P1 authorization.
+
 **Outcome:** the developer can build without guessing the product, support
 boundary or runtime. Target duration: two weeks; no open-ended research phase.
 

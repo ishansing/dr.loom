@@ -94,3 +94,37 @@ phase must establish appropriate integration/regression coverage, a comparable
 coverage baseline and a trusted scanner as required by its risk. Owner:
 implementing developer; review/approval remains with the project owner/operator.
 No productivity or performance gain has been measured.
+
+## [ADR-003] - 2026-10-22 (P0 runtime comparison)
+
+**Title:** Compare the researched release with trusted offline fixtures outside Loom.
+
+**Status:** Accepted for the bounded experiment, not runtime/backend adoption.
+
+**Context & Problem Statement:** The owner approved offline-only P0 evaluation.
+Previous temporary installations are gone. Existing probes exercise different
+workloads and cannot establish comparative effort or hard-crash safety. Docker
+does not report rootless mode on this host; an empty bubblewrap domain works.
+
+**Options Evaluated:**
+
+1. Reproduce the researched `1.3.0` release with one shared synthetic contract,
+   verified dependencies outside Loom, and an experimental bubblewrap launcher.
+2. Rebase experiments to the newest release immediately; this may resolve known
+   issues but invalidates prior assumptions and requires a larger source audit.
+3. Wait for a rootless container installation before any runtime experiments;
+   this delays even reviewed synthetic offline comparisons.
+
+**Decision & Rationale:** Choose option 1 for this first evidence package.
+Revalidate primary-source release facts separately. Run only trusted synthetic
+code, with clear environment, no network, minimal read-only runtime/dependency
+mounts and a disposable writable fixture. Test boundary failures before runtime
+execution. This launcher is research-only, not a production containment backend;
+no host settings, daemon privileges, Loom dependency or support pin changes.
+
+**Consequences & Tech Debt:** Shared assertions can compare adapter seams, not
+model quality or production enforcement. Clean reopen must not be labeled
+hard-crash/replay proof; missing cases remain open. Whole-domain quotas, seccomp,
+provider mediation and supported host selection still need qualification before
+untrusted execution. Developer owns evidence and recommendation; owner approves
+any runtime/backend promotion. No measured performance benefit is claimed.

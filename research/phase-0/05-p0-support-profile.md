@@ -60,8 +60,16 @@ tests against implemented controls. A fake owner gate is not Loom enforcement.
 
 ## Shared runtime comparison — next bounded package
 
+**2026-10-22 progress:** [first shared offline evidence](../pi/14-p0-runtime-comparison.md)
+now passes on both runtimes under Node and Bun, with synthetic namespace/mount/
+cleanup feasibility checks. [Release revalidation](../pi/15-p0-release-revalidation.md)
+records published `1.4.0` separately from tested `1.3.0`. No runtime selected.
+Hard-crash/replay, storage ownership and upgrade/rollback cases remain open;
+the acceptance rows above still describe required qualification, not passed gates.
+
 Budget: **five active development days total**, per roadmap; log actual effort,
-not calendar elapsed time. No experiment executed or effort result claimed here.
+not calendar elapsed time. First increment executed; no active-hour/effort result
+was measured, and the five-day comparison is not declared complete.
 
 1. Inventory existing public API probes and recoverable temporary evidence.
    Revalidate the selected published source/artifact before executing it; keep

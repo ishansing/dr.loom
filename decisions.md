@@ -279,12 +279,20 @@ prior rootful `default` context current and added a separate `rootless` context.
 Daemon reports `rootless`, `overlayfs` and cgroup driver `systemd`. Controlled
 tests observed a `100000 100000` CPU quota with 20/21 periods throttled, a 512 MiB
 memory limit with a 32 MiB over-limit process OOM-killed (exit 137), and a 64-PID
-limit with fork denied at 16. `--skip-iptables` was needed because `nf_tables` was
-not loaded. Not qualified: 2 GiB disk quota, linger/boot start, digest-pinned
-image, kill/whole-domain cleanup, provider-broker integration, port publishing and
-production-host support. The existing rootful daemon was not modified. Rollback is
-the rootless setuptool uninstall plus removal of only the user-level unit/binaries
-and context; never touch the rootful daemon.
+limit with fork denied at 16. A `--pids-limit=64` container whose PID 1 and child
+ignored `SIGTERM` was stopped with `docker stop -t 1`: exit 137, no surviving host
+process and no heartbeat write after stop. A `--storage-opt size=64m` probe wrote
+128 MiB successfully, so that option is **not enforced** on this rootless
+overlayfs/btrfs host; `/home` has btrfs quotas disabled, so an enforced 2 GiB cap
+needs a privileged quota/subvolume setup or a revised target. The logged
+`restoring thread network namespace failed` line matches known detach-netns noise
+reported by a Moby maintainer on working setups; port publishing itself remains
+untested. `--skip-iptables` was needed because `nf_tables` was not loaded. Not
+qualified: enforced disk quota, linger/boot start, final digest-pinned runtime
+image, provider-broker integration, port publishing and production-host support.
+The existing rootful daemon was not modified. Rollback is the rootless setuptool
+uninstall plus removal of only the user-level unit/binaries and context; never
+touch the rootful daemon.
 
 ## [ADR-007] - 2026-10-22 (P0 framework baseline proposal)
 

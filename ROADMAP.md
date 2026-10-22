@@ -214,7 +214,9 @@ framework/operator/recovery design and blocked T-01/T-03 backlog. A provider/mod
 profile is now recorded (personal OpenAI subscription, `gpt-6.1-sol`, private source
 with required training opt-out); subscription tier and SIWC integration remain
 unqualified. A user-level rootless Docker lab was installed on 2026-10-22 with
-tested CPU/memory/PID limits; disk quota, image pin, cleanup and broker
+tested CPU/memory/PID limits and whole-container cleanup; the storage-opt disk
+probe was not enforced on btrfs, so an enforced 2 GiB cap needs a privileged
+quota setup or a revised target. Final image pin, port publishing and broker
 qualification remain. Independent review is unassigned pending the owner's
 named reviewer, and G0/P1 remain blocked.
 

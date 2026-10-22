@@ -18,7 +18,7 @@ Accepting a target does not install it or certify production support.
 | Provider/model/data | Initial profile specified; qualification OPEN | Personal OpenAI subscription; GPT-6.1 Sol candidate, owner-confirmed available on that account; private source allowed; required training/improvement opt-out (owner-applied, confirmation pending); no additional retention/residency restrictions for now. Owner’s “codex api” restatement maps to this subscription/SIWC candidate, not the legacy backend or Platform API-key billing. [Review](08-subscription-provider-review.md): SIWC direct conditional candidate; consumer Antigravity blocked by terms. Subscription tier and broker/data-handling proof open; no live allowance consumption, paid budget **zero**. |
 | Operator/transport | Accepted design [ADR-009](../../decisions.md#adr-009---2026-10-22-p0-operatortransport-proposal) | Trusted local operator channel, narrow runner pipe and command-family contract below; concrete schemas/auth implementation/review still required. |
 | Durability/retention | Accepted design [ADR-008](../../decisions.md#adr-008---2026-10-22-p0-durability-proposal) | Explicit authoritative WAL/FULL, consistent backups and recovery targets below; destination/protection and drills not implemented. |
-| Host/capacity/deployment | Lab target accepted; rootless setup installed | Owner authorized the user-level rootless lab install on 2026-10-22; CPU/memory/PID limits were observed. Disk quota, image pin, cleanup, broker and production qualification remain open. Not production support. |
+| Host/capacity/deployment | Lab target accepted; rootless setup installed | Owner authorized the user-level rootless lab install on 2026-10-22; CPU/memory/PID limits and whole-container cleanup were observed. Disk quota is not enforceable via storage-opt on btrfs; privileged quota/subvolume setup or a revised target is required. Final image pin, port publishing, broker and production qualification remain open. Not production support. |
 | Independent review | OPEN by explicit owner choice | Owner selected “Unassigned / not booked”. No reviewer, booking owner/availability or independent sign-off is invented. |
 | Build authorization | OPEN | Complete G0 decision/evidence review, then explicitly authorize P1. No G0 exception or phase advancement is granted here. |
 
@@ -80,17 +80,29 @@ Controlled checks: `--cpus=1 --memory=512m --pids-limit=64` produced
 `cpu.max=100000 100000`, `memory.max=536870912`, `pids.max=64`; a 0.5-CPU busy
 loop throttled 20/21 periods; a 32 MiB no-swap allocation was OOM-killed (exit
 137); a 16-PID limit denied further forks. Default-bridge egress worked via
-slirp4netns; `--skip-iptables` was used because `nf_tables` was not loaded.
-`libnetwork: restoring thread network namespace failed: operation not permitted`
-appeared in the user-unit log while containers still ran; treat as an observed
-warning to investigate, not a pass. Not yet proven: 2 GiB disk quota, linger/boot
-start, digest-pinned image, port publishing, kill/whole-domain cleanup, broker
-integration and production-host support. The rootful daemon was not modified.
+slirp4netns; `--skip-iptables` was used because `nf_tables` was not loaded. A
+`--pids-limit=64` container whose PID 1 and child ignored `SIGTERM` exited 137
+under `docker stop -t 1`; the heartbeat file stopped changing (11 lines at stop,
+11 after two seconds), no marker process survived, and the container was removed.
+A `--storage-opt size=64m` probe wrote 128 MiB successfully (exit 0), so the
+storage option is **not an enforced cap** on this rootless `overlayfs`/btrfs host;
+`/home` is btrfs with quotas disabled. An enforced 2 GiB cap needs a privileged
+quota/subvolume setup or a revised owner target.
 
-The owner selected this exact local reference for initial qualification, with a
-separately approved rootless Docker setup/version still required. A different
-production host/distribution must be explicitly named rather than silently assumed.
-Rolling kernel/engine/runtime changes trigger a reviewed evidence delta.
+`libnetwork: restoring thread network namespace failed: operation not permitted`
+appeared while containers still ran. A Moby maintainer's analysis of the same
+lines in [moby#52933](https://github.com/moby/moby/issues/52933#issuecomment-5498923624)
+calls them inherent noise on working detach-netns setups; our no-port workloads
+passed, but port publishing is still untested. Not yet proven: enforced disk
+quota, linger/boot start, final digest-pinned runtime image, port publishing,
+broker integration and production-host support. The rootful daemon was not
+modified.
+
+The owner selected this exact local reference for initial qualification. The
+rootless setup/version is approved and installed; qualification remains partial.
+A different production host/distribution must be explicitly named rather than
+silently assumed. Rolling kernel/engine/runtime changes trigger a reviewed
+evidence delta.
 
 Required configuration/evidence for the rootless target:
 
@@ -107,8 +119,11 @@ Required configuration/evidence for the rootless target:
 - Default network isolation; provider traffic only through the trusted broker
   described below. No raw provider/production credentials in the container.
 - Kill/stop and startup-failure tests must prove the whole container domain is
-  quiescent before volume/workspace reuse. Preserve evidence on failure. The
-  bubblewrap/pidfd research fixture is not production Docker qualification.
+  quiescent before volume/workspace reuse. Preserve evidence on failure. One
+  synthetic `stop -t 1` test with a SIGTERM-ignoring PID 1 and child passed with
+  no surviving process or heartbeat write; startup failure and volume reuse still
+  need explicit tests. The bubblewrap/pidfd research fixture is not production
+  Docker qualification.
 
 **Accepted initial qualification envelope, not measured performance:** one active runtime worker,
 one effective workspace mutator, 2 CPU cores, 4 GiB memory, 256 PIDs, 2 GiB total
@@ -116,6 +131,12 @@ persistent writable run data and a 20-minute wall deadline. Quotas must cover al
 writable layers/volumes and temporary storage; a disk-usage poll or Docker memory
 flag does not prove a disk quota. Pick/test an enforceable volume/storage profile
 before claiming that cap. No fan-out or extra backend enabled implicitly.
+
+Observed 2026-10-22: `--storage-opt size=64m` did not constrain a 128 MiB write
+(exit 0); `/home` is btrfs with quotas disabled. Docker's storage option is
+therefore not an enforceable 2 GiB cap here. A hard cap requires an operator/
+administrator-provisioned btrfs qgroup/subvolume or quota-enabled filesystem;
+supervisor polling is not equivalent. This remains an owner decision.
 
 **Deployment proposal:** first staging target is a disposable local rootless-OCI
 application environment. Later production uses the same reviewed deployment
@@ -263,8 +284,9 @@ not completed P1/P2 implementation (which would be circular). Required before P1
   is a real dependency, not an AI self-review checkbox.
 - Version/profile evidence and setup/qualification owners, no unresolved choice
   changing state ownership or credential/deployment boundaries; approvals recorded
-  in ADRs and the support matrix. User-level rootless setup is installed; disk
-  quota, digest pin, cleanup, broker and production-host qualification remain open.
+  in ADRs and the support matrix. User-level rootless setup is installed; one
+  whole-container cleanup test passed; enforced disk quota, final image pin, port
+  publishing, broker and production-host qualification remain open.
 - First support/acceptance matrix and specific P1 slice approved. Full workflow,
   Docker containment/provider integration and deploy/restore drills remain G2–G4
   proof obligations, never pre-claimed from this planning document.

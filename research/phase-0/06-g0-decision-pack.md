@@ -18,7 +18,7 @@ Accepting a target does not install it or certify production support.
 | Provider/model/data | Initial profile specified; qualification OPEN | Personal OpenAI subscription; GPT-6.1 Sol candidate, owner-confirmed available on that account; private source allowed; required training/improvement opt-out (owner-applied, confirmation pending); no additional retention/residency restrictions for now. Owner’s “codex api” restatement maps to this subscription/SIWC candidate, not the legacy backend or Platform API-key billing. [Review](08-subscription-provider-review.md): SIWC direct conditional candidate; consumer Antigravity blocked by terms. Subscription tier and broker/data-handling proof open; no live allowance consumption, paid budget **zero**. |
 | Operator/transport | Accepted design [ADR-009](../../decisions.md#adr-009---2026-10-22-p0-operatortransport-proposal) | Trusted local operator channel, narrow runner pipe and command-family contract below; concrete schemas/auth implementation/review still required. |
 | Durability/retention | Accepted design [ADR-008](../../decisions.md#adr-008---2026-10-22-p0-durability-proposal) | Explicit authoritative WAL/FULL, consistent backups and recovery targets below; destination/protection and drills not implemented. |
-| Host/capacity/deployment | Lab target accepted; qualification open | Owner selected the current Linux reference and worker envelope below. This is not production support or permission to configure Docker. |
+| Host/capacity/deployment | Lab target accepted; rootless setup installed | Owner authorized the user-level rootless lab install on 2026-10-22; CPU/memory/PID limits were observed. Disk quota, image pin, cleanup, broker and production qualification remain open. Not production support. |
 | Independent review | OPEN by explicit owner choice | Owner selected “Unassigned / not booked”. No reviewer, booking owner/availability or independent sign-off is invented. |
 | Build authorization | OPEN | Complete G0 decision/evidence review, then explicitly authorize P1. No G0 exception or phase advancement is granted here. |
 
@@ -59,6 +59,33 @@ need to provision/verify children or execute a fresh supported workflow later.
 16 logical CPUs/~15 GiB RAM, Bun `1.4.3`, Node `26.7.0`. Read-only `docker info`
 at the observed endpoint reports server `29.9.1`, cgroup v2/systemd, `overlayfs`, seccomp and cgroup namespaces,
 **without `rootless`**. No daemon/context/settings were changed or containers started.
+
+**Lab setup evidence — 2026-10-22 (owner-authorized).** Installed the official
+user-level static bundles
+`docker-29.9.2.tgz` (SHA-256 `9ac225999fd5e863f7694c728ef23d480616b1e5639328fa309befd4243d69eb`)
+and `docker-rootless-extras-29.9.2.tgz`
+(SHA-256 `f2663b230a7afc13dea88fc589685331d01f5f3fc458b92ab40e2388db452ed2`)
+under `$HOME/bin`, plus upstream static `slirp4netns 1.3.6-x86_64`
+(SHA-256 `411167abceff1fc8a7c562f53ed9f26d3ec8a17df4e2fe6eaa3bd53f1c1e1d48`,
+matching the GitHub release digest).
+`rootlesskit 3.3.0` is bundled. Docker's static path published no separate
+checksum, so the two Docker bundle hashes above are recorded rather than
+independently verified. A user `docker.service` is active and enabled for
+the login session; a dedicated `rootless` CLI context points at
+`unix:///run/user/1000/docker.sock`, while the prior `default` context was restored
+so existing rootful workflows are unchanged. `docker info` reports `name=rootless`,
+storage driver `overlayfs`, cgroup driver `systemd`.
+
+Controlled checks: `--cpus=1 --memory=512m --pids-limit=64` produced
+`cpu.max=100000 100000`, `memory.max=536870912`, `pids.max=64`; a 0.5-CPU busy
+loop throttled 20/21 periods; a 32 MiB no-swap allocation was OOM-killed (exit
+137); a 16-PID limit denied further forks. Default-bridge egress worked via
+slirp4netns; `--skip-iptables` was used because `nf_tables` was not loaded.
+`libnetwork: restoring thread network namespace failed: operation not permitted`
+appeared in the user-unit log while containers still ran; treat as an observed
+warning to investigate, not a pass. Not yet proven: 2 GiB disk quota, linger/boot
+start, digest-pinned image, port publishing, kill/whole-domain cleanup, broker
+integration and production-host support. The rootful daemon was not modified.
 
 The owner selected this exact local reference for initial qualification, with a
 separately approved rootless Docker setup/version still required. A different
@@ -236,7 +263,8 @@ not completed P1/P2 implementation (which would be circular). Required before P1
   is a real dependency, not an AI self-review checkbox.
 - Version/profile evidence and setup/qualification owners, no unresolved choice
   changing state ownership or credential/deployment boundaries; approvals recorded
-  in ADRs and the support matrix. Actual rootless setup remains separately authorized.
+  in ADRs and the support matrix. User-level rootless setup is installed; disk
+  quota, digest pin, cleanup, broker and production-host qualification remain open.
 - First support/acceptance matrix and specific P1 slice approved. Full workflow,
   Docker containment/provider integration and deploy/restore drills remain G2–G4
   proof obligations, never pre-claimed from this planning document.
@@ -282,9 +310,10 @@ closed; setup, precise implementation contracts and evidence are not implied.
 2. **Independent review remains unassigned/not booked:** identify the reviewer/role
    and booking owner/availability when available. No credentials,
    private URLs, personal contact details or raw `.env` values are needed here.
-3. Operator later approves concrete rootless setup, enforceable storage/quotas,
-   backup destination/protection and any production host. Review concrete
-   transport/schema/auth details in their phase spec; no broad setup approval.
+3. Operator has authorized the user-level rootless lab setup; remaining operator
+   decisions cover enforceable disk quotas, backup destination/protection,
+   production host and any boot/linger policy. Review concrete transport/schema/
+   auth details in their phase spec; no broad production setup approval.
 
 Until these and the G0 checklist are resolved, continue planning or hand off;
 do not call P1 started, certify support or improvise authority. This pack is a

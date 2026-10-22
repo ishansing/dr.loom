@@ -293,10 +293,14 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
   subscription/SIWC candidate, not the legacy private backend and not a silent
   switch to Platform API-key billing. Provider/model
   independence is now recorded as an architecture invariant; this profile is only
-  the first integration candidate. Subscription tier, integration/data-policy
-  proof and independent review remain open; G0 open. No login, live calls,
-  installation or executable changes. The prior docs commit is `67a94fc`; the
-  owner's explicit request authorizes committing this docs follow-up.
+  the first integration candidate. Owner authorized the user-level rootless lab
+  setup; Docker `29.9.2` is running rootless with tested CPU, memory and PID
+  limits. Disk quota, image pin, cleanup/kill, broker and production-host
+  qualification remain open. Subscription tier, integration/data-policy proof,
+  owner opt-out confirmation and named/booked independent review remain open;
+  G0 open. No login, live model calls or executable application changes. Prior
+  docs commits are `67a94fc` and `98a6975`; this host-evidence delta is covered
+  by the owner's commit request.
 - **Next gate:** owner approval of the complete G0 evidence before P1. No paid
   calls, deployment, dependency promotion or phase advancement authorized here.
 
@@ -314,10 +318,12 @@ Loom's authority, workflow and verification remain provider/model-independent;
 each enabled integration needs qualification and explicit selection, no silent
 fallback. Private-source permission does not waive secret hygiene or authorize
 unrelated personal/customer data, OAuth/login or live allowance consumption.
-The owner's explicit commit request covers this docs delta only.
+The owner's explicit commit request covers the preceding docs delta only. The
+owner separately authorized the user-level rootless lab setup recorded below.
 Out of scope: application/test/probe edits, dependency/scanner installation,
-live model calls, credentials, host configuration, production qualification,
-framework re-pin, P1, commits, publication or deployment. No auth/cache/keyring
+live model calls, credentials, host configuration beyond that authorized lab
+setup, production qualification, framework re-pin, P1, further commits,
+publication or deployment. No auth/cache/keyring
 inspection, OAuth login/refresh, private endpoints, quota-consuming requests,
 client impersonation, limit circumvention or plugin installation.
 
@@ -345,8 +351,23 @@ external Pi `1.4.0` tree, never credential stores or local account configuration
 The sibling framework is at `bd0cacc5` with unrelated untracked work: preserve it
 and read the pinned commit through Git, never substitute its working tree.
 No raw host skill/config directories are mounted. Bubblewrap
-`0.13.1` runs an empty unshared domain on this host. Docker reports seccomp and
-cgroup namespaces but not rootless mode; do not escalate to daemon privileges.
+`0.13.1` runs an empty unshared domain on this host. At the initial observation,
+Docker reported seccomp and cgroup namespaces but not rootless mode; the separate
+lab setup is below.
+
+**Rootless lab setup (owner-authorized, 2026-10-22):** official static Docker
+`29.9.2` and rootless extras under `$HOME/bin`, with `rootlesskit 3.3.0` and
+`slirp4netns 1.3.6`; user `docker.service` active; separate `rootless` CLI
+context, with the prior `default` context restored. The daemon reports
+`name=rootless`, storage driver `overlayfs`, cgroup driver `systemd`. Controlled
+runs enforced 1 CPU (`100000 100000`, throttled 20/21 periods), 512 MiB memory
+(32 MiB over-limit OOM, exit 137) and 64 PIDs (fork denied at 16). The rootful
+daemon was not modified. Disk quota, digest-pinned image, linger/boot start,
+kill/whole-domain cleanup, port publishing, broker integration and production
+host remain unqualified; `--skip-iptables` was used because `nf_tables` was not
+loaded. Exact hashes and observed warnings are in the
+[G0 pack](research/phase-0/06-g0-decision-pack.md#3-host-sandbox-and-deployment-target).
+
 Neither `gitleaks`
 nor `trufflehog` was found on PATH; record scanner coverage honestly.
 Biome currently uses `rules.preset: "none"`; its configured checks passing is
@@ -372,8 +393,9 @@ behavior changes. No lowercase spec duplicate or additional ADR directory.
 | Layer | This task's proof | Applicability / limit |
 | --- | --- | --- |
 | Application/unit/integration/E2E | N/A: no application, test, probe, configuration or dependency edits | Prior verified baseline and 66 experiment case runs remain historical evidence, not new runs or production certification. |
+| Rootless lab resource controls | Official static Docker `29.9.2` + extras; controlled CPU throttle, memory OOM and PID-fork-denial runs; rootful daemon/context preserved | Host lab evidence only; disk quota, digest pin, cleanup/kill, broker and production host remain unqualified. |
 | Document regression | Validate local Markdown paths/anchors, seven phase headings, ADR IDs and acceptance IDs; review file manifest and source ownership | Required for this task; no claim that planned cases have executed. |
-| Security | Scoped manual review of changed documents for secrets/unsafe instructions; dependency audit N/A because no dependency/executable changes | Full automated secret scan unavailable; no scanner or dependency installed. Not a production security sign-off. |
+| Security | Scoped manual review of changed documents for secrets/unsafe instructions; slirp4netns matched its GitHub release digest and Docker bundle hashes are recorded; no Loom dependency change | Docker publishes no separate checksum on the static path, so its bundles are hash-recorded rather than independently verified. Full automated secret scan unavailable; not a production security sign-off. |
 
 Record each command/result before marking this task verified. Future code
 phases declare the relevant unit/integration/E2E and coverage comparison cases
@@ -422,12 +444,18 @@ before implementation; N/A requires a scope-specific reason.
 
 ### 6. Blast Radius & Rollback Plan
 
-Changes affect P0 planning/research documents, not running Loom software or data.
-Review for accidental authority expansion, case-collision paths and references
-to unsupported tooling. Before merge, revise only this task's identified files;
-after commit, revert its specific commit only with authorization, preserving
-unrelated work and decision history. No feature flags/down-migrations are needed
-for this experiment. Preserve evidence; no broad temporary-directory deletion.
+Changes affect P0 planning/research documents plus an owner-authorized
+user-level rootless Docker lab install under `$HOME/bin` with a systemd user
+unit and a separate CLI context. The rootful daemon, its `default` context
+endpoint and Loom data were not modified. If removal is authorized, run the
+rootless setuptool uninstall, stop/disable the user unit, and remove only the
+user-level binaries/context; never touch the rootful daemon or unrelated user
+data. Review for accidental authority expansion, case-collision paths and
+references to unsupported tooling. Before merge, revise only this task's
+identified files; after commit, revert its specific commit only with
+authorization, preserving unrelated work and decision history. No feature
+flags/down-migrations are needed for this experiment. Preserve evidence; no
+broad temporary-directory deletion.
 
 ### 7. Definition of Done (DoD)
 
@@ -439,11 +467,14 @@ Run in this order; each required executable check must exit `0`:
 3. `git diff --exit-code -- src tests research/pi/probes package.json bun.lock biome.json tsconfig.json .github FRAMEWORK_REF`
    — prove code, experiments, config, dependencies and pin unchanged.
 4. Manual status/evidence/secret review: all proposed versus accepted decisions
-   are labeled; no fabricated reviewer booking, host support or G0 closure.
+   are labeled; host setup is recorded as lab evidence, not production support;
+   no fabricated reviewer booking, host support or G0 closure.
 
-Application lint/typecheck/test/coverage/audits are N/A for this docs-only delta;
-their preceding results remain at `5ae0737`. Required engineering tools and
-production integration/security gates remain open for their affected phases.
+Application lint/typecheck/test/coverage/audits are N/A for this docs-and-lab
+delta; their preceding results remain at `5ae0737`. The host change is the
+authorized user-level rootless lab, not a Loom application/runtime change.
+Required engineering tools and production integration/security gates remain open
+for their affected phases.
 
 Read-only document/structure check (no application/test file generated):
 
@@ -507,17 +538,20 @@ Verification record:
 - [x] Documents, phase/ADR structure and links/anchors validated.
 - [x] Application/probe/config/pin integrity and document whitespace pass.
 - [x] Official account-policy permission distinguished from adapter support;
-  no account/credential effects or runtime change; task-scoped docs commit
-  authorized; no false G0 closure.
+  no account/credential effects; authorized user-level rootless lab installed;
+  no Loom application change, invented reviewer booking or false G0 closure.
+- [x] Rootless lab CPU/memory/PID limits observed; rootful daemon/default context
+  preserved; rollback path recorded.
 
 Baseline from governance (2026-10-21): lint/typecheck passed; 3 tests passed,
 100% functions / 90.99% instrumented lines; audit found no advisories across
 14 packages. Skill/recovery evidence and accepted runtime were committed at
-`5ae0737`; the G0 pack is at `558610f`. Current docs-only verification (2026-10-22):
+`5ae0737`; the G0 pack is at `558610f`. Current docs-and-lab verification (2026-10-22):
 
 | Command / review | Result | Limit |
 | --- | --- | --- |
-| SPEC's document validator, new-report/pack whitespace and `git diff --check` | Exit 0: 246 local links; seven phase sections; 12 unique acceptance IDs; unique ADR IDs; whitespace/casing pass | No full Markdown lint or future external availability claim. |
-| Declared `git diff --exit-code` for application/probe/config/pin integrity | Exit 0; no changes | Earlier executable results not relabelled as fresh; application checks N/A for docs-only delta. |
-| Six-file scope/source/evidence/authority/secret review | Official report reconciled with static Pi source; critical Google terms, SIWC inference and OpenAI data-control requirements independently fetched; model availability is owner-attested; no credentials or live effects | No independent account verification, opt-out confirmation, legal approval, live integration or automated secret-scan pass claimed. Prior commit `67a94fc`; follow-up commit authorized; G0 open. |
+| SPEC's document validator, new-report/pack whitespace and `git diff --check` | Exit 0: 247 local links; seven phase sections; 12 unique acceptance IDs; unique ADR IDs; whitespace/casing pass | No full Markdown lint or future external availability claim. |
+| Declared `git diff --exit-code` for application/probe/config/pin integrity | Exit 0; no changes | Earlier executable results not relabelled as fresh; application checks N/A for docs-and-lab delta. |
+| Six-file scope/source/evidence/authority/secret review | Official report reconciled with static Pi source; critical Google terms, SIWC inference and OpenAI data-control requirements independently fetched; model availability is owner-attested; no credentials or live effects | No independent account verification, opt-out confirmation, legal approval, live integration or automated secret-scan pass claimed. Prior commits `67a94fc`/`98a6975`; this host-evidence delta included in the authorized commit; G0 open. |
+| Rootless lab setup and resource controls | User-level Docker `29.9.2` (rootless, `overlayfs`, cgroup `systemd`); CPU throttle 20/21, memory OOM exit 137, PID fork denial at 16; rootful default preserved | Lab host only; disk quota, digest pin, linger, kill/cleanup, port publishing, broker and production host unqualified. |
 | Secret scanner | Unavailable (`gitleaks`/`trufflehog` not on PATH) | No automated secret-scan pass claimed; code/release phase requirements must be resolved before its closure. |

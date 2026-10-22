@@ -271,6 +271,21 @@ deadline. These are accepted qualification targets, not measured capacity or
 production support. Rootless setup, disk-quota mechanism and production-host
 qualification remain separate gates; no system changes were authorized.
 
+**Setup event — 2026-10-22:** Owner separately authorized the lab setup. Installed
+the official static Docker/rootless-extras `29.9.2` (download SHA-256 recorded in
+the G0 pack) under `$HOME/bin`, with upstream static `slirp4netns 1.3.6` and
+bundled `rootlesskit 3.3.0`; created and started a user `docker.service`; kept the
+prior rootful `default` context current and added a separate `rootless` context.
+Daemon reports `rootless`, `overlayfs` and cgroup driver `systemd`. Controlled
+tests observed a `100000 100000` CPU quota with 20/21 periods throttled, a 512 MiB
+memory limit with a 32 MiB over-limit process OOM-killed (exit 137), and a 64-PID
+limit with fork denied at 16. `--skip-iptables` was needed because `nf_tables` was
+not loaded. Not qualified: 2 GiB disk quota, linger/boot start, digest-pinned
+image, kill/whole-domain cleanup, provider-broker integration, port publishing and
+production-host support. The existing rootful daemon was not modified. Rollback is
+the rootless setuptool uninstall plus removal of only the user-level unit/binaries
+and context; never touch the rootful daemon.
+
 ## [ADR-007] - 2026-10-22 (P0 framework baseline proposal)
 
 **Title:** Retain and revalidate the existing framework pin for the first small fix.

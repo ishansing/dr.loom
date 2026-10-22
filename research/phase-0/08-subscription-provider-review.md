@@ -91,6 +91,17 @@ qualification follows from this report.
   The reviewed SIWC pages do not fully specify plan-specific inference retention,
   training-policy precedence or residency for every custom-app deployment: resolve
   those before allowing confidential data. [O1, O8, O11]
+- **Owner data-control requirement (2026-10-22):** training/improvement opt-out is
+  required for the personal account. Official control: turn off **Improve the model
+  for everyone** in ChatGPT Data controls, or use the Privacy Portal's **Do not
+  train on my content**; either suffices for ChatGPT and Codex tasks on a personal
+  plan. Codex has a separate **Include environments** setting that the ChatGPT
+  toggle does **not** change; verify it is off before Loom sends private
+  environment/context data. The opt-out covers new conversations/tasks only, does
+  not delete history and does not establish zero retention; safety/abuse retention
+  remains. Submitting feedback can enroll the associated conversation. Only the
+  owner can apply this in account settings; Loom must not log in or toggle it, and
+  must record owner confirmation rather than assume it. [O13, O14]
 - Business offers workspace roles/SSO/MFA; Enterprise adds RBAC, provisioning,
   retention/residency, audit and spend controls as eligible/configured. Those
   controls are not automatically present on a personal plan or automatically
@@ -214,8 +225,8 @@ quota consumption without express authorization.
 initial model candidate (`gpt-6.1-sol`), confirmed available by the owner on that
 account (owner attestation; no API check or live call performed). The identifier
 also appears in the public SIWC example [O4]. Private source code may be sent;
-no additional owner-imposed training, retention or residency restrictions for
-now. This is a
+a training/improvement opt-out is required; no additional owner-imposed retention
+or residency restrictions for now. This is a
 qualification profile, not a provider/model dependency in Loom's
 authority/workflow/verification. Each enabled
 provider/model still needs explicit selection and conformance; no silent fallback.
@@ -232,10 +243,14 @@ personal-plan no-training or zero-retention guarantee is inferred.
    Synthetic/public inputs and owner-authorized private source are allowed data
    classes; secrets and unrelated personal/customer data remain excluded. No
    extra owner-imposed data restrictions does not waive vendor or legal duties.
-3. Owner: separate express approval for OAuth/login and background automation;
+3. Owner: apply and confirm the training/improvement opt-out in ChatGPT Data
+   controls or the Privacy Portal, and verify Codex **Include environments** is
+   off before private environment context is sent. This is an account action;
+   Loom must not log in or toggle it. Opt-out does not prove zero retention.
+4. Owner: separate express approval for OAuth/login and background automation;
    live quota consumption, maximum requests/tokens/time and credit/spend ceiling;
    whether existing credits may be consumed. No silent paid/API/Google fallback.
-4. Developer: reconcile pinned Pi provider transport/body/stream/tool/usage seams
+5. Developer: reconcile pinned Pi provider transport/body/stream/tool/usage seams
    with **SIWC direct** requirements, implement only after authorization, then
    prove broker isolation, authorization, cancellation, redaction and accounting.
    Adapter existence is neither vendor permission nor conformance evidence.
@@ -265,6 +280,8 @@ All following URLs were fetched 2026-10-22; pages are mutable, not revision-pinn
 - **O10:** https://developers.openai.com/codex/pricing.md
 - **O11:** https://openai.com/business-data/
 - **O12:** https://developers.openai.com/api/docs/guides/your-data.md
+- **O13:** https://help.openai.com/en/articles/7730893-data-controls-faq (mutable; fetched 2026-10-22)
+- **O14:** https://openai.com/policies/how-your-data-is-used-to-improve-model-performance/ (updated 2026-03-13; fetched 2026-10-22)
 - **G1:** https://antigravity.google/terms
 - **G2:** https://antigravity.google/docs/faq
 - **G3:** https://antigravity.google/docs/plans/

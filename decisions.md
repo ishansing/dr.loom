@@ -423,8 +423,9 @@ fit, independent review and G0 remain open. No dependency/runtime change made.
 
 **Owner clarification — 2026-10-22:** Personal OpenAI account, GPT-6.1 Sol initial
 candidate (`gpt-6.1-sol`), confirmed available by the owner on that account
-(attestation, not an API check), private source allowed and no additional
-owner-imposed training/retention/residency restrictions for now. This
+(attestation, not an API check), private source allowed, required
+training/improvement opt-out (owner-applied; confirmation pending) and no
+additional owner-imposed retention/residency restrictions for now. This
 specifies the initial qualification profile only: Loom's authority, workflow and
 verification remain provider/model-independent. Subscription tier,
 integration proof and independent review stay open. Vendor/legal duties and secret

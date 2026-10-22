@@ -14,7 +14,7 @@ Execution requirements: [active phase](../../SPEC.md#active-phase-specification)
 | Isolation target | Rootless Docker selected in accepted ADR-006 | Separate setup approval and rootless identity/resource/mount/egress/cleanup qualification; no rootful fallback |
 | Deployment candidate | Local disposable staging destination | Concrete target/restore contract; no production deployment approval |
 | Provider/model | Initial qualification: personal OpenAI account, Codex/ChatGPT subscription via conditional SIWC direct route; GPT-6.1 Sol candidate (`gpt-6.1-sol`), owner-confirmed available on that account. Antigravity consumer route blocked by terms | Subscription tier and qualified broker still needed; availability is owner-attested, not API-verified; no live quota use, paid budget zero; [review](08-subscription-provider-review.md) |
-| Provider data policy | Owner permits private source alongside synthetic/public inputs; no additional training/retention/residency restrictions for now | Vendor/legal duties and secret hygiene remain; unrelated customer/personal data not authorized; actual personal-account handling must be documented before live use |
+| Provider data policy | Owner permits private source alongside synthetic/public inputs and requires a training/improvement opt-out for the personal account; no additional retention/residency restrictions for now | Owner must apply/confirm **Improve the model for everyone** off (or Privacy Portal) and verify Codex **Include environments**; opt-out covers new tasks only and is not zero retention; vendor/legal duties and secret hygiene remain; unrelated customer/personal data not authorized |
 | Runtime | Coding-agent SDK `1.4.0` selected; owner accepted ADR-005 on 2026-10-22 | Scoped dependency-promotion/adapter implementation approval; no dependency added to Loom |
 | Framework | Retain/revalidate current `2.1.0` pin, accepted ADR-007 | Required children and fresh full-workflow qualification; no re-pin or compatibility claim by historical readiness |
 
@@ -29,8 +29,9 @@ envelope. Framework retention, operator/transport and durability design were
 accepted in ADR-007–009. The owner subsequently requested Codex subscription and
 consideration of Antigravity; [subscription review](08-subscription-provider-review.md)
 records conditional SIWC feasibility and the consumer Antigravity restriction.
-Personal account, initial model candidate and private-code permission are now
-specified; subscription tier and integration/data-policy proof remain open. Loom's
+Personal account, initial model candidate, private-code permission and required
+training opt-out are now specified; subscription tier, owner confirmation of the
+opt-out and account/model qualification remain open. Loom's
 authority/workflow/verification stay provider/model-independent; this is only the
 first qualification profile. No live allowance consumption is authorized, paid
 budget stays zero, and independent review is unassigned/not booked. G0 remains open.

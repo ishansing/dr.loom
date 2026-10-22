@@ -285,14 +285,18 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
   Review complete: SIWC direct is a conditional candidate; consumer Antigravity
   third-party access is prohibited by current terms. ADR-010 is proposed, not
   adoption. Owner clarified personal OpenAI account, GPT-6.1 Sol initial model
-  candidate and private-source permission with no additional training/retention/
-  residency requirements for now; owner also confirmed `gpt-6.1-sol` is available
-  on that personal account (attestation, not an API check). Provider/model
+  candidate, private-source permission and a required training/improvement
+  opt-out with no additional retention/residency requirements for now; owner also
+  confirmed `gpt-6.1-sol` is available on that personal account (attestation, not
+  an API check). Applying/confirming the opt-out remains an owner account action.
+  The owner later restated “codex api”; this is recorded as the already-requested
+  subscription/SIWC candidate, not the legacy private backend and not a silent
+  switch to Platform API-key billing. Provider/model
   independence is now recorded as an architecture invariant; this profile is only
   the first integration candidate. Subscription tier, integration/data-policy
   proof and independent review remain open; G0 open. No login, live calls,
-  installation or executable changes. The user's subsequent explicit request
-  authorizes this task-scoped documentation commit.
+  installation or executable changes. The prior docs commit is `67a94fc`; the
+  owner's explicit request authorizes committing this docs follow-up.
 - **Next gate:** owner approval of the complete G0 evidence before P1. No paid
   calls, deployment, dependency promotion or phase advancement authorized here.
 
@@ -358,6 +362,7 @@ separate scoped implementation decision, not an unrequested edit here.
 | `research/phase-0/08-subscription-provider-review.md` | Official eligibility/auth/data evidence plus static pinned Pi integration seams and blockers. |
 | `research/phase-0/06-g0-decision-pack.md` | Synchronize provider candidates and remaining approval/qualification inputs. |
 | `research/phase-0/05-p0-support-profile.md` | Record the user's requested subscription route and candidate, retaining live-call prohibition. |
+| `ROADMAP.md` | Synchronize P0 execution status with the recorded provider profile; no phase advancement. |
 
 No Loom public API, dependency, schema, exported type, production runtime permission or CI
 behavior changes. No lowercase spec duplicate or additional ADR directory.
@@ -411,6 +416,9 @@ before implementation; N/A requires a scope-specific reason.
 - Private-source permission is data-class authorization for the initial profile,
   not a waiver of vendor terms, secret hygiene or provider validation. Secrets and
   unrelated personal/customer data remain excluded until separately approved.
+- The training/improvement opt-out is an owner-applied account control, not a Loom
+  runtime guarantee. Record owner confirmation; do not infer zero retention from
+  the opt-out, and verify Codex **Include environments** separately.
 
 ### 6. Blast Radius & Rollback Plan
 
@@ -500,7 +508,7 @@ Verification record:
 - [x] Application/probe/config/pin integrity and document whitespace pass.
 - [x] Official account-policy permission distinguished from adapter support;
   no account/credential effects or runtime change; task-scoped docs commit
-  explicitly authorized; no false G0 closure.
+  authorized; no false G0 closure.
 
 Baseline from governance (2026-10-21): lint/typecheck passed; 3 tests passed,
 100% functions / 90.99% instrumented lines; audit found no advisories across
@@ -511,5 +519,5 @@ Baseline from governance (2026-10-21): lint/typecheck passed; 3 tests passed,
 | --- | --- | --- |
 | SPEC's document validator, new-report/pack whitespace and `git diff --check` | Exit 0: 246 local links; seven phase sections; 12 unique acceptance IDs; unique ADR IDs; whitespace/casing pass | No full Markdown lint or future external availability claim. |
 | Declared `git diff --exit-code` for application/probe/config/pin integrity | Exit 0; no changes | Earlier executable results not relabelled as fresh; application checks N/A for docs-only delta. |
-| Five-file scope/source/evidence/authority/secret review | Official report reconciled with static Pi source; critical Google terms and SIWC inference requirements independently fetched; model availability is owner-attested; no credentials or live effects | No independent account verification, legal approval, live integration or automated secret-scan pass claimed. Task-scoped docs commit authorized; G0 open. |
+| Six-file scope/source/evidence/authority/secret review | Official report reconciled with static Pi source; critical Google terms, SIWC inference and OpenAI data-control requirements independently fetched; model availability is owner-attested; no credentials or live effects | No independent account verification, opt-out confirmation, legal approval, live integration or automated secret-scan pass claimed. Prior commit `67a94fc`; follow-up commit authorized; G0 open. |
 | Secret scanner | Unavailable (`gitleaks`/`trufflehog` not on PATH) | No automated secret-scan pass claimed; code/release phase requirements must be resolved before its closure. |

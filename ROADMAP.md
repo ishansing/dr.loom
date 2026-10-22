@@ -218,8 +218,9 @@ tested CPU/memory/PID limits, whole-container cleanup, and a provisioned fixed
 2 GiB ext4 workspace that hit `ENOSPC` under a read-only rootfs; `/tmp` and
 `/dev/shm` are capped at 64 MiB. Workspace mount preflight, log caps, boot
 persistence, final image pin, port publishing and broker qualification remain.
-Independent review is unassigned pending the owner's named reviewer, and G0/P1
-remain blocked.
+Independent review is assigned to Ishan Singh (Principal Developer;
+owner-stated availability “always available”), with review/sign-off pending, and
+G0/P1 remain blocked.
 
 **Outcome:** the developer can build without guessing the product, support
 boundary or runtime. Target duration: two weeks; no open-ended research phase.
@@ -530,7 +531,7 @@ must make failure visible and provide tested recovery procedures.
 | Product scope and priority | Project owner (user) | Draft options, trace requirements, identify tradeoffs |
 | Implementation and evidence quality | Solo developer | Produce reviewed code/tests/docs; run bounded experiments |
 | Policy/credential/production authorization | Deployment operator/human approver | Prepare immutable proposals; never self-grant authority |
-| Independent trust-boundary review | Named security/platform reviewer, booked in P0 | Supply evidence/cases, not replace independent sign-off |
+| Independent trust-boundary review | Named independent reviewer (Ishan Singh, Principal Developer), owner-stated availability; review/sign-off pending | Supply evidence/cases, not replace independent sign-off |
 | Release decision | Project owner with deployment operator | Assemble readiness packet; no automatic release on model confidence |
 
 ### Definition of ready for a work package

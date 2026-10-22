@@ -300,7 +300,8 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
   mount preflight, log caps and boot persistence remain. Final image pin, broker,
   port publishing and production-host qualification remain open. Subscription
   tier, integration/data-policy proof, owner opt-out confirmation and
-  named/booked independent review remain open; G0 open. No login, live model
+  independent review is named (Ishan Singh, Principal Developer; owner-stated
+  availability), but review/sign-off remains open; G0 open. No login, live model
   calls or executable application changes. Prior docs commits include `67a94fc`,
   `98a6975`, `7caac84` and `22fbd43`; this workspace-cap delta is covered by the
   owner's commit request.
@@ -483,7 +484,7 @@ Run in this order; each required executable check must exit `0`:
    — prove code, experiments, config, dependencies and pin unchanged.
 4. Manual status/evidence/secret review: all proposed versus accepted decisions
    are labeled; host setup is recorded as lab evidence, not production support;
-   no fabricated reviewer booking, host support or G0 closure.
+   no fabricated reviewer sign-off, host support or G0 closure.
 
 Application lint/typecheck/test/coverage/audits are N/A for this docs-and-lab
 delta; their preceding results remain at `5ae0737`. The host change is the
@@ -554,7 +555,7 @@ Verification record:
 - [x] Application/probe/config/pin integrity and document whitespace pass.
 - [x] Official account-policy permission distinguished from adapter support;
   no account/credential effects; authorized user-level rootless lab installed;
-  no Loom application change, invented reviewer booking or false G0 closure.
+  no Loom application change, invented reviewer sign-off or false G0 closure.
 - [x] Rootless lab CPU/memory/PID limits observed; SIGTERM-ignoring container
   stopped with no surviving process or heartbeat writes; 2 GiB workspace cap
   ENOSPC-tested; tmpfs capped; rootful daemon/default context preserved; rollback

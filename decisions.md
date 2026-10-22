@@ -226,3 +226,162 @@ approved the elaborated recommendation. The selected runtime is upstream
 `4a080252f06caf63a525d7873c5d94d3c23887e0`. This accepts the design direction
 only: no Loom dependency installation, framework re-pin, paid call, deployment,
 commit/publication or G0/P1 advancement is authorized by this approval.
+
+## [ADR-006] - 2026-10-22 (P0 support profile)
+
+**Title:** Target rootless Docker for the first Linux/local execution profile.
+
+**Status:** Accepted as a design target — owner selected it explicitly; setup
+and qualification are not approved or completed by this decision.
+
+**Context & Problem Statement:** The first profile needs one whole-runtime
+isolation backend. The owner initially approved Linux/local evaluation and now
+selected rootless Docker, plus a disposable Loom checkout as the real reference
+repository. The observed Docker daemon does not report rootless mode; passing
+bubblewrap research probes does not certify either production backend.
+
+**Options Evaluated:**
+
+1. Rootless Docker: OCI packaging and native container lifecycle/resource
+   controls, with explicit rootless host setup and qualification still required.
+2. Bubblewrap: already useful for local synthetic experiments, but production
+   resource limits/seccomp/lifecycle packaging would need additional owned work.
+
+**Decision & Rationale:** Target option 1 for the first Linux x86_64/local profile;
+reuse platform container controls instead of promoting the research launcher as
+a production service. Use a disposable Loom checkout with synthetic fault
+injection as the first representative Bun/TypeScript workload. Never expose the
+live Loom checkout, protected ledger or credentials to that worker.
+
+**Consequences & Tech Debt:** This does not configure the current daemon, install
+packages, provision resources, start containers or enable untrusted execution.
+The trusted supervisor controls Docker; the runner receives no Docker socket or
+host credential mounts. Rootless identity, cgroup/resource support, pinned image,
+network/provider mediation, mount policy and whole-domain cleanup need evidence
+before the selected profile can be called supported. No privileged/rootful or
+unsandboxed fallback. Bubblewrap remains a research fixture only. Owner:
+developer proposes the exact host/backend version profile; operator approves
+setup and supplies qualification access separately. No safety/performance
+advantage has been measured by this selection.
+
+**Profile event — 2026-10-22:** Owner selected the current Linux x86_64/Omarchy
+reference snapshot for initial lab qualification, with one worker, 2 CPUs,
+4 GiB RAM, 256 PIDs, 2 GiB enforced persistent writable data and a 20-minute
+deadline. These are accepted qualification targets, not measured capacity or
+production support. Rootless setup, disk-quota mechanism and production-host
+qualification remain separate gates; no system changes were authorized.
+
+## [ADR-007] - 2026-10-22 (P0 framework baseline proposal)
+
+**Title:** Retain and revalidate the existing framework pin for the first small fix.
+
+**Status:** Accepted — owner chose retain/revalidate on 2026-10-22.
+
+**Context & Problem Statement:** The SDK decision is accepted, but the sibling
+framework has advanced from pinned `2.1.0` to `4.0.0`. The read-only
+[baseline review](research/phase-0/07-framework-baseline-review.md) found eight
+changed contract/registry/lock files, unchanged artifact/result/ledger reference
+bytes, and no fresh complete Loom/Pi workflow qualification for either baseline.
+
+**Options Evaluated:**
+
+1. Retain `4fe0869ae41b0d81cbe3c6bc643f10ff2049ceed` / `2.1.0`, provision
+   its exact required children and qualify the bounded conflict-free workflow.
+2. Re-pin to reviewed `bd0cacc5a0a81d41311782d2b20f778ee7b40392` / `4.0.0`,
+   including changed child hashes/routing and their new qualification matrix.
+
+**Decision & Rationale:** Choose option 1 for the first small TS-fix profile;
+the selected workflow needs neither newer optional close-out workflows nor the
+changed conflict/security routes. Preserve the actual pin unchanged.
+
+**Consequences & Tech Debt:** This is not a claim of current production readiness
+or an indefinite freeze. Exact `tdd`/`code-review` and triggered diagnosis content
+must be provisioned/hashed before use; model-driven whole-workflow evidence is
+still future work. Unqualified conflicts/security/data changes hand off. Owner:
+developer supplies scoped revalidation and a later drift
+review. No sibling edits, skill installation or framework re-pin occur here.
+
+**Status event — 2026-10-22:** Proposed → Accepted after the owner explicitly
+selected “Retain 2.1.0”. This closes the baseline design choice, not full workflow
+qualification or permission to install external skills.
+
+## [ADR-008] - 2026-10-22 (P0 durability proposal)
+
+**Title:** Make authoritative SQLite durability explicit and restore from verified backups.
+
+**Status:** Accepted as design — owner approved contract/targets on 2026-10-22;
+backup destination/protection and implementation evidence remain open.
+
+**Context & Problem Statement:** `src/store.ts` enables WAL but does not set or
+verify synchronous durability. Session reopen/crash probes do not prove host-loss
+durability. Effect certainty cannot depend on a runtime transcript or a missing
+response. Storage/restore assumptions affect the first schema and outbox design.
+
+**Options Evaluated:**
+
+1. Explicit WAL + `synchronous=FULL` for Loom authority on supported local storage;
+   transactional state/audit/outbox, verified consistent backups and clone restore.
+2. WAL + `NORMAL` with an explicitly accepted acknowledged-tail loss window on
+   host/power failure; potentially less sync overhead, but weaker durability.
+
+**Decision & Rationale:** Choose option 1 for the low-concurrency first profile.
+Read back required PRAGMAs and fail startup/admission if they cannot be met.
+Do not hold write transactions across network calls, blindly retry uncertain
+effects, copy a live DB without its WAL state, or claim code downgrade restores
+data. Schema rollback may use a reviewed backup restore rather than an unsafe
+fabricated down-migration; the approved recovery/loss window must be explicit.
+
+**Consequences & Tech Debt:** Sync cost is unmeasured; SQLite/OS/device guarantees
+remain conditional on the qualified storage stack. Accepted backup targets:
+daily plus pre-upgrade/migration consistent snapshots, seven daily/four weekly
+copies in an operator-managed separate failure domain, 24-hour host-loss RPO and
+one-hour restore target. These are acceptance targets, not achieved SLOs. Primary
+audit history is not deleted by backup rotation. Actual destination, protection,
+reconciliation and restore drills still need approval/evidence. Owner: operator
+supplies the backup destination/protection plan; developer implements/tests only
+after G0/P1 authorization.
+
+**Status event — 2026-10-22:** Proposed → Accepted after the owner approved the
+design including WAL/FULL, daily/pre-change backups, seven daily/four weekly
+copies, 24-hour host-loss RPO and one-hour restore target. Targets are not
+achieved SLOs; no backup job, data deletion, setup or restore operation is authorized.
+
+## [ADR-009] - 2026-10-22 (P0 operator/transport proposal)
+
+**Title:** Complete local operator controls through separate trusted and runner channels.
+
+**Status:** Accepted as design — owner approved the local operator/runner
+authority contract on 2026-10-22; commands/protocol remain unimplemented.
+
+**Context & Problem Statement:** Historical R-14 describes four recording/orientation
+commands; it does not provide the approval/kill/reset and supervised start/resume
+surface required by current SPEC/ROADMAP. Actor strings, a TTY or model prose do
+not by themselves prove human authorization.
+
+**Options Evaluated:**
+
+1. A local trusted operator CLI outside the sandbox, with OS-established identity,
+   explicit critical-action confirmation and action/payload/environment-bound
+   decisions; a separate narrow per-runner request/result channel.
+2. Add a writable authenticated web/API control surface now; feasible but adds
+   remote authentication/session/CSRF and lifecycle scope to the first profile.
+
+**Decision & Rationale:** Choose option 1. Keep the dashboard read-only and
+the first deployment private/local. Accepted command-family design and protocol
+invariants are in the [G0 pack](research/phase-0/06-g0-decision-pack.md). The runner
+can propose operations but cannot approve, reset kill or supply authoritative
+identity/epoch. Live authorization remains in the final owned operation.
+
+**Consequences & Tech Debt:** These commands/protocol are not shipped. The trusted
+operator account is a stated threat-model assumption, not proof against host-account
+compromise. A separate approved host channel establishes actor/confirmation; the
+runner never receives that socket/credential. No generic public control API,
+agent `--actor human` escape hatch or automatic reset. Owner: project owner
+reviews remaining concrete details; developer specifies schemas and tests before
+implementation. Previous research remains historical, not implementation evidence.
+
+**Status event — 2026-10-22:** Proposed → Accepted after the owner's explicit
+approval of G0 pack sections 4–5 and ADR-008/009. This selects local CLI versus
+writable web/API control and the stated authority boundaries. Exact message schemas,
+limits, authentication implementation and end-to-end proofs still require the
+applicable phase specification/review; no additional command is shipped here.

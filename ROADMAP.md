@@ -208,6 +208,10 @@ Existing Bun/TypeScript workflow, Linux/local evaluation and offline-only calls
 confirmed. The owner accepted coding-agent SDK `1.4.0` in
 [ADR-005](decisions.md#adr-005---2026-10-22-p0-runtime-recommendation).
 G0 remains open; no dependency/sandbox promotion or P1 authorization.
+The [remaining G0 decision pack](research/phase-0/06-g0-decision-pack.md) records
+the accepted disposable Loom reference/rootless Docker lab target, accepted
+framework/operator/recovery design and blocked T-01/T-03 backlog. Provider/model and independent
+review remain unresolved; exact sandbox setup is not authorized by target selection.
 
 **Outcome:** the developer can build without guessing the product, support
 boundary or runtime. Target duration: two weeks; no open-ended research phase.

@@ -9,17 +9,24 @@ Execution requirements: [active phase](../../SPEC.md#active-phase-specification)
 | Dimension | Initial scope | Approval/evidence still needed |
 | --- | --- | --- |
 | User/journey | Single trusted developer/operator; small fix in an existing Bun/strict TypeScript repository | Representative real repository and I2P runbook families |
-| First fixture | Disposable synthetic TS repository with one deterministic failing test, a bounded patch and a passing test | Synthetic red/green proof complete; real reference-repository qualification remains |
-| Host | Linux x86_64; local/private CLI | Supported distribution/kernel and minimum hardware, not just current workstation |
-| Isolation candidate | Evaluate rootless containers; no backend selected | Privilege, mount, egress and whole-domain cleanup proof; fallback decision if incompatible |
+| First fixture | Disposable Loom checkout with synthetic fault injection and deterministic Bun/TypeScript tests; owner selected | Synthetic red/green proof complete; full reference-workflow qualification remains |
+| Host | Current Linux x86_64/Omarchy snapshot selected for lab qualification; local/private CLI | Rootless setup/resource proof and production-host support remain separate gates |
+| Isolation target | Rootless Docker selected in accepted ADR-006 | Separate setup approval and rootless identity/resource/mount/egress/cleanup qualification; no rootful fallback |
 | Deployment candidate | Local disposable staging destination | Concrete target/restore contract; no production deployment approval |
 | Provider/model | Offline synthetic responses only; zero paid-call budget | Exact provider/model, data policy and cap before live calls; G0 remains open |
 | Runtime | Coding-agent SDK `1.4.0` selected; owner accepted ADR-005 on 2026-10-22 | Scoped dependency-promotion/adapter implementation approval; no dependency added to Loom |
-| Framework | Retain current `FRAMEWORK_REF` unchanged during kickoff | Retain/revalidate versus re-pin review; previous readiness is not current compatibility proof |
+| Framework | Retain/revalidate current `2.1.0` pin, accepted ADR-007 | Required children and fresh full-workflow qualification; no re-pin or compatibility claim by historical readiness |
 
 No real credentials, customer repositories or production data belong in fixtures.
 The owner has approved evaluation scope and the SDK runtime direction, not
 dependency installation or production support.
+
+**Current decision pack:** [06-g0-decision-pack.md](06-g0-decision-pack.md), with
+[framework baseline review](07-framework-baseline-review.md). Owner selected the
+disposable Loom reference, rootless Docker target and current Linux qualification
+envelope. Framework retention, operator/transport and durability design were
+accepted in ADR-007–009. Provider/model was explicitly left open, paid budget
+stays zero, and independent review is unassigned/not booked. G0 remains open.
 
 ## Observed starting point
 
@@ -127,13 +134,13 @@ return is evidence of completion. See the [normative boundaries](../../SPEC.md#r
 
 | Item | Next owner/action | Closure evidence |
 | --- | --- | --- |
-| Representative repo/runbook families | Owner nominates one sanitized repo/task; developer maps pinned I2P entry points | Approved support matrix and task acceptance test |
+| Representative repo/runbook families | Disposable Loom checkout selected; developer specifies the bounded first golden and required framework inputs | Approved small TS-fix matrix and task acceptance test; no full workflow proof yet |
 | Runtime/revision | Design choice closed by accepted ADR-005; developer scopes later dependency promotion | SDK `1.4.0` direction accepted; implementation/support qualification remains gated |
-| Sandbox/host/deployment | Developer tests approved candidate; owner approves concrete profile | Mount/egress/cleanup and restore evidence; no implicit Docker privilege escalation |
+| Sandbox/host/deployment | Rootless Docker target accepted in ADR-006; owner reviews concrete profile/setup plan | Mount/resource/egress/cleanup and restore evidence; current daemon is not rootless; no implicit escalation |
 | Provider/model/data/spending | Owner specifies exact profile before any live call | Explicit approval; synthetic comparison alone cannot close this |
-| Framework drift | Developer reviews selected revision, contracts, registry/locks and readiness | Retain/revalidate or approved re-pin ADR; current pin unchanged meanwhile |
-| Operator controls/transport | Developer proposes CLI and identity-bound supervisor protocol; owner reviews | Approval/kill/reset/recovery walkthrough; no invented shipped commands |
-| Durability/capacity/recovery | Owner states acceptable loss/restore and retention; developer tests assumptions | Process/host/power-loss distinction, backup/restore criteria and bounded capacities |
+| Framework drift | Retain/revalidate design closed in ADR-007; developer scopes required-child/full-workflow qualification | Current pin unchanged; source delta reviewed, no real-workflow certificate |
+| Operator controls/transport | Local CLI/runner design accepted in ADR-009; concrete schemas/auth details and proof remain phase work | Approval/kill/reset/recovery walkthrough; no invented shipped commands |
+| Durability/capacity/recovery | WAL/FULL, backup/restore targets and lab envelope accepted; operator supplies setup/storage/backup particulars | Process/host/power-loss distinction, enforced limits and restore drill; no achieved SLO claim |
 | Independent review | Owner identifies reviewer/availability | Booking and named scope; not booked by this document or self-certified |
 | Next implementation package | Developer scopes T-01/T-03 after remaining decisions | Updated estimates and owner-approved P1 backlog only after G0 passes |
 

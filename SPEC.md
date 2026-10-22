@@ -266,33 +266,34 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
 
 ## Active phase specification
 
-- **Work package:** P0 skill compatibility and runtime/revision recommendation, 2026-10-22.
+- **Work package:** P0 remaining G0 decision pack, 2026-10-22.
 - **Authority:** user authorized starting P0 after PR #1 merged; confirmed existing
   TS repository, Linux/local evaluation and offline-only experiments.
-- **Branch:** `chore/p0-runtime-recommendation`, from recovery commit `f08c7ec`.
-- **Status:** Skill/revision evidence verified within research limits;
-  owner accepted coding-agent SDK `1.4.0` in ADR-005 on 2026-10-22.
-  The user's subsequent request authorizes this task-scoped commit and next P0
-  steps, not Loom dependency promotion, framework re-pin or publication.
-  G0 remains open; a runtime design decision is not production certification.
+- **Branch:** `chore/p0-g0-decision-pack`, from accepted-runtime commit `5ae0737`.
+- **Status:** Decision pack prepared; runtime direction accepted in ADR-005 and
+  rootless Docker target/disposable Loom reference accepted in ADR-006.
+  Retained framework `2.1.0`, operator/transport and durability design accepted
+  in ADR-007–009; current Linux qualification envelope selected. Provider/model
+  deliberately left open; independent review unassigned/not booked. No dependency
+  promotion, framework re-pin, infrastructure change or publication. The user's
+  subsequent explicit request authorizes this task-scoped documentation commit.
 - **Next gate:** owner approval of the complete G0 evidence before P1. No paid
   calls, deployment, dependency promotion or phase advancement authorized here.
 
 ### 1. Phase Objective & Scope
 
-Extract only tracked regular files at `FRAMEWORK_REF` into a read-only snapshot;
-check the vendored verification child hash and transport the actual adapter/
-child/result contract in both runtimes. Compare native SDK skill loading with
-owned explicit Durable context loading; missing external children fail closed.
-Reuse existing ordinary/crash probes on exact `1.4.0` in a separate external
-installation, retaining `1.3.0` regressions. Record the runtime/revision ADR,
-its explicit owner acceptance and a proposed adapter manifest, with remaining
-G0 choices named. No actual framework
-skills, shell commands from skill text or real model workflows are executed.
-Out of scope: application code, Loom dependency installation/promotion, paid
-calls, secrets, host configuration, production sandbox certification, framework
-re-pin, P1, publishing or deployment. Experiment-only pinned dependencies may
-be downloaded under `/tmp/opencode`, with lifecycle scripts disabled.
+Prepare actionable choices for the remaining G0 contract: supported workflow,
+framework baseline, host/backend/deployment, provider/data/spending, operator
+approval/kill/reset, transport, durability/restore and independent review.
+Inspect pinned/current framework Git objects and relevant primary documentation;
+record what is verified versus what requires implementation evidence. Reconcile
+historical four-command CLI and rollback assumptions without inventing shipped
+commands or approving public/security behavior by implication. Draft the next
+T-01/T-03 implementation backlog, but do not start it before G0 approval.
+Out of scope: application/test/probe edits, dependency/scanner installation,
+live model calls, credentials, host configuration, production qualification,
+framework re-pin, P1, publication or deployment. Committing the verified decision
+pack is authorized by the user's subsequent explicit request.
 
 ### 2. Environment & Upstream State
 
@@ -301,14 +302,17 @@ Observed 2026-10-22: Linux x86_64 (Omarchy), 16 logical CPUs, approximately
 host, not a qualified deployment or sandbox. Bun `1.4.3`, Node `26.7.0`; existing TypeScript
 `5.9.3`, Biome `2.5.14`, existing `bun.lock`. These are observations, not newly
 promoted support pins. `.env.example` is absent; no raw environment values read.
+Read-only inspection for this package observed embedded SQLite `3.53.4` with
+in-memory synchronous default `2`, and Docker endpoint server `29.9.1` reporting
+cgroup v2/systemd but no rootless security option. No file-backed authority DB,
+daemon config or running container was modified; these are facts, not qualification.
 The scaffold's schema is owned by `src/store.ts`; no schema change in this task.
 Framework selection stays in `FRAMEWORK_REF`; ADR-005 selects coding-agent SDK
 `1.4.0`, with no runtime dependency added to Loom. No separate upstream SOP URL/ref is configured; this
 change adapts the user-supplied playbook into reviewed repository governance.
 Merged `master` was fetched read-only over HTTPS after verifying PR #1's merge.
-Existing external `1.3.0` and Durable migration installations remain unchanged.
-Revalidate/install both packages at exact `1.4.0` in a new external comparison
-directory with disabled lifecycle scripts; inspect shipped API/source first.
+Prior `1.3.0`/`1.4.0` comparison evidence is committed at `5ae0737`; no new
+runtime experiment or installation is required for this docs-only package.
 The sibling framework is at `bd0cacc5` with unrelated untracked work: preserve it
 and read the pinned commit through Git, never substitute its working tree.
 No raw host skill/config directories are mounted. Bubblewrap
@@ -324,15 +328,12 @@ separate scoped implementation decision, not an unrequested edit here.
 
 | File | Operation / responsibility |
 | --- | --- |
-| `SPEC.md` | Declare skill/revision comparison and results. |
-| `decisions.md` | Runtime/revision ADR and dated explicit owner-acceptance event. |
-| `research/pi/17-p0-runtime-recommendation.md` | Skill/contract evidence, revision deltas, choice rationale and proposed adapter file manifest. |
-| `research/pi/probes/p0-runtime-comparison.mjs` | Explicit expected-version and skill-fixture mode, reusing runtime setup. |
-| `research/pi/probes/p0-sandbox.py` | Optional read-only framework snapshot and explicit version/skill launch inputs. |
-| `research/pi/probes/p0-recovery.py` | Explicit expected-version propagation; keep downgrade experiment restricted to `1.3.0` source stores. |
-| `research/pi/probes/p0-framework.py` | Pinned Git extraction/hash checks, missing/tampered fixture self-check and shared skill runs. |
-| `research/phase-0/05-p0-support-profile.md` | Record recommendation/evidence and remaining G0 owner inputs. |
-| `ROADMAP.md` | Synchronize the accepted runtime direction; retain remaining G0 gates. |
+| `SPEC.md` | Declare decision-pack scope, owner choices and document checks. |
+| `decisions.md` | Proposed significant choices; dated acceptance only for explicit owner decisions. |
+| `research/phase-0/06-g0-decision-pack.md` | Concrete support/authority/recovery proposals, evidence checklist and blocked P1 backlog. |
+| `research/phase-0/07-framework-baseline-review.md` | Read-only pinned/current source and readiness delta; retain/re-pin recommendation with limits. |
+| `research/phase-0/05-p0-support-profile.md` | Link the decision pack and synchronize remaining owner inputs. |
+| `ROADMAP.md` | Link current P0 decision-pack status; preserve G0/P1 authorization boundary. |
 
 No Loom public API, dependency, schema, exported type, production runtime permission or CI
 behavior changes. No lowercase spec duplicate or additional ADR directory.
@@ -341,11 +342,9 @@ behavior changes. No lowercase spec duplicate or additional ADR directory.
 
 | Layer | This task's proof | Applicability / limit |
 | --- | --- | --- |
-| Unit/regression baseline | `bun test --coverage` | Existing three smoke tests; preserve source unchanged and record coverage, not a comprehensive production suite. |
-| DB integration baseline | Existing lease and close/reopen smoke assertions in the same suite | Runs with the baseline; no new DB behavior claimed. |
-| Experiment integration | Ordinary/recovery cases at exact `1.4.0`, `1.3.0` regressions, pinned adapter/child loading on Node/Bun; missing/hash-tampered snapshot assertions | No real model skill execution, full I2P lifecycle, provider/MCP or production proof. |
+| Application/unit/integration/E2E | N/A: no application, test, probe, configuration or dependency edits | Prior verified baseline and 66 experiment case runs remain historical evidence, not new runs or production certification. |
 | Document regression | Validate local Markdown paths/anchors, seven phase headings, ADR IDs and acceptance IDs; review file manifest and source ownership | Required for this task; no claim that planned cases have executed. |
-| Security | Read-only dependency audit and scoped manual review of changed documents for secrets/unsafe instructions | Full automated secret scan unavailable; no scanner or dependency installed. Not a production security sign-off. |
+| Security | Scoped manual review of changed documents for secrets/unsafe instructions; dependency audit N/A because no dependency/executable changes | Full automated secret scan unavailable; no scanner or dependency installed. Not a production security sign-off. |
 
 Record each command/result before marking this task verified. Future code
 phases declare the relevant unit/integration/E2E and coverage comparison cases
@@ -382,7 +381,7 @@ before implementation; N/A requires a scope-specific reason.
 
 ### 6. Blast Radius & Rollback Plan
 
-Changes affect P0 research/probes, not running Loom software or data.
+Changes affect P0 planning/research documents, not running Loom software or data.
 Review for accidental authority expansion, case-collision paths and references
 to unsupported tooling. Before merge, revise only this task's identified files;
 after commit, revert its specific commit only with authorization, preserving
@@ -393,24 +392,17 @@ for this experiment. Preserve evidence; no broad temporary-directory deletion.
 
 Run in this order; each required executable check must exit `0`:
 
-1. `bun run lint` — formatting/static checks for the configured repository.
-2. `bun run check` — strict TypeScript baseline.
-   Research syntax checks: `node --check research/pi/probes/p0-runtime-comparison.mjs`
-   and `python3 -c 'from pathlib import Path; p = Path("research/pi/probes/p0-sandbox.py"); compile(p.read_text(), str(p), "exec")'`.
-3. `bun test --coverage` — existing suite and a recorded coverage snapshot.
-   Then run `python3 research/pi/probes/p0-sandbox.py --self-test` and both
-   comparison paths with `node` and `bun` through the wrapper, using its
-   documented external experiment directory. Each assertion must pass;
-   missing dependencies/isolation mean blocked, not a substitute host launch.
-   Recovery command: `python3 research/pi/probes/p0-recovery.py --experiment /tmp/opencode/loom-p0-comparison --upgrade-experiment /tmp/opencode/loom-p0-durable-140`;
-   it runs both engines/runtimes and copy-only migration. Check recovery MJS
-   with `node --check` and Python by in-memory `compile()` before test execution.
-   Repeat ordinary/crash probes with `--version 1.4.0` and the separate
-   `/tmp/opencode/loom-p0-comparison-140` directory. Skill command:
-   `python3 research/pi/probes/p0-framework.py --framework ../I2P --experiment /tmp/opencode/loom-p0-comparison-140 --version 1.4.0`.
-4. `bun audit` — read-only dependency advisory audit, no automatic fixes.
-5. `git diff --check` — tracked diff whitespace; additionally validate new
-   documents' whitespace, local links/anchors and required headings read-only.
+1. Run the read-only document/structure command below — local links/anchors,
+   seven active sections, acceptance/ADR IDs, casing and whitespace.
+2. `git diff --check` — tracked document whitespace; validate new files too.
+3. `git diff --exit-code -- src tests research/pi/probes package.json bun.lock biome.json tsconfig.json .github FRAMEWORK_REF`
+   — prove code, experiments, config, dependencies and pin unchanged.
+4. Manual status/evidence/secret review: all proposed versus accepted decisions
+   are labeled; no fabricated reviewer booking, host support or G0 closure.
+
+Application lint/typecheck/test/coverage/audits are N/A for this docs-only delta;
+their preceding results remain at `5ae0737`. Required engineering tools and
+production integration/security gates remain open for their affected phases.
 
 Read-only document/structure check (no application/test file generated):
 
@@ -471,34 +463,20 @@ experiment's verification does not close G0 or any production gate.
 
 Verification record:
 
-- [x] Lint, strict typecheck and research syntax checks.
-- [x] Baseline coverage unchanged; old regressions and new skill/revision matrix pass.
-- [x] Loom/three external tree audits; scanner unavailable, not passed.
-- [x] Links, phase/ADR structure, whitespace and task diff reviewed; approval-only
-  documentation follow-up included `ROADMAP.md` in the nine-file manifest.
-- [x] Accepted ADR-005 and remaining G0 owner inputs recorded; task-scoped commit
-  authorized by the user's subsequent explicit request.
+- [x] Documents, phase/ADR structure and links/anchors validated.
+- [x] Application/probe/config/pin integrity and document whitespace pass.
+- [x] Six-file scope/secret/evidence review; owner acceptance events recorded in
+  ADR-006–009. Provider/model intentionally open, review unassigned/not booked,
+  P1 backlog blocked; task-scoped commit explicitly authorized by the user.
 
 Baseline from governance (2026-10-21): lint/typecheck passed; 3 tests passed,
 100% functions / 90.99% instrumented lines; audit found no advisories across
-14 packages. Recovery verified/committed at `f08c7ec`; current results (2026-10-22):
+14 packages. Skill/recovery evidence and accepted runtime were committed at
+`5ae0737`. Current documentation-only verification results (2026-10-22):
 
 | Command / review | Result | Limit |
 | --- | --- | --- |
-| `bun run lint` | Exit 0; 12 files | Existing configured rules only. |
-| `bun run check` and research syntax checks | Exit 0; both Node probe syntax checks and Python in-memory compilation passed | MJS/Python not claimed strictly typed. |
-| `bun test --coverage` and experiment assertions | Exit 0; 3 pass/0 fail, 100% functions / 90.99% instrumented lines unchanged; across both versions: eight ordinary paths, eight skill paths, 40 crash and eight ownership cases; two old-store upgrade/restore cases; snapshot tamper/missing/symlink guards pass | Baseline and research assertions reported separately; no real model/complete workflow claim. |
-| `bun audit` and external experiment dependency review | Exit 0; zero advisories across 14 Loom packages and 121-/91-/122-package external trees; recorded external lock hashes unchanged; both direct `1.4.0` tarball SHA-512 values matched metadata | No full source/license/provenance review. |
+| Document validator and whitespace | Exit 0: 240 local links, seven phase sections, 12 unique acceptance IDs, unique ADR IDs; both new documents' whitespace and `git diff --check` passed | No external-link availability or full Markdown lint claim. |
+| Application/probe/config/pin integrity | Declared `git diff --exit-code` command exited 0 | No executable behavior change; earlier test/coverage/audit results not relabelled as fresh. |
+| Source/evidence/authority review | Six-file manual scope review; verified eight-file framework subset delta and identical artifact-reference Git blob; official Docker/SQLite sources and scoped runtime facts recorded | Live docs not release qualification; no fake reviewer booking or G0 closure. |
 | Secret scanner | Unavailable (`gitleaks`/`trufflehog` not on PATH) | No automated secret-scan pass claimed; code/release phase requirements must be resolved before its closure. |
-| Document/manifest review | Validator exit 0: 215 local links, seven phase sections, 12 unique acceptance IDs and unique ADR IDs; new-file whitespace and mandatory-assertion guard passed; `git diff --check` exit 0; scoped manual review of eight files | Manual review is not an automated secret scan. |
-| Application/config integrity | `git diff --exit-code -- src tests package.json bun.lock biome.json tsconfig.json .github FRAMEWORK_REF` exit 0; sibling framework status/revision unchanged | No application/test, dependency, compiler, linter, CI or framework-pin changes. |
-
-Approval-only follow-up (2026-10-22): updated ADR status/event, active phase,
-support profile, recommendation and roadmap. Validate documents/whitespace and
-confirm probe bytes unchanged from the prior verified snapshot. No application
-or probe code changed; the earlier executable results above were not rerun or
-relabelled as fresh tests for this documentation-only follow-up.
-Observed: document validator passed 216 local links, phase/ADR structure and
-whitespace; `git diff --check` and application/config integrity checks exited 0.
-All probe bytes matched the pre-update SHA-256 snapshot. The user subsequently
-authorized committing this evidence and accepted decision.

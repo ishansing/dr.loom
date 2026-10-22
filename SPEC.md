@@ -107,6 +107,15 @@ No untrusted execution or production authority is enabled before these
 boundaries are tested. Sandboxing is therefore an adapter prerequisite,
 not optional hardening after unrestricted execution has shipped.
 
+**Provider/model selection is run-scoped, not an authority dependency.** Loom's
+ledger, policy, budgets, recovery, audit and completion rules must not assume a
+vendor, model family or subscription. A provider/model pair is an explicitly
+selected, qualified integration; account and data-policy eligibility stay
+per-integration. No silent fallback, automatic account rotation or model
+substitution may turn one provider's failure or limit into another's effect.
+Codex/ChatGPT subscription is the first qualification candidate, not Loom's
+architecture. See [ADR-010](decisions.md#adr-010---2026-10-22-p0-subscription-provider-review).
+
 ## First milestone: session ledger, leases, audit (+ kill switch)
 
 The implementation language/runtime is **Bun**. A scaffold exists (`src/`
@@ -266,34 +275,47 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
 
 ## Active phase specification
 
-- **Work package:** P0 remaining G0 decision pack, 2026-10-22.
+- **Work package:** P0 subscription-provider eligibility review, 2026-10-22.
 - **Authority:** user authorized starting P0 after PR #1 merged; confirmed existing
   TS repository, Linux/local evaluation and offline-only experiments.
-- **Branch:** `chore/p0-g0-decision-pack`, from accepted-runtime commit `5ae0737`.
-- **Status:** Decision pack prepared; runtime direction accepted in ADR-005 and
-  rootless Docker target/disposable Loom reference accepted in ADR-006.
-  Retained framework `2.1.0`, operator/transport and durability design accepted
-  in ADR-007–009; current Linux qualification envelope selected. Provider/model
-  deliberately left open; independent review unassigned/not booked. No dependency
-  promotion, framework re-pin, infrastructure change or publication. The user's
-  subsequent explicit request authorizes this task-scoped documentation commit.
+- **Branch:** `chore/p0-subscription-provider-review`, from G0 pack `558610f`.
+- **Status:** User specified Codex subscription access and asked to consider
+  Google Antigravity subscription. These are provider candidates, not permission
+  to log in, consume quotas, add a fallback, replace Pi SDK or claim eligibility.
+  Review complete: SIWC direct is a conditional candidate; consumer Antigravity
+  third-party access is prohibited by current terms. ADR-010 is proposed, not
+  adoption. Owner clarified personal OpenAI account, GPT-6.1 Sol initial model
+  candidate and private-source permission with no additional training/retention/
+  residency requirements for now; owner also confirmed `gpt-6.1-sol` is available
+  on that personal account (attestation, not an API check). Provider/model
+  independence is now recorded as an architecture invariant; this profile is only
+  the first integration candidate. Subscription tier, integration/data-policy
+  proof and independent review remain open; G0 open. No login, live calls,
+  installation or executable changes. The user's subsequent explicit request
+  authorizes this task-scoped documentation commit.
 - **Next gate:** owner approval of the complete G0 evidence before P1. No paid
   calls, deployment, dependency promotion or phase advancement authorized here.
 
 ### 1. Phase Objective & Scope
 
-Prepare actionable choices for the remaining G0 contract: supported workflow,
-framework baseline, host/backend/deployment, provider/data/spending, operator
-approval/kill/reset, transport, durability/restore and independent review.
-Inspect pinned/current framework Git objects and relevant primary documentation;
-record what is verified versus what requires implementation evidence. Reconcile
-historical four-command CLI and rollback assumptions without inventing shipped
-commands or approving public/security behavior by implication. Draft the next
-T-01/T-03 implementation backlog, but do not start it before G0 approval.
+Investigate official subscription eligibility, third-party/custom-harness use,
+auth/billing/data terms and installed Pi `1.4.0` provider seams. Distinguish a
+native provider adapter from vendor permission and working integration. Record
+Codex subscription as the requested route and Antigravity as an additional
+candidate, not an automatic fallback or a second execution runtime. Identify a
+supported host-side credential/egress path or a blocker; preserve the accepted
+whole-runner isolation and one-runtime decisions.
+Record the owner's initial qualification profile, not a core model dependency:
+Loom's authority, workflow and verification remain provider/model-independent;
+each enabled integration needs qualification and explicit selection, no silent
+fallback. Private-source permission does not waive secret hygiene or authorize
+unrelated personal/customer data, OAuth/login or live allowance consumption.
+The owner's explicit commit request covers this docs delta only.
 Out of scope: application/test/probe edits, dependency/scanner installation,
 live model calls, credentials, host configuration, production qualification,
-framework re-pin, P1, publication or deployment. Committing the verified decision
-pack is authorized by the user's subsequent explicit request.
+framework re-pin, P1, commits, publication or deployment. No auth/cache/keyring
+inspection, OAuth login/refresh, private endpoints, quota-consuming requests,
+client impersonation, limit circumvention or plugin installation.
 
 ### 2. Environment & Upstream State
 
@@ -313,6 +335,9 @@ change adapts the user-supplied playbook into reviewed repository governance.
 Merged `master` was fetched read-only over HTTPS after verifying PR #1's merge.
 Prior `1.3.0`/`1.4.0` comparison evidence is committed at `5ae0737`; no new
 runtime experiment or installation is required for this docs-only package.
+The G0 decision pack is committed at `558610f`; approved design choices remain
+unchanged. Inspect only published static code/declarations in the existing
+external Pi `1.4.0` tree, never credential stores or local account configuration.
 The sibling framework is at `bd0cacc5` with unrelated untracked work: preserve it
 and read the pinned commit through Git, never substitute its working tree.
 No raw host skill/config directories are mounted. Bubblewrap
@@ -328,12 +353,11 @@ separate scoped implementation decision, not an unrequested edit here.
 
 | File | Operation / responsibility |
 | --- | --- |
-| `SPEC.md` | Declare decision-pack scope, owner choices and document checks. |
-| `decisions.md` | Proposed significant choices; dated acceptance only for explicit owner decisions. |
-| `research/phase-0/06-g0-decision-pack.md` | Concrete support/authority/recovery proposals, evidence checklist and blocked P1 backlog. |
-| `research/phase-0/07-framework-baseline-review.md` | Read-only pinned/current source and readiness delta; retain/re-pin recommendation with limits. |
-| `research/phase-0/05-p0-support-profile.md` | Link the decision pack and synchronize remaining owner inputs. |
-| `ROADMAP.md` | Link current P0 decision-pack status; preserve G0/P1 authorization boundary. |
+| `SPEC.md` | Declare subscription review scope, sources and verification. |
+| `decisions.md` | Record significant provider/boundary recommendation without inventing final eligibility or approval. |
+| `research/phase-0/08-subscription-provider-review.md` | Official eligibility/auth/data evidence plus static pinned Pi integration seams and blockers. |
+| `research/phase-0/06-g0-decision-pack.md` | Synchronize provider candidates and remaining approval/qualification inputs. |
+| `research/phase-0/05-p0-support-profile.md` | Record the user's requested subscription route and candidate, retaining live-call prohibition. |
 
 No Loom public API, dependency, schema, exported type, production runtime permission or CI
 behavior changes. No lowercase spec duplicate or additional ADR directory.
@@ -378,6 +402,15 @@ before implementation; N/A requires a scope-specific reason.
   content; negative tamper tests use a fresh copy, not the sibling checkout.
   Globally installed children are intentionally absent: report blocked, never
   read current global files or auto-download/install missing skills.
+- OAuth code availability is not account entitlement or permission for third-party
+  automation. Do not reuse an official client's identity to bypass vendor rules.
+  Missing/unclear permission blocks live use; do not route around quota exhaustion.
+- Credentials/refresh tokens remain outside the isolated runner. A subscription
+  can consume credits or incur optional charges: zero additional-charge budget
+  does not authorize consuming subscription allowance. All live calls stay disabled.
+- Private-source permission is data-class authorization for the initial profile,
+  not a waiver of vendor terms, secret hygiene or provider validation. Secrets and
+  unrelated personal/customer data remain excluded until separately approved.
 
 ### 6. Blast Radius & Rollback Plan
 
@@ -465,18 +498,18 @@ Verification record:
 
 - [x] Documents, phase/ADR structure and links/anchors validated.
 - [x] Application/probe/config/pin integrity and document whitespace pass.
-- [x] Six-file scope/secret/evidence review; owner acceptance events recorded in
-  ADR-006–009. Provider/model intentionally open, review unassigned/not booked,
-  P1 backlog blocked; task-scoped commit explicitly authorized by the user.
+- [x] Official account-policy permission distinguished from adapter support;
+  no account/credential effects or runtime change; task-scoped docs commit
+  explicitly authorized; no false G0 closure.
 
 Baseline from governance (2026-10-21): lint/typecheck passed; 3 tests passed,
 100% functions / 90.99% instrumented lines; audit found no advisories across
 14 packages. Skill/recovery evidence and accepted runtime were committed at
-`5ae0737`. Current documentation-only verification results (2026-10-22):
+`5ae0737`; the G0 pack is at `558610f`. Current docs-only verification (2026-10-22):
 
 | Command / review | Result | Limit |
 | --- | --- | --- |
-| Document validator and whitespace | Exit 0: 240 local links, seven phase sections, 12 unique acceptance IDs, unique ADR IDs; both new documents' whitespace and `git diff --check` passed | No external-link availability or full Markdown lint claim. |
-| Application/probe/config/pin integrity | Declared `git diff --exit-code` command exited 0 | No executable behavior change; earlier test/coverage/audit results not relabelled as fresh. |
-| Source/evidence/authority review | Six-file manual scope review; verified eight-file framework subset delta and identical artifact-reference Git blob; official Docker/SQLite sources and scoped runtime facts recorded | Live docs not release qualification; no fake reviewer booking or G0 closure. |
+| SPEC's document validator, new-report/pack whitespace and `git diff --check` | Exit 0: 246 local links; seven phase sections; 12 unique acceptance IDs; unique ADR IDs; whitespace/casing pass | No full Markdown lint or future external availability claim. |
+| Declared `git diff --exit-code` for application/probe/config/pin integrity | Exit 0; no changes | Earlier executable results not relabelled as fresh; application checks N/A for docs-only delta. |
+| Five-file scope/source/evidence/authority/secret review | Official report reconciled with static Pi source; critical Google terms and SIWC inference requirements independently fetched; model availability is owner-attested; no credentials or live effects | No independent account verification, legal approval, live integration or automated secret-scan pass claimed. Task-scoped docs commit authorized; G0 open. |
 | Secret scanner | Unavailable (`gitleaks`/`trufflehog` not on PATH) | No automated secret-scan pass claimed; code/release phase requirements must be resolved before its closure. |

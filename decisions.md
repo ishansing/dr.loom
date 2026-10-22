@@ -385,3 +385,48 @@ approval of G0 pack sections 4–5 and ADR-008/009. This selects local CLI versu
 writable web/API control and the stated authority boundaries. Exact message schemas,
 limits, authentication implementation and end-to-end proofs still require the
 applicable phase specification/review; no additional command is shipped here.
+
+## [ADR-010] - 2026-10-22 (P0 subscription-provider review)
+
+**Title:** Evaluate SIWC direct for requested Codex subscription; exclude consumer
+Antigravity from Loom's provider path under its current terms.
+
+**Status:** Proposed recommendation — subscription candidate requested by owner;
+no provider adoption, account eligibility, implementation or live use approved.
+
+**Context & Problem Statement:** Owner requested Codex subscription access and
+asked to consider Antigravity subscription. Loom keeps one isolated upstream Pi
+SDK loop and provider credentials outside the worker. An OAuth implementation
+is not permission to use a hosted service.
+
+**Options Evaluated:**
+
+1. Documented Sign in with ChatGPT direct subscription inference, own app identity,
+   public Responses endpoint and narrow local user-controlled Loom broker.
+2. Legacy Codex private backend or consumer Antigravity OAuth/CLI wrapper.
+3. Separately authorized paid API access; not selected or a silent fallback.
+
+**Decision & Rationale:** Recommend qualifying option 1, not enabling it. Official
+SIWC docs permit eligible local/custom apps and expressly authorized automation;
+Pi `1.4.0` has a relevant `openai` OAuth seam. Reject option 2 for this review:
+legacy backend does not meet the documented SIWC direct route and Antigravity
+consumer terms explicitly prohibit third-party access. See the
+[source and static-code review](research/phase-0/08-subscription-provider-review.md).
+
+**Consequences & Tech Debt:** Owner supplies plan/workspace, exact model and data
+requirements. Developer qualifies own registration/identity, local token storage,
+request/stream/tool compatibility, quota accounting, cancellation and redacted
+errors before live use. No token sharing, generic proxy, account rotation or
+automatic fallback. Login, background automation and allowance consumption need
+separate express consent; additional-spend cap stays zero. Account-specific policy
+fit, independent review and G0 remain open. No dependency/runtime change made.
+
+**Owner clarification — 2026-10-22:** Personal OpenAI account, GPT-6.1 Sol initial
+candidate (`gpt-6.1-sol`), confirmed available by the owner on that account
+(attestation, not an API check), private source allowed and no additional
+owner-imposed training/retention/residency restrictions for now. This
+specifies the initial qualification profile only: Loom's authority, workflow and
+verification remain provider/model-independent. Subscription tier,
+integration proof and independent review stay open. Vendor/legal duties and secret
+hygiene remain; unrelated personal/customer data is not authorized. No login,
+background automation, live allowance use, fallback or extra spending approved.

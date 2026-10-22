@@ -15,7 +15,7 @@ Accepting a target does not install it or certify production support.
 | Reference repository | Owner selected | Disposable Loom checkout with synthetic fault injection and deterministic tests. Never expose the live control-plane checkout, authoritative DB or credentials. |
 | Backend | Accepted target [ADR-006](../../decisions.md#adr-006---2026-10-22-p0-support-profile) | Rootless Docker; operator setup permission, exact host/profile and qualification remain separate. No rootful/privileged fallback. |
 | Framework | Accepted [ADR-007](../../decisions.md#adr-007---2026-10-22-p0-framework-baseline-proposal) | Owner selected retain/revalidate current `2.1.0` pin for the first small conflict-free TS fix; no re-pin or skill installation. |
-| Provider/model/data | OPEN by explicit owner choice | Owner chose “Leave open” after clarification. No identifiers/data policy inferred; paid-call budget remains **zero**. |
+| Provider/model/data | Initial profile specified; qualification OPEN | Personal OpenAI subscription; GPT-6.1 Sol candidate, owner-confirmed available on that account; private source allowed with no additional owner-imposed training/retention/residency restrictions for now. [Review](08-subscription-provider-review.md): SIWC direct conditional candidate; consumer Antigravity blocked by terms. Subscription tier and broker/data-handling proof open; no live allowance consumption, paid budget **zero**. |
 | Operator/transport | Accepted design [ADR-009](../../decisions.md#adr-009---2026-10-22-p0-operatortransport-proposal) | Trusted local operator channel, narrow runner pipe and command-family contract below; concrete schemas/auth implementation/review still required. |
 | Durability/retention | Accepted design [ADR-008](../../decisions.md#adr-008---2026-10-22-p0-durability-proposal) | Explicit authoritative WAL/FULL, consistent backups and recovery targets below; destination/protection and drills not implemented. |
 | Host/capacity/deployment | Lab target accepted; qualification open | Owner selected the current Linux reference and worker envelope below. This is not production support or permission to configure Docker. |
@@ -268,9 +268,16 @@ The owner accepted retained `2.1.0`, ADR-008/009's operator/durability design an
 the current Linux reference/qualification envelope. Those design decisions are
 closed; setup, precise implementation contracts and evidence are not implied.
 
-1. **Provider/model/data remains open intentionally:** supply exact provider/model,
-   allowed data categories and intended broker destination policy when ready.
-   Live calls remain prohibited at the current zero budget.
+1. **Initial profile recorded; eligibility still open:** personal OpenAI account,
+   GPT-6.1 Sol candidate (owner-confirmed available on the account), and
+   private-source permission; no additional owner-imposed training/retention/
+   residency restrictions for now. Supply subscription tier; verify applicable
+   agreement, actual data handling and integration. This profile does
+   not make Loom's authority/workflow/verification model-dependent. Qualify SIWC direct
+   with Loom's own identity and a narrow local broker; do not use legacy private
+   endpoints or consumer Antigravity as a fallback. [Evidence and required inputs](08-subscription-provider-review.md).
+   Login/background automation/live allowance consumption require separate express
+   authorization; live calls remain prohibited at the current zero paid budget.
 2. **Independent review remains unassigned/not booked:** identify the reviewer/role
    and booking owner/availability when available. No credentials,
    private URLs, personal contact details or raw `.env` values are needed here.

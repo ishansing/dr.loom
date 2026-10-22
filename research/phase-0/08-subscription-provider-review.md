@@ -111,6 +111,28 @@ qualification follows from this report.
   exceptions), caching, and approval-dependent ZDR/residency. Do not transplant
   these ordinary API guarantees wholesale onto SIWC. [O10–O12]
 
+### Public harness check (2026-10-22)
+
+No reviewed open-source harness exposes or verifies either account control.
+Sources were inspected read-only, without login, credential access or execution:
+
+- `openai/codex` @ `9a8a85b`: the sign-in success screen sends users to
+  `https://chatgpt.com/#settings` for training-data preferences; the reviewed
+  auth/login code has no account-settings query. `include_environment_context`
+  is only the local `<environment_context>` prompt block and defaults true; it
+  is not the account-level **Include environments** control.
+- `numman-ali/opencode-openai-codex-auth` 4.4.0 @ `bec2ad6`: implements the
+  ChatGPT OAuth/PKCE flow and token storage, then calls the Codex backend; its
+  source and docs expose no training or account-environment setting.
+- `ndycode/codex-multi-auth` 2.24.0 @ `cce85fb` and `Soju06/codex-lb` @
+  `72630bb`: account switching, usage and proxy tooling; no reviewed query for
+  either data control.
+
+OAuth mechanics from these projects can inform a future Loom broker, but none is
+a supported verifier for account data controls. Do not add a Loom login or probe
+an undocumented private settings endpoint for this purpose; owner browser
+confirmation or attestation remains the only supported path.
+
 ## Google: eligibility, explicit restrictions and alternatives
 
 - Antigravity FAQ describes personal Google Accounts, approved geographies and
@@ -259,13 +281,15 @@ personal-plan no-training or zero-retention guarantee is inferred.
    Adapter existence is neither vendor permission nor conformance evidence.
 
 **Verification/limits:** zero live model calls; no login, token/cache inspection,
-private endpoint probing, installs or provider tests. Public fetches establish
-published claims only, not account rollout or quota. Search integration was
-unavailable; direct official links were followed instead. One guessed Codex data
-page returned 404; privacy conclusions use the cited terms/auth/data sources and
-explicitly retain SIWC-specific unknowns. No full automated secret scan or legal
-review claimed. Document whitespace/reference validation is recorded by the parent
-task; no application test is applicable to this research-only addition.
+private endpoint probing, installs or provider tests. Public harness source was
+inspected read-only at the commits below, not executed or security-audited. Public
+fetches establish published claims only, not account rollout or quota. Search
+integration was unavailable; direct official links were followed instead. One
+guessed Codex data page returned 404; privacy conclusions use the cited
+terms/auth/data sources and explicitly retain SIWC-specific unknowns. No full
+automated secret scan or legal review claimed. Document whitespace/reference
+validation is recorded by the parent task; no application test is applicable to
+this research-only addition.
 
 ## Official sources
 
@@ -293,3 +317,13 @@ All following URLs were fetched 2026-10-22; pages are mutable, not revision-pinn
 - **G6:** https://ai.google.dev/gemini-api/docs/google-ai-plans (last updated 2026-10-16).
 - **G7:** https://antigravity.google/docs/enterprise/
 - **G8:** https://ai.google.dev/gemini-api/terms (effective 2026-03-23; last updated 2026-04-28).
+
+## Public harness sources
+
+Read-only source inspection on 2026-10-22; these projects were not executed or
+vendored. Commit links identify the exact reviewed revisions.
+
+- **H1:** https://github.com/openai/codex/commit/9a8a85bc539325f2819dd0717f88b6ba6286495e
+- **H2:** https://github.com/numman-ali/opencode-openai-codex-auth/commit/bec2ad69b252ef4ad7dd33b9532ff8b4fdb6d016 (v4.4.0)
+- **H3:** https://github.com/ndycode/codex-multi-auth/commit/cce85fbe458162b4094eec16ed003597c7a5777d (v2.24.0)
+- **H4:** https://github.com/Soju06/codex-lb/commit/72630bbfeee9e3b0d9acfb95e2b1e706b8b0188e

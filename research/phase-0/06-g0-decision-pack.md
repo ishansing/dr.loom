@@ -345,7 +345,10 @@ closed; setup, precise implementation contracts and evidence are not implied.
    `include_environment_context=true` and `include_environment_context_time=true`
    as built-in defaults. The CLI training banner points to ChatGPT settings. The
    account-level **Include environments** state is not proven by this local flag,
-   so owner attestation remains required. Supply subscription tier; verify
+   so owner attestation remains required. A public-source review of official Codex
+   (`9a8a85b`) and three third-party Codex-auth/account tools found no supported
+   account-control query; they implement OAuth, account rotation and usage, not
+   training/Include environments verification. Supply subscription tier; verify
    applicable agreement, actual data handling and integration. This profile does
    not make Loom's authority/workflow/verification model-dependent. Qualify SIWC direct
    with Loom's own identity and a narrow local broker; do not use legacy private

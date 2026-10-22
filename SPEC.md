@@ -266,27 +266,28 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
 
 ## Active phase specification
 
-- **Work package:** P0 runtime comparison — first offline evidence, 2026-10-22.
+- **Work package:** P0 runtime comparison — crash, ownership and rollback evidence, 2026-10-22.
 - **Authority:** user authorized starting P0 after PR #1 merged; confirmed existing
   TS repository, Linux/local evaluation and offline-only experiments.
-- **Branch:** `chore/p0-runtime-comparison`, from clean kickoff `13613df`.
-- **Status:** P0 in progress; first shared offline evidence passes under both
-  runtimes on Node/Bun. Five-active-development-day budget, not a claim of five
-  days worked; hard-crash/replay/ownership/upgrade evidence remains outstanding.
-  G0 remains open; the user's subsequent request authorizes this evidence
-  commit and continuation, not runtime selection or publication.
+- **Branch:** `chore/p0-runtime-recovery`, from committed first evidence `af998f2`.
+- **Status:** P0 in progress; previous evidence committed at the user's request;
+  recovery increment verified within the stated research limits; the user's
+  subsequent request authorizes its task-scoped commit and next steps.
+  No push or runtime promotion implied. G0 remains open;
+  five-active-development-day comparison budget remains in force.
 - **Next gate:** owner approval of the complete G0 evidence before P1. No paid
   calls, deployment, dependency promotion or phase advancement authorized here.
 
 ### 1. Phase Objective & Scope
 
-Compare the published Pi SDK and Durable against the same trusted synthetic
-workload: bounded TS patch, owned denied/resumed effect, hash-bound verification,
-throwing output filter and persisted conversation reopen. Inventory missing
-hard-crash/replay/ownership/upgrade proof separately; do not present a clean
-reopen as crash recovery. Reuse existing public API probes where applicable.
-Check isolation feasibility with synthetic sentinels before runtime execution.
-Only reviewed synthetic code runs; no untrusted repositories/extensions.
+Extend the shared offline evidence with real external SIGKILL checkpoints before
+effect dispatch, after target mutation/before result commit and after terminal
+commit. Compare Durable saved-task recovery with explicit SDK supervisor retry;
+never attribute a new SDK prompt to automatic task replay. Revoke live policy,
+change final payload and preserve/reconcile uncertain non-idempotent effects.
+Exercise competing storage owners on synthetic stores and a standard-library
+external ownership guard; test backup/migration/rollback on copies only.
+Use reviewed synthetic code under the existing experimental bubblewrap boundary.
 Out of scope: application code, Loom dependency installation/promotion, paid
 calls, secrets, host configuration, production sandbox certification, framework
 re-pin, P1, publishing or deployment. Experiment-only pinned dependencies may
@@ -304,9 +305,10 @@ Framework selection stays in `FRAMEWORK_REF`; Pi SDK/Durable selection stays
 open under the roadmap. No separate upstream SOP URL/ref is configured; this
 change adapts the user-supplied playbook into reviewed repository governance.
 Merged `master` was fetched read-only over HTTPS after verifying PR #1's merge.
-Previous temporary probe installations are absent; exact packages must be
-re-fetched and integrity-checked. Revalidate official released source and keep
-newer releases distinct from the comparison's `1.3.0` baseline. Bubblewrap
+Existing external `1.3.0` experiment installation and integrity evidence may be
+reused if present and unchanged. Evaluate Durable `1.4.0` only in a separate
+external installation for schema migration, not as a Loom upgrade. Revalidate
+its published artifact and installed migration source before execution. Bubblewrap
 `0.13.1` runs an empty unshared domain on this host. Docker reports seccomp and
 cgroup namespaces but not rootless mode; do not escalate to daemon privileges.
 Neither `gitleaks`
@@ -319,13 +321,13 @@ separate scoped implementation decision, not an unrequested edit here.
 
 | File | Operation / responsibility |
 | --- | --- |
-| `SPEC.md` | Declare comparison scope, checks and observed evidence. |
-| `decisions.md` | Record bounded experiment choices and limitations. |
-| `research/pi/14-p0-runtime-comparison.md` | Shared contract, exact commands, per-case evidence and remaining blockers. |
-| `research/pi/15-p0-release-revalidation.md` | Primary-source release/revision revalidation; no dependency promotion. |
-| `research/pi/probes/p0-runtime-comparison.mjs` | Self-checking shared offline workload with two runtime entry paths. |
-| `research/pi/probes/p0-sandbox.py` | Minimal reviewed synthetic sandbox checks and offline launch wrapper. |
-| `research/phase-0/05-p0-support-profile.md` | Link current comparison evidence; retain acceptance criteria. |
+| `SPEC.md` | Declare recovery increment and results. |
+| `decisions.md` | Record recovery/retry and backup test strategy. |
+| `research/pi/16-p0-crash-recovery.md` | Exact crash/ownership/migration evidence, recommendation limits and next owner. |
+| `research/pi/probes/p0-runtime-recovery.mjs` | Runtime-specific start/recover/storage fixture modes; self-checking assertions. |
+| `research/pi/probes/p0-recovery.py` | External checkpoint driver, synthetic authority/reconciliation, ownership and copy-only migration assertions. |
+| `research/pi/probes/p0-sandbox.py` | Allow the additional reviewed probe file using the same mount/env boundary. |
+| `research/phase-0/05-p0-support-profile.md` | Link recovery evidence without rewriting acceptance gates. |
 
 No public API, dependency, schema, exported type, runtime permission or CI
 behavior changes. No lowercase spec duplicate or additional ADR directory.
@@ -336,7 +338,7 @@ behavior changes. No lowercase spec duplicate or additional ADR directory.
 | --- | --- | --- |
 | Unit/regression baseline | `bun test --coverage` | Existing three smoke tests; preserve source unchanged and record coverage, not a comprehensive production suite. |
 | DB integration baseline | Existing lease and close/reopen smoke assertions in the same suite | Runs with the baseline; no new DB behavior claimed. |
-| Experiment integration | New probe on SDK/Durable under Node and Bun with asserts; sandbox wrapper self-check | Missing full adapter/provider E2E remains a future gate; no production proof. |
+| Experiment integration | Real SIGKILL and persisted recovery scenarios on SDK/Durable under Node/Bun; ownership counterexample and external lock; copied SQLite upgrade and restore | Process crashes, not power/host loss; external synthetic authority is not Loom enforcement. |
 | Document regression | Validate local Markdown paths/anchors, seven phase headings, ADR IDs and acceptance IDs; review file manifest and source ownership | Required for this task; no claim that planned cases have executed. |
 | Security | Read-only dependency audit and scoped manual review of changed documents for secrets/unsafe instructions | Full automated secret scan unavailable; no scanner or dependency installed. Not a production security sign-off. |
 
@@ -360,6 +362,14 @@ before implementation; N/A requires a scope-specific reason.
   synthetic workspace writable; unshare network/PID/IPC and close descriptors.
   No host home, Docker socket, raw env or Loom DB is exposed to the runner.
   A sandbox/precondition failure blocks launch rather than falling back.
+- Establish the PID-namespace init pidfd via a native startup barrier before
+  COMMAND executes; stop and confirm that identity's exit before workspace reuse.
+  A runtime ACK, outer process exit or a heartbeat-only observation is insufficient.
+- Deliberate dual-owner opens are counterexamples on disposable synthetic stores,
+  never supported production behavior. Positive ownership tests deny the second
+  owner before launch and release only after the first domain is confirmed dead.
+- Preserve the source store and offline backup; migration and old-version
+  rejection happen only on clones. No code rollback is called a DB downgrade.
 
 ### 6. Blast Radius & Rollback Plan
 
@@ -383,6 +393,9 @@ Run in this order; each required executable check must exit `0`:
    comparison paths with `node` and `bun` through the wrapper, using its
    documented external experiment directory. Each assertion must pass;
    missing dependencies/isolation mean blocked, not a substitute host launch.
+   Recovery command: `python3 research/pi/probes/p0-recovery.py --experiment /tmp/opencode/loom-p0-comparison --upgrade-experiment /tmp/opencode/loom-p0-durable-140`;
+   it runs both engines/runtimes and copy-only migration. Check recovery MJS
+   with `node --check` and Python by in-memory `compile()` before test execution.
 4. `bun audit` — read-only dependency advisory audit, no automatic fixes.
 5. `git diff --check` — tracked diff whitespace; additionally validate new
    documents' whitespace, local links/anchors and required headings read-only.
@@ -441,29 +454,29 @@ PY
 
 Manual sign-off also requires matching file manifest, scope/secret review,
 honest scanner/E2E limitations, relevant ADRs and explicit Git status. If a
-required audit/check cannot run, record blocked—not successful. A docs-only
-verification result does not close G0 or any production gate.
+required audit/check cannot run, record blocked—not successful. This research
+experiment's verification does not close G0 or any production gate.
 
 Verification record:
 
-- [x] Lint and strict typecheck.
-- [x] Existing coverage compared with kickoff baseline; four experiment paths
-  and synthetic boundary self-check pass. See the scoped comparison report.
-- [x] Loom/external dependency audits; scanner unavailable, not passed.
+- [x] Lint, strict typecheck and research syntax checks.
+- [x] Baseline coverage and four ordinary probe paths unchanged; 20 crash,
+  four ownership and two migration/restore cases pass with namespace-exit checks.
+- [x] Loom and both external tree audits; scanner unavailable, not passed.
 - [x] Links, phase/ADR structure, whitespace and seven-file task diff reviewed.
-- [x] G0 recorded as open; task-scoped commit explicitly authorized by the user;
-  required production checks not waived.
+- [x] G0 remains open; task-scoped commit explicitly authorized by the user's
+  subsequent request; no required checks waived.
 
 Baseline from governance (2026-10-21): lint/typecheck passed; 3 tests passed,
 100% functions / 90.99% instrumented lines; audit found no advisories across
-14 packages. Kickoff was verified at `13613df`. Comparison results (2026-10-22):
+14 packages. Prior comparison verified/committed at `af998f2`; recovery results (2026-10-22):
 
 | Command / review | Result | Limit |
 | --- | --- | --- |
-| `bun run lint` | Exit 0, 11 files; initial new-probe formatting failure corrected | Existing configured rule set only; Python syntax/self-check tracked separately. |
-| `bun run check` and research syntax checks | Exit 0; Node syntax check and Python in-memory compilation passed; optimized Python launch correctly refused to disable mandatory assertions | Existing TypeScript compilation scope; MJS/Python experiments not claimed strictly typed. |
-| `bun test --coverage` and experiment assertions | Exit 0; 3 pass/0 fail, 100% functions / 90.99% instrumented lines unchanged; four Node/Bun × SDK/Durable paths and boundary self-check passed | Instrumented framework/store baseline; probe assertions tracked separately. |
-| `bun audit` and external experiment dependency review | Exit 0, no advisories across 14 Loom packages; external read-only npm audit exit 0, zero advisories across 121-package tree; two direct tarball SHA-512 checks matched official metadata | Advisory/integrity snapshots only; no complete transitive source/license or provenance review. |
+| `bun run lint` | Exit 0; 12 files | Existing configured rules only; Python syntax/self-check separate. |
+| `bun run check` and research syntax checks | Exit 0; Node syntax and Python in-memory compilation passed | MJS/Python not claimed strictly typed. |
+| `bun test --coverage` and experiment assertions | Exit 0; 3 tests, 100% functions / 90.99% instrumented lines unchanged; four ordinary paths, 20 crash scenarios, four ownership cases and two migration/restore cases passed | Process-crash and synthetic-authority evidence, not power loss or full Loom enforcement. |
+| `bun audit` and external experiment dependency review | Exit 0 with no advisories across 14 Loom packages; external npm audits exit 0 with zero advisories in 121-/91-package trees; lock hashes unchanged; direct `1.4.0` tarball SHA-512 matched metadata | No full source/license/provenance review. |
 | Secret scanner | Unavailable (`gitleaks`/`trufflehog` not on PATH) | No automated secret-scan pass claimed; code/release phase requirements must be resolved before its closure. |
-| Document/manifest review | Validator exit 0: 197 local links, seven phase sections, 12 unique acceptance IDs and unique ADR IDs; new-file whitespace checks and `git diff --check` passed; seven-file manual review | Manual review is not an automated secret scan; experimental and future qualification evidence remain distinct. |
+| Document/manifest review | Validator exit 0: 204 local links, seven phase sections, 12 unique acceptance IDs and unique ADR IDs; new-file whitespace/optimization guards and `git diff --check` passed; seven-file scoped manual review completed | Manual review is not an automated secret scan. |
 | Application/config integrity | `git diff --exit-code -- src tests package.json bun.lock biome.json tsconfig.json .github` exit 0 | No application/test, dependency, compiler, linter or CI changes. |

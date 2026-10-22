@@ -67,6 +67,13 @@ records published `1.4.0` separately from tested `1.3.0`. No runtime selected.
 Hard-crash/replay, storage ownership and upgrade/rollback cases remain open;
 the acceptance rows above still describe required qualification, not passed gates.
 
+**Recovery increment:** [process-crash/ownership/restore evidence](../pi/16-p0-crash-recovery.md)
+now covers external SIGKILL, live denial and final-payload checks, unsafe-effect
+reconciliation, native dual-open counterexamples and copy-only `1.3.0` → `1.4.0`
+SQLite upgrade/old-backup restore. The research launcher now confirms namespace
+init exit through pidfds before reuse, including the startup window. These are
+synthetic process-failure results, not power-loss or production qualification.
+
 Budget: **five active development days total**, per roadmap; log actual effort,
 not calendar elapsed time. First increment executed; no active-hour/effort result
 was measured, and the five-day comparison is not declared complete.

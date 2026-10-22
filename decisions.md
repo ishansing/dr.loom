@@ -128,3 +128,46 @@ hard-crash/replay proof; missing cases remain open. Whole-domain quotas, seccomp
 provider mediation and supported host selection still need qualification before
 untrusted execution. Developer owns evidence and recommendation; owner approves
 any runtime/backend promotion. No measured performance benefit is claimed.
+
+## [ADR-004] - 2026-10-22 (P0 recovery experiments)
+
+**Title:** Measure actual process crashes and restore from quiesced copies.
+
+**Status:** Accepted for synthetic research only; no runtime promotion.
+
+**Context & Problem Statement:** Clean reopen passed but does not establish
+saved-task replay authorization, uncertain-effect handling or storage leadership.
+Durable `1.4.0` introduces a schema migration that older code cannot reopen.
+
+**Options Evaluated:**
+
+1. Externally SIGKILL isolated runners at observable checkpoints; keep the
+   synthetic authority/effect target outside; test migration only on copies.
+2. Use cooperative close and in-process interruption; simpler but cannot prove
+   process-crash recovery and may exercise different runtime paths.
+3. Test migration on the only fixture database and attempt code downgrade;
+   viable only with a separately verified backup, but adds avoidable evidence risk.
+
+**Decision & Rationale:** Choose option 1. Compare Durable's saved-task recovery
+with an explicitly supervised new SDK prompt, not a fictional shared replay API.
+Unknown unsafe effects get reconciliation, not blind retry. Demonstrate native
+storage ownership limits separately from a standard-library external file-lock
+fixture. Back up only after whole-domain exit and verified SQLite checkpoint;
+migrate clones and restore a separate copy with the older version.
+
+**Consequences & Tech Debt:** These are process-failure and local filesystem
+tests, not host/power-loss or distributed leadership proof. The file lock is a
+fixture, not production fencing; unsafe concurrent opens are deliberate negative
+tests on throwaway stores only. `1.4.0` stays in a separate external installation.
+Owner: developer supplies evidence; project owner reviews revision selection,
+durability assumptions and promotion. No effect or model quality promise follows.
+
+**2026-10-22 implementation finding:** Killing only the outer bubblewrap process
+immediately after native startup info could leave its namespace init alive; an
+after-runtime-ACK heartbeat test did not cover that window. The research launcher
+now gates COMMAND startup on a parent handshake, captures the namespace-init
+pidfd and sends SIGKILL through that identity, then waits for namespace exit
+before any workspace reuse. This uses native Linux identity/lifecycle primitives,
+not PID-number guessing or a runtime ACK. A deterministic immediate-stop self-test
+and detached-writer test cover both windows; production quotas/seccomp and host
+failure behavior remain outside this experiment's certification.

@@ -5,8 +5,10 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import select
 import selectors
 import shutil
+import signal
 import subprocess
 import tempfile
 import time
@@ -24,7 +26,8 @@ test("fixture sum", () => expect(sum(2, 3)).toBe(5));
 '''
 
 
-def command(workspace, executable, args, experiment=None, verification=None):
+def command(workspace, executable, args, experiment=None, verification=None,
+            probe="p0-runtime-comparison.mjs"):
     binary = Path(shutil.which(executable)).resolve()
     cmd = ["bwrap", "--unshare-all", "--die-with-parent", "--new-session",
            "--cap-drop", "ALL", "--ro-bind", "/usr", "/usr",
@@ -36,19 +39,81 @@ def command(workspace, executable, args, experiment=None, verification=None):
            "--clearenv", "--setenv", "PATH", "/runtime:/usr/bin",
            "--setenv", "HOME", "/tmp", "--setenv", "PI_OFFLINE", "1"]
     if experiment:
-        source = Path(__file__).resolve().with_name("p0-runtime-comparison.mjs")
+        assert probe in {"p0-runtime-comparison.mjs", "p0-runtime-recovery.mjs"}
+        source = Path(__file__).resolve().with_name(probe)
         cmd += ["--dir", "/experiment", "--ro-bind", str(experiment / "node_modules"),
                 "/experiment/node_modules", "--ro-bind", str(source),
-                "/experiment/p0-runtime-comparison.mjs"]
+                f"/experiment/{probe}"]
     if verification:
         cmd += ["--ro-bind", str(verification), "/verification"]
     return cmd + [f"/runtime/{executable}", *args]
 
 
+def stop_domain(process, pidfd):
+    if not select.select([pidfd], [], [], 0)[0]:
+        try:
+            signal.pidfd_send_signal(pidfd, signal.SIGKILL)
+        except ProcessLookupError:
+            pass  # The same pidfd became terminal between poll and signal.
+    assert select.select([pidfd], [], [], 5)[0], "PID namespace still alive; reuse blocked"
+    process.wait(timeout=5)
+
+
+def spawn_domain(cmd, **streams):
+    info_read, info_write = os.pipe()
+    start_read, start_write = os.pipe()
+    process = None
+    pidfd = None
+    try:
+        cmd = [*cmd[:1], "--info-fd", str(info_write), "--block-fd", str(start_read), *cmd[1:]]
+        process = subprocess.Popen(cmd, env={"PATH": "/usr/bin:/bin",
+                                            "LOOM_SYNTHETIC_SECRET": "synthetic-env-sentinel"},
+                                   close_fds=True, pass_fds=(info_write, start_read), **streams)
+        os.close(info_write)
+        info_write = None
+        os.close(start_read)
+        start_read = None
+        raw = b""
+        deadline = time.monotonic() + 5
+        while True:
+            remaining = deadline - time.monotonic()
+            assert remaining > 0 and select.select([info_read], [], [], remaining)[0], "sandbox startup info timed out"
+            chunk = os.read(info_read, 4096)
+            if not chunk:
+                break
+            raw += chunk
+            assert len(raw) <= 4096, "sandbox info limit"
+        info = json.loads(raw)
+        pidfd = os.pidfd_open(info["child-pid"])
+        # Capture the namespace-init identity before allowing COMMAND to start.
+        status = Path(f"/proc/{info['child-pid']}/status").read_text()
+        assert any(line.startswith("NSpid:") and line.split()[-1] == "1"
+                   for line in status.splitlines()), "expected PID namespace init"
+        os.write(start_write, b"1")
+        return process, pidfd
+    except BaseException:
+        if process is not None:
+            if pidfd is not None:
+                stop_domain(process, pidfd)
+                os.close(pidfd)
+            elif process.poll() is None:
+                process.kill()
+                process.wait(timeout=5)
+        raise
+    finally:
+        for fd in [info_read, info_write, start_read, start_write]:
+            if fd is not None:
+                os.close(fd)
+
+
 def run(cmd, **kwargs):
-    return subprocess.run(cmd, env={"PATH": "/usr/bin:/bin",
-                                   "LOOM_SYNTHETIC_SECRET": "synthetic-env-sentinel"}, close_fds=True,
-                          capture_output=True, timeout=30, **kwargs)
+    process, pidfd = spawn_domain(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    try:
+        stdout, stderr = process.communicate(timeout=30, **kwargs)
+        return subprocess.CompletedProcess(cmd, process.returncode, stdout, stderr)
+    finally:
+        stop_domain(process, pidfd)
+        os.close(pidfd)
 
 
 def self_test():
@@ -91,22 +156,26 @@ setTimeout(() => process.exit(2), 2000);"""
 spawn(process.execPath, ['-e', `setInterval(() => require('node:fs').appendFileSync('/workspace/ticks','x'), 10)`],
  {detached:true,stdio:'ignore'}).unref();
 setInterval(() => {}, 1000);"""
-        p = subprocess.Popen(command(workspace, "node", ["-e", js]),
-                             env={"PATH": "/usr/bin:/bin"}, close_fds=True,
-                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        p, pidfd = spawn_domain(command(workspace, "node", ["-e", js]),
+                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         try:
             deadline = time.monotonic() + 5
             while not (workspace / "ticks").exists() and time.monotonic() < deadline:
                 time.sleep(0.02)
             assert (workspace / "ticks").exists(), "writer never started"
         finally:
-            p.kill()
-            p.wait(timeout=5)
+            stop_domain(p, pidfd)
+            os.close(pidfd)
         time.sleep(0.1)
         before = (workspace / "ticks").stat().st_size
         time.sleep(0.2)
         assert (workspace / "ticks").stat().st_size == before, "descendant still writing"
-    print("PASS: synthetic mount/env/loopback boundary and detached-writer teardown")
+        # Also stop immediately after the native startup handshake, before a runtime ACK.
+        p, pidfd = spawn_domain(command(workspace, "node", ["-e", "setInterval(()=>{},1000)"]),
+                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        stop_domain(p, pidfd)
+        os.close(pidfd)
+    print("PASS: synthetic mount/env/loopback boundary; pidfd-confirmed startup/descendant teardown")
 
 
 def compare(experiment, engine, runtime):
@@ -126,10 +195,9 @@ def compare(experiment, engine, runtime):
     effects = 0
     requests = []
     report = None
-    p = subprocess.Popen(command(workspace, engine, ["/experiment/p0-runtime-comparison.mjs", runtime],
-                                 experiment=experiment), env={"PATH": "/usr/bin:/bin"},
-                         stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                         close_fds=True)
+    p, pidfd = spawn_domain(command(workspace, engine, ["/experiment/p0-runtime-comparison.mjs", runtime],
+                                    experiment=experiment), stdin=subprocess.PIPE,
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     selector = selectors.DefaultSelector()
     selector.register(p.stdout, selectors.EVENT_READ, "stdout")
     selector.register(p.stderr, selectors.EVENT_READ, "stderr")
@@ -205,9 +273,8 @@ def compare(experiment, engine, runtime):
                           "candidate_sha256": candidate, "reopen": "clean only"}))
     finally:
         selector.close()
-        if p.poll() is None:
-            p.kill()
-            p.wait(timeout=5)
+        stop_domain(p, pidfd)
+        os.close(pidfd)
         for stream in [p.stdin, p.stdout, p.stderr]:
             stream.close()
 

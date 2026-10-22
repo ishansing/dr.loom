@@ -313,7 +313,8 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
   Owner approved deferring live qualification with the integration disabled.
   Independent reviewer Ishan Singh's approval of the `fc0e05e` report is relayed
   by the owner on 2026-10-22; the corrected package requires its own disposition.
-  G0 remains open pending final package/first-slice approval. No login, live model
+  G0 remains open pending final package acceptance; owner has approved the T-01
+  schema/safe-migration scope. No login, live model
   calls or executable application changes. Prior docs commits include `67a94fc`,
   `98a6975`, `7caac84` and `22fbd43`; this workspace-cap delta is covered by the
   owner's commit request.
@@ -332,6 +333,12 @@ The user approved deferring live qualification and identified Plus plus Free
 subject to availability as qualification candidates. Free is not fallback or
 account rotation. G0 acceptance and approval of the specific first slice remain
 explicit human decisions; do not infer them from this preparation request.
+**Subsequent owner decision:** “T-01 approved” approves the schema/safe-migration
+slice described in the closure packet. Record scope approval only; G0 package
+acceptance and P1 start are not inferred. Exact migration/API/legacy contracts
+and the seven-section P1 specification still precede application/test edits.
+This approval-record delta does not modify the approved reports or expand their
+artifact scope; prior commit/push authorization ended with PR #2's preparation.
 The prior commit request ended at `dbbc576`; this delta is not authorized for
 commit/push. Preserve the original approved report, append a new follow-up report.
 
@@ -675,3 +682,4 @@ Baseline from governance (2026-10-21): lint/typecheck passed; 3 tests passed,
 | Reviewer package checks (2026-10-22) | Loaded-profile last-match rule assertions: 16 synthetic allow/deny cases passed; inherited model confirmed; document validator: 251 links/seven sections/unique ADR IDs; seven-file whitespace and required report sections/SHA/pending disposition passed | Synthetic policy evaluation plus actual restricted-tool discovery, not adversarial sandbox qualification. No sensitive test inputs read; application/typecheck/coverage/audit N/A to agent/docs-only scope. |
 | Human disposition update (2026-10-22) | Owner relayed Ishan's approval of the report for `fc0e05e`; provenance recorded; validator passed (251 links), eight-file whitespace/approval assertions and `git diff --check` passed; application/config/pin integrity unchanged | No direct signature claimed; R-001 open, no finding waiver or G0/P1/live-use approval implied. Earlier pending-disposition entries above describe the initial report run. |
 | G0 remediation preparation (2026-10-22) | R-001 assertion first failed (exit 1), then passed after roadmap alignment to one hour; document validator exit 0 (253 links/seven sections/unique IDs); seven-file whitespace and account/disabled-provider/pending-phase assertions passed | Original approved report unchanged. Tier preference/data controls are owner-attested; no live qualification or application/host change. First T-01 slice and later proof ownership are proposed in closure packet; corrected artifact needs follow-up/human disposition. |
+| T-01 scope approval record (2026-10-22) | Owner stated “T-01 approved”; document validator passed (254 links/seven sections/unique IDs), six-file whitespace and scope/authority assertions passed; `git diff --check` passed; code/config/pins/reports unchanged | Approval metadata only; earlier candidate/report snapshots preserved. G0 package acceptance and phase start remain separate; no application tests applicable or implementation performed. |

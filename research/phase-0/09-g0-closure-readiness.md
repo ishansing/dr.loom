@@ -30,7 +30,7 @@ Ishan's original approval was relayed by the owner; it does not cover this delta
 | Durability/recovery | ADR-008 accepted; R-001 aligned to one hour | Developer verifies documentation correction; measured restore later |
 | Provider/data/spend intent | Disabled SIWC and deferred live qualification approved; attestations recorded | Owner/developer retain qualification and express-live-use gates |
 | Review | Original report approved for fc0e05e; corrected candidate requires follow-up | AI reviewer prepares report; Ishan supplies disposition for that artifact |
-| First core slice | T-01 proposal below, T-03 next | Owner approves exact bounded slice; developer writes approved active P1 specification before code |
+| First core slice | T-01 schema/safe-migration scope approved by owner: “T-01 approved”; T-03 remains next, not authorized | Developer prepares detailed active P1 specification; exact migration contract and G0 package acceptance precede code |
 | Engineering checks | Existing tools/mandatory tests retained; fresh baseline to record before code | Developer; missing scanner blocks affected code-phase closure, not concealed |
 | Final G0 decision | OPEN; do not infer from remediation request | Owner approves build-ready packet and scope/failure assumptions; P1 start remains explicit |
 
@@ -39,9 +39,9 @@ runtime choice, credential exposure or the first deployment boundary. If future
 eligibility requires a different boundary, stop and return it for review; do not
 silently route via private APIs or a different billing path.
 
-## Proposed first P1 slice — T-01 schema and safe migrations
+## Owner-approved first P1 slice scope — T-01 schema and safe migrations
 
-**Scope for owner approval:** evolve the schema through the existing store owner,
+**Scope approved by owner, 2026-10-22 (“T-01 approved”):** evolve the schema through the existing store owner,
 with explicit supported-version detection, atomic fresh/legacy migration,
 append-only audit enforcement and deterministic tests. No runner, live provider,
 outbox dispatch, policy engine, critical approval command or production authority.
@@ -124,9 +124,10 @@ pretend implementation is complete. Record actual checks in SPEC/follow-up.
 
 ## Human closeout request
 
-After follow-up evidence is ready, request Ishan's disposition of the corrected
-artifact and the owner's acceptance of this G0 package and bounded T-01 scope.
-Keep G0 OPEN and P1 NOT STARTED until those approvals are recorded. Approval of
+Ishan's follow-up report approval is recorded separately, as relayed by the
+owner. Owner has now approved bounded T-01 scope. Final acceptance of the G0
+package remains outstanding; keep G0 OPEN and P1 NOT STARTED until it is recorded
+and phase start is authorized. Detailed migration contracts precede code. Approval of
 the old report or of provider deferral is not approval of a different candidate,
 implementation, deployment or live quota use. No commits/pushes are authorized
 by the current preparation request.

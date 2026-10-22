@@ -519,8 +519,8 @@ remains separate. This event does not approve the uncommitted reviewer tooling.
 
 **Title:** Separate provider-independent core readiness from live integration qualification.
 
-**Status:** Accepted scope boundary at owner request; G0 closure and the proposed
-first T-01 slice still require final human disposition. No P1 execution authorized.
+**Status:** Accepted scope boundary and owner-approved T-01 scope; final G0
+package acceptance remains open. No P1 execution authorized by this scope record.
 
 **Context & Problem Statement:** the G0 review found a restore-target mismatch
 and asked whether unresolved provider eligibility changes core ownership. The
@@ -545,3 +545,10 @@ locked framework children and production restore remain their implementation-gat
 obligations with named owners. No safety test or scanner gate is waived. The first
 core package must have an approved exact migration contract and fresh baseline
 before code; this planning decision neither implements it nor approves release.
+
+**T-01 scope approval — 2026-10-22:** owner stated “T-01 approved” after the
+package/slice explanation. Approves schema and safe-migration scope in the
+closure packet, not G0 package acceptance, phase advancement, a specific SQL
+migration or release. Prepare the detailed P1 contract before code; keep live
+providers disabled. This is post-review approval metadata; approved review
+reports and their original candidate identity remain unchanged.

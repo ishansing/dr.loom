@@ -18,8 +18,8 @@ Accepting a target does not install it or certify production support.
 | Provider/model/data | Initial profile specified; qualification OPEN | Personal OpenAI subscription; GPT-6.1 Sol candidate, owner-confirmed available on that account; private source allowed; required training/improvement opt-out (owner-applied, confirmation pending); no additional retention/residency restrictions for now. Owner’s “codex api” restatement maps to this subscription/SIWC candidate, not the legacy backend or Platform API-key billing. [Review](08-subscription-provider-review.md): SIWC direct conditional candidate; consumer Antigravity blocked by terms. Subscription tier and broker/data-handling proof open; no live allowance consumption, paid budget **zero**. |
 | Operator/transport | Accepted design [ADR-009](../../decisions.md#adr-009---2026-10-22-p0-operatortransport-proposal) | Trusted local operator channel, narrow runner pipe and command-family contract below; concrete schemas/auth implementation/review still required. |
 | Durability/retention | Accepted design [ADR-008](../../decisions.md#adr-008---2026-10-22-p0-durability-proposal) | Explicit authoritative WAL/FULL, consistent backups and recovery targets below; destination/protection and drills not implemented. |
-| Host/capacity/deployment | Lab target accepted; rootless setup installed | Owner authorized the user-level rootless lab install on 2026-10-22; CPU/memory/PID limits and whole-container cleanup were observed. Disk quota is not enforceable via storage-opt on btrfs; privileged quota/subvolume setup or a revised target is required. Final image pin, port publishing, broker and production qualification remain open. Not production support. |
-| Independent review | OPEN by explicit owner choice | Owner selected “Unassigned / not booked”. No reviewer, booking owner/availability or independent sign-off is invented. |
+| Host/capacity/deployment | Lab target accepted; rootless setup installed | Owner authorized the user-level rootless lab install on 2026-10-22; CPU/memory/PID limits and whole-container cleanup were observed. A fixed 2 GiB ext4 workspace cap was provisioned and ENOSPC-tested; mount/log integration and boot persistence remain. Final image pin, port publishing, broker and production qualification remain open. Not production support. |
+| Independent review | OPEN | Owner chose to name a reviewer; reviewer identity/role/availability and booking are not yet provided. No reviewer or sign-off is invented. |
 | Build authorization | OPEN | Complete G0 decision/evidence review, then explicitly authorize P1. No G0 exception or phase advancement is granted here. |
 
 ## 2. First qualification journey
@@ -85,18 +85,26 @@ slirp4netns; `--skip-iptables` was used because `nf_tables` was not loaded. A
 under `docker stop -t 1`; the heartbeat file stopped changing (11 lines at stop,
 11 after two seconds), no marker process survived, and the container was removed.
 A `--storage-opt size=64m` probe wrote 128 MiB successfully (exit 0), so the
-storage option is **not an enforced cap** on this rootless `overlayfs`/btrfs host;
-`/home` is btrfs with quotas disabled. An enforced 2 GiB cap needs a privileged
-quota/subvolume setup or a revised owner target.
+storage option is **not an enforced cap** on this rootless `overlayfs`/btrfs host.
+The owner chose a provisioned hard cap instead: a fixed-size 2 GiB ext4 image at
+`$HOME/.local/share/loom-lab/workspace-2g.img` (`mkfs.ext4 -m 0 -N 200000 -L
+loom-workspace -E root_owner=$UID:$GID`) is mounted by udisks at
+`/run/media/$USER/loom-workspace` and is the only persistent writable run volume.
+With a read-only rootfs and 64 MiB tmpfs `/tmp` and `/dev/shm`, a 2.3 GiB fill
+stopped at 1.9 GiB with `ENOSPC` (`dd` exit 1); a 100 MiB `/tmp` fill stopped at
+64 MiB. This is a filesystem-size cap, not a Docker quota: the image/layer/
+metadata store remains supervisor-owned and uncapped, so the runner must preflight
+the mount, disable or cap logs, and expose only this workspace. Boot persistence
+and loop cleanup authorization remain open.
 
 `libnetwork: restoring thread network namespace failed: operation not permitted`
 appeared while containers still ran. A Moby maintainer's analysis of the same
 lines in [moby#52933](https://github.com/moby/moby/issues/52933#issuecomment-5498923624)
 calls them inherent noise on working detach-netns setups; our no-port workloads
-passed, but port publishing is still untested. Not yet proven: enforced disk
-quota, linger/boot start, final digest-pinned runtime image, port publishing,
-broker integration and production-host support. The rootful daemon was not
-modified.
+passed, but port publishing is still untested. Not yet proven: runner integration
+of the workspace cap and log limits, boot persistence, final digest-pinned runtime
+image, port publishing, broker integration and production-host support. The
+rootful daemon was not modified.
 
 The owner selected this exact local reference for initial qualification. The
 rootless setup/version is approved and installed; qualification remains partial.
@@ -114,8 +122,10 @@ Required configuration/evidence for the rootless target:
   limits with controlled over-limit tests; missing enforcement blocks admission.
 - Entire SDK/startup/extensions/descendants in one bounded container domain.
   Pin the image by digest; read-only rootfs and input snapshot, explicit writable
-  workspace/runtime-journal volume, bounded temporary storage. No host home,
-  host PID/IPC/network namespaces, Docker socket, devices or privileged mounts.
+  workspace/runtime-journal volume, bounded temporary storage. The selected cap is
+  a fixed-size 2 GiB ext4 workspace plus 64 MiB tmpfs `/tmp` and `/dev/shm`; no
+  writable container layer. No host home, host PID/IPC/network namespaces, Docker
+  socket, devices or privileged mounts.
 - Default network isolation; provider traffic only through the trusted broker
   described below. No raw provider/production credentials in the container.
 - Kill/stop and startup-failure tests must prove the whole container domain is
@@ -133,10 +143,13 @@ flag does not prove a disk quota. Pick/test an enforceable volume/storage profil
 before claiming that cap. No fan-out or extra backend enabled implicitly.
 
 Observed 2026-10-22: `--storage-opt size=64m` did not constrain a 128 MiB write
-(exit 0); `/home` is btrfs with quotas disabled. Docker's storage option is
-therefore not an enforceable 2 GiB cap here. A hard cap requires an operator/
-administrator-provisioned btrfs qgroup/subvolume or quota-enabled filesystem;
-supervisor polling is not equivalent. This remains an owner decision.
+(exit 0), so it is not used. A 2 GiB ext4 workspace image (1.9 GiB usable,
+user-level udisks loop mount) was filled from a read-only-rootfs container: `dd`
+stopped at 1.9 GiB with `ENOSPC` (exit 1), and a `/tmp` fill stopped at the 64 MiB
+tmpfs limit. The workspace is the only persistent writable run volume; container
+writable layers are disabled and Docker's image/metadata store is supervisor-owned.
+Remaining integration: mount preflight, log caps, boot persistence and loop cleanup
+authorization. A supervisor poll is not part of this cap.
 
 **Deployment proposal:** first staging target is a disposable local rootless-OCI
 application environment. Later production uses the same reviewed deployment
@@ -285,8 +298,9 @@ not completed P1/P2 implementation (which would be circular). Required before P1
 - Version/profile evidence and setup/qualification owners, no unresolved choice
   changing state ownership or credential/deployment boundaries; approvals recorded
   in ADRs and the support matrix. User-level rootless setup is installed; one
-  whole-container cleanup test passed; enforced disk quota, final image pin, port
-  publishing, broker and production-host qualification remain open.
+  whole-container cleanup test passed; the 2 GiB ext4 workspace cap was
+  ENOSPC-tested; runner integration/log caps, final image pin, port publishing,
+  broker and production-host qualification remain open.
 - First support/acceptance matrix and specific P1 slice approved. Full workflow,
   Docker containment/provider integration and deploy/restore drills remain G2–G4
   proof obligations, never pre-claimed from this planning document.
@@ -333,9 +347,10 @@ closed; setup, precise implementation contracts and evidence are not implied.
    and booking owner/availability when available. No credentials,
    private URLs, personal contact details or raw `.env` values are needed here.
 3. Operator has authorized the user-level rootless lab setup; remaining operator
-   decisions cover enforceable disk quotas, backup destination/protection,
-   production host and any boot/linger policy. Review concrete transport/schema/
-   auth details in their phase spec; no broad production setup approval.
+   decisions cover workspace-cap integration/boot persistence, backup
+   destination/protection, production host and any boot/linger policy. Review
+   concrete transport/schema/auth details in their phase spec; no broad production
+   setup approval.
 
 Until these and the G0 checklist are resolved, continue planning or hand off;
 do not call P1 started, certify support or improvise authority. This pack is a

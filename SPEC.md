@@ -295,14 +295,15 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
   independence is now recorded as an architecture invariant; this profile is only
   the first integration candidate. Owner authorized the user-level rootless lab
   setup; Docker `29.9.2` is running rootless with tested CPU, memory, PID and
-  whole-container cleanup controls. The storage-opt disk probe was not enforced
-  on this btrfs host, so a 2 GiB cap needs a privileged quota setup or a revised
-  owner target. Final image pin, broker, port publishing and production-host
-  qualification remain open. Subscription tier, integration/data-policy proof,
-  owner opt-out confirmation and named/booked independent review remain open;
-  G0 open. No login, live model calls or executable application changes. Prior
-  docs commits are `67a94fc` and `98a6975`; this host-evidence delta is covered
-  by the owner's commit request.
+  whole-container cleanup controls. A fixed 2 GiB ext4 workspace (read-only
+  rootfs, 64 MiB tmpfs `/tmp` and `/dev/shm`) was provisioned and ENOSPC-tested;
+  mount preflight, log caps and boot persistence remain. Final image pin, broker,
+  port publishing and production-host qualification remain open. Subscription
+  tier, integration/data-policy proof, owner opt-out confirmation and
+  named/booked independent review remain open; G0 open. No login, live model
+  calls or executable application changes. Prior docs commits include `67a94fc`,
+  `98a6975`, `7caac84` and `22fbd43`; this workspace-cap delta is covered by the
+  owner's commit request.
 - **Next gate:** owner approval of the complete G0 evidence before P1. No paid
   calls, deployment, dependency promotion or phase advancement authorized here.
 
@@ -366,13 +367,17 @@ runs enforced 1 CPU (`100000 100000`, throttled 20/21 periods), 512 MiB memory
 (32 MiB over-limit OOM, exit 137) and 64 PIDs (fork denied at 16); a container
 whose PID 1 and child ignored `SIGTERM` exited 137 under `docker stop -t 1` with
 no surviving process or heartbeat write. A `--storage-opt size=64m` probe wrote
-128 MiB, so Docker's storage option is not an enforced disk cap here; `/home` is
-btrfs with quotas disabled and an enforced 2 GiB cap needs a privileged quota
-setup or a revised target. The rootful daemon was not modified. Final image pin,
-linger/boot start, port publishing, broker integration and production host remain
-unqualified; `--skip-iptables` was used because `nf_tables` was not loaded. The
-logged netns warning matches documented detach-netns noise on working setups, not
-a proven failure. Exact hashes and evidence are in the
+128 MiB, so Docker's storage option is not an enforced disk cap here. The selected
+cap is a fixed 2 GiB ext4 workspace image under `$HOME/.local/share/loom-lab`,
+mounted by udisks at `/run/media/$USER/loom-workspace`; with a read-only rootfs
+and 64 MiB tmpfs `/tmp` and `/dev/shm`, a 2.3 GiB fill stopped at 1.9 GiB with
+`ENOSPC` (`dd` exit 1) and a 100 MiB `/tmp` fill stopped at 64 MiB. The image
+store remains supervisor-owned and uncapped, so mount preflight and log caps are
+required. The rootful daemon was not modified. Final image pin, linger/boot
+start, port publishing, broker integration and production host remain unqualified;
+`--skip-iptables` was used because `nf_tables` was not loaded. The logged netns
+warning matches documented detach-netns noise on working setups, not a proven
+failure. Exact hashes and evidence are in the
 [G0 pack](research/phase-0/06-g0-decision-pack.md#3-host-sandbox-and-deployment-target).
 
 Neither `gitleaks`
@@ -400,7 +405,7 @@ behavior changes. No lowercase spec duplicate or additional ADR directory.
 | Layer | This task's proof | Applicability / limit |
 | --- | --- | --- |
 | Application/unit/integration/E2E | N/A: no application, test, probe, configuration or dependency edits | Prior verified baseline and 66 experiment case runs remain historical evidence, not new runs or production certification. |
-| Rootless lab resource controls | Official static Docker `29.9.2` + extras; controlled CPU throttle, memory OOM and PID-fork-denial runs; rootful daemon/context preserved | Host lab evidence only; disk quota, digest pin, cleanup/kill, broker and production host remain unqualified. |
+| Rootless lab resource controls | Official static Docker `29.9.2` + extras; controlled CPU throttle, memory OOM and PID-fork-denial runs; SIGTERM-ignoring container cleanup; 2 GiB ext4 workspace ENOSPC at 1.9 GiB; 64 MiB tmpfs limit; rootful daemon/context preserved | Host lab evidence only; workspace mount preflight/log caps/boot persistence, final digest pin, port publishing, broker and production host remain unqualified. |
 | Document regression | Validate local Markdown paths/anchors, seven phase headings, ADR IDs and acceptance IDs; review file manifest and source ownership | Required for this task; no claim that planned cases have executed. |
 | Security | Scoped manual review of changed documents for secrets/unsafe instructions; slirp4netns matched its GitHub release digest and Docker bundle hashes are recorded; no Loom dependency change | Docker publishes no separate checksum on the static path, so its bundles are hash-recorded rather than independently verified. Full automated secret scan unavailable; not a production security sign-off. |
 
@@ -453,11 +458,14 @@ before implementation; N/A requires a scope-specific reason.
 
 Changes affect P0 planning/research documents plus an owner-authorized
 user-level rootless Docker lab install under `$HOME/bin` with a systemd user
-unit and a separate CLI context. The rootful daemon, its `default` context
-endpoint and Loom data were not modified. If removal is authorized, run the
-rootless setuptool uninstall, stop/disable the user unit, and remove only the
-user-level binaries/context; never touch the rootful daemon or unrelated user
-data. Review for accidental authority expansion, case-collision paths and
+unit, a separate CLI context, and a 2 GiB workspace image at
+`$HOME/.local/share/loom-lab/workspace-2g.img` mounted via udisks. The rootful
+daemon, its `default` context endpoint and Loom data were not modified. If removal
+is authorized, run the rootless setuptool uninstall, stop/disable the user unit,
+and remove only the user-level binaries/context and workspace image/loop mount;
+loop deletion may require operator authorization. Never touch the rootful daemon
+or unrelated user data. Review for accidental authority expansion, case-collision
+paths and
 references to unsupported tooling. Before merge, revise only this task's
 identified files; after commit, revert its specific commit only with
 authorization, preserving unrelated work and decision history. No feature
@@ -548,8 +556,9 @@ Verification record:
   no account/credential effects; authorized user-level rootless lab installed;
   no Loom application change, invented reviewer booking or false G0 closure.
 - [x] Rootless lab CPU/memory/PID limits observed; SIGTERM-ignoring container
-  stopped with no surviving process or heartbeat writes; rootful daemon/default
-  context preserved; storage-opt disk cap found unenforced; rollback path recorded.
+  stopped with no surviving process or heartbeat writes; 2 GiB workspace cap
+  ENOSPC-tested; tmpfs capped; rootful daemon/default context preserved; rollback
+  path recorded.
 
 Baseline from governance (2026-10-21): lint/typecheck passed; 3 tests passed,
 100% functions / 90.99% instrumented lines; audit found no advisories across
@@ -560,6 +569,6 @@ Baseline from governance (2026-10-21): lint/typecheck passed; 3 tests passed,
 | --- | --- | --- |
 | SPEC's document validator, new-report/pack whitespace and `git diff --check` | Exit 0: 247 local links; seven phase sections; 12 unique acceptance IDs; unique ADR IDs; whitespace/casing pass | No full Markdown lint or future external availability claim. |
 | Declared `git diff --exit-code` for application/probe/config/pin integrity | Exit 0; no changes | Earlier executable results not relabelled as fresh; application checks N/A for docs-and-lab delta. |
-| Six-file scope/source/evidence/authority/secret review | Official report reconciled with static Pi source; critical Google terms, SIWC inference and OpenAI data-control requirements independently fetched; model availability is owner-attested; no credentials or live effects | No independent account verification, opt-out confirmation, legal approval, live integration or automated secret-scan pass claimed. Prior commits `67a94fc`/`98a6975`; this host-evidence delta included in the authorized commit; G0 open. |
-| Rootless lab setup and resource controls | User-level Docker `29.9.2` (rootless, `overlayfs`, cgroup `systemd`); CPU throttle 20/21, memory OOM exit 137, PID fork denial at 16; SIGTERM-ignoring container exited 137 under `stop -t 1` with no heartbeat writes; `--storage-opt size=64m` wrote 128 MiB (not enforced); rootful default preserved | Lab host only; enforced 2 GiB quota needs privileged btrfs quota/subvolume setup; final image pin, linger, port publishing, broker and production host unqualified. |
+| Six-file scope/source/evidence/authority/secret review | Official report reconciled with static Pi source; critical Google terms, SIWC inference and OpenAI data-control requirements independently fetched; model availability is owner-attested; no credentials or live effects | No independent account verification, opt-out confirmation, legal approval, live integration or automated secret-scan pass claimed. Prior commits `67a94fc`/`98a6975`/`7caac84`/`22fbd43`; this workspace-cap delta included in the authorized commit; G0 open. |
+| Rootless lab setup and resource controls | User-level Docker `29.9.2` (rootless, `overlayfs`, cgroup `systemd`); CPU throttle 20/21, memory OOM exit 137, PID fork denial at 16; SIGTERM-ignoring container exited 137 under `stop -t 1` with no heartbeat writes; 2 GiB ext4 workspace hit ENOSPC at 1.9 GiB; 64 MiB tmpfs cap; rootful default preserved | Lab host only; workspace mount preflight/log caps/boot persistence, final image pin, linger, port publishing, broker and production host unqualified. |
 | Secret scanner | Unavailable (`gitleaks`/`trufflehog` not on PATH) | No automated secret-scan pass claimed; code/release phase requirements must be resolved before its closure. |

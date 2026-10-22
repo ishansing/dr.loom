@@ -214,11 +214,12 @@ framework/operator/recovery design and blocked T-01/T-03 backlog. A provider/mod
 profile is now recorded (personal OpenAI subscription, `gpt-6.1-sol`, private source
 with required training opt-out); subscription tier and SIWC integration remain
 unqualified. A user-level rootless Docker lab was installed on 2026-10-22 with
-tested CPU/memory/PID limits and whole-container cleanup; the storage-opt disk
-probe was not enforced on btrfs, so an enforced 2 GiB cap needs a privileged
-quota setup or a revised target. Final image pin, port publishing and broker
-qualification remain. Independent review is unassigned pending the owner's
-named reviewer, and G0/P1 remain blocked.
+tested CPU/memory/PID limits, whole-container cleanup, and a provisioned fixed
+2 GiB ext4 workspace that hit `ENOSPC` under a read-only rootfs; `/tmp` and
+`/dev/shm` are capped at 64 MiB. Workspace mount preflight, log caps, boot
+persistence, final image pin, port publishing and broker qualification remain.
+Independent review is unassigned pending the owner's named reviewer, and G0/P1
+remain blocked.
 
 **Outcome:** the developer can build without guessing the product, support
 boundary or runtime. Target duration: two weeks; no open-ended research phase.

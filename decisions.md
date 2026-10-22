@@ -283,16 +283,24 @@ limit with fork denied at 16. A `--pids-limit=64` container whose PID 1 and chil
 ignored `SIGTERM` was stopped with `docker stop -t 1`: exit 137, no surviving host
 process and no heartbeat write after stop. A `--storage-opt size=64m` probe wrote
 128 MiB successfully, so that option is **not enforced** on this rootless
-overlayfs/btrfs host; `/home` has btrfs quotas disabled, so an enforced 2 GiB cap
-needs a privileged quota/subvolume setup or a revised target. The logged
-`restoring thread network namespace failed` line matches known detach-netns noise
-reported by a Moby maintainer on working setups; port publishing itself remains
-untested. `--skip-iptables` was needed because `nf_tables` was not loaded. Not
-qualified: enforced disk quota, linger/boot start, final digest-pinned runtime
-image, provider-broker integration, port publishing and production-host support.
-The existing rootful daemon was not modified. Rollback is the rootless setuptool
-uninstall plus removal of only the user-level unit/binaries and context; never
-touch the rootful daemon.
+overlayfs/btrfs host. The owner chose a provisioned hard cap instead: a fixed-size
+2 GiB ext4 workspace image (`$HOME/.local/share/loom-lab/workspace-2g.img`,
+`mkfs.ext4 -m 0 -N 200000 -L loom-workspace -E root_owner=$UID:$GID`, user-level
+udisks loop mount under `/run/media/$USER/loom-workspace`) is the only persistent
+writable run volume. With a read-only rootfs and 64 MiB tmpfs `/tmp` and
+`/dev/shm`, a 2.3 GiB fill hit ENOSPC at 1.9 GiB (`dd` exit 1) and a 100 MiB
+`/tmp` fill hit ENOSPC at 64 MiB. Docker's image/metadata store remains
+supervisor-owned and uncapped, so runner log caps and a mount preflight are
+required; boot persistence and loop cleanup authorization are unqualified. The
+logged `restoring thread network namespace failed` line matches known detach-netns
+noise reported by a Moby maintainer on working setups; port publishing itself
+remains untested. `--skip-iptables` was needed because `nf_tables` was not loaded.
+Not qualified: runner integration of the workspace cap and log limits,
+linger/boot start, final digest-pinned runtime image, provider-broker integration,
+port publishing and production-host support. The existing rootful daemon was not
+modified. Rollback is the rootless setuptool uninstall plus removal of only the
+user-level unit/binaries/context and the workspace image/loop mount; never touch
+the rootful daemon.
 
 ## [ADR-007] - 2026-10-22 (P0 framework baseline proposal)
 

@@ -288,7 +288,10 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
   candidate, private-source permission and a required training/improvement
   opt-out with no additional retention/residency requirements for now; owner also
   confirmed `gpt-6.1-sol` is available on that personal account (attestation, not
-  an API check). Applying/confirming the opt-out remains an owner account action.
+  an API check). Applying/confirming the opt-out remains an owner account action;
+  an offline check of installed `codex-cli 0.163.0` found no account data-control
+  setting, and its local `include_environment_context=true` default is not proof
+  of the account-level **Include environments** state.
   The owner later restated “codex api”; this is recorded as the already-requested
   subscription/SIWC candidate, not the legacy private backend and not a silent
   switch to Platform API-key billing. Provider/model
@@ -572,4 +575,5 @@ Baseline from governance (2026-10-21): lint/typecheck passed; 3 tests passed,
 | Declared `git diff --exit-code` for application/probe/config/pin integrity | Exit 0; no changes | Earlier executable results not relabelled as fresh; application checks N/A for docs-and-lab delta. |
 | Six-file scope/source/evidence/authority/secret review | Official report reconciled with static Pi source; critical Google terms, SIWC inference and OpenAI data-control requirements independently fetched; model availability is owner-attested; no credentials or live effects | No independent account verification, opt-out confirmation, legal approval, live integration or automated secret-scan pass claimed. Prior commits `67a94fc`/`98a6975`/`7caac84`/`22fbd43`; this workspace-cap delta included in the authorized commit; G0 open. |
 | Rootless lab setup and resource controls | User-level Docker `29.9.2` (rootless, `overlayfs`, cgroup `systemd`); CPU throttle 20/21, memory OOM exit 137, PID fork denial at 16; SIGTERM-ignoring container exited 137 under `stop -t 1` with no heartbeat writes; 2 GiB ext4 workspace hit ENOSPC at 1.9 GiB; 64 MiB tmpfs cap; rootful default preserved | Lab host only; workspace mount preflight/log caps/boot persistence, final image pin, linger, port publishing, broker and production host unqualified. |
+| Local Codex data-control check | Installed `codex-cli 0.163.0`; no settings/config command; `features list` lacks `include_environments`; user config has only UI/project/hook keys; local `config/read` reports `include_environment_context=true` | Local CLI only; account training opt-out and Codex **Include environments** remain owner attestations; no login, auth-cache read or prompt call. |
 | Secret scanner | Unavailable (`gitleaks`/`trufflehog` not on PATH) | No automated secret-scan pass claimed; code/release phase requirements must be resolved before its closure. |

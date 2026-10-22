@@ -246,7 +246,10 @@ personal-plan no-training or zero-retention guarantee is inferred.
 3. Owner: apply and confirm the training/improvement opt-out in ChatGPT Data
    controls or the Privacy Portal, and verify Codex **Include environments** is
    off before private environment context is sent. This is an account action;
-   Loom must not log in or toggle it. Opt-out does not prove zero retention.
+   Loom must not log in or toggle it. The installed `codex-cli 0.163.0` check
+   found no account data-control setting; local `include_environment_context=true`
+   is a prompt-context flag, not proof of the account state. Opt-out does not
+   prove zero retention.
 4. Owner: separate express approval for OAuth/login and background automation;
    live quota consumption, maximum requests/tokens/time and credit/spend ceiling;
    whether existing credits may be consumed. No silent paid/API/Google fallback.

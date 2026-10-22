@@ -15,7 +15,7 @@ Accepting a target does not install it or certify production support.
 | Reference repository | Owner selected | Disposable Loom checkout with synthetic fault injection and deterministic tests. Never expose the live control-plane checkout, authoritative DB or credentials. |
 | Backend | Accepted target [ADR-006](../../decisions.md#adr-006---2026-10-22-p0-support-profile) | Rootless Docker; operator setup permission, exact host/profile and qualification remain separate. No rootful/privileged fallback. |
 | Framework | Accepted [ADR-007](../../decisions.md#adr-007---2026-10-22-p0-framework-baseline-proposal) | Owner selected retain/revalidate current `2.1.0` pin for the first small conflict-free TS fix; no re-pin or skill installation. |
-| Provider/model/data | Initial profile specified; qualification OPEN | Personal OpenAI subscription; GPT-6.1 Sol candidate, owner-confirmed available on that account; private source allowed; required training/improvement opt-out (owner-applied, confirmation pending); no additional retention/residency restrictions for now. Owner’s “codex api” restatement maps to this subscription/SIWC candidate, not the legacy backend or Platform API-key billing. [Review](08-subscription-provider-review.md): SIWC direct conditional candidate; consumer Antigravity blocked by terms. Subscription tier and broker/data-handling proof open; no live allowance consumption, paid budget **zero**. |
+| Provider/model/data | Initial profile specified; qualification OPEN | Personal OpenAI subscription; GPT-6.1 Sol candidate, owner-confirmed available on that account; private source allowed; required training/improvement opt-out (owner-applied; confirmation pending; installed CLI exposes no account data-control setting); no additional retention/residency restrictions for now. Owner’s “codex api” restatement maps to this subscription/SIWC candidate, not the legacy backend or Platform API-key billing. [Review](08-subscription-provider-review.md): SIWC direct conditional candidate; consumer Antigravity blocked by terms. Subscription tier and broker/data-handling proof open; no live allowance consumption, paid budget **zero**. |
 | Operator/transport | Accepted design [ADR-009](../../decisions.md#adr-009---2026-10-22-p0-operatortransport-proposal) | Trusted local operator channel, narrow runner pipe and command-family contract below; concrete schemas/auth implementation/review still required. |
 | Durability/retention | Accepted design [ADR-008](../../decisions.md#adr-008---2026-10-22-p0-durability-proposal) | Explicit authoritative WAL/FULL, consistent backups and recovery targets below; destination/protection and drills not implemented. |
 | Host/capacity/deployment | Lab target accepted; rootless setup installed | Owner authorized the user-level rootless lab install on 2026-10-22; CPU/memory/PID limits and whole-container cleanup were observed. A fixed 2 GiB ext4 workspace cap was provisioned and ENOSPC-tested; mount/log integration and boot persistence remain. Final image pin, port publishing, broker and production qualification remain open. Not production support. |
@@ -338,7 +338,14 @@ closed; setup, precise implementation contracts and evidence are not implied.
    GPT-6.1 Sol candidate (owner-confirmed available on the account), and
    private-source permission; training/improvement opt-out required and
    owner-applied (confirmation pending); no additional owner-imposed
-   retention/residency restrictions for now. Supply subscription tier; verify
+   retention/residency restrictions for now. **Offline Codex check
+   (2026-10-22):** installed `codex-cli 0.163.0` exposes no settings/config
+   command for either account control; `features list` has no
+   `include_environments`; local `config/read` reports
+   `include_environment_context=true` and `include_environment_context_time=true`
+   as built-in defaults. The CLI training banner points to ChatGPT settings. The
+   account-level **Include environments** state is not proven by this local flag,
+   so owner attestation remains required. Supply subscription tier; verify
    applicable agreement, actual data handling and integration. This profile does
    not make Loom's authority/workflow/verification model-dependent. Qualify SIWC direct
    with Loom's own identity and a narrow local broker; do not use legacy private

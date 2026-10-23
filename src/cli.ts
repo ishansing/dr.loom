@@ -30,14 +30,32 @@ if (cmd === "init") {
 	const db = openDb(dbPath);
 	try {
 		initSchema(db);
-		const t = recordTransition(db, {
-			runId: arg("--run", "run-1"),
-			phase: arg("--phase", "init"),
-			status: "committed",
-			resumePoint: arg("--resume", "init"),
-			evidenceRef: arg("--evidence") || undefined,
-		});
-		console.log(JSON.stringify(t));
+		try {
+			const epoch = arg("--epoch");
+			const t = recordTransition(
+				db,
+				{
+					runId: arg("--run"),
+					phase: arg("--phase"),
+					status: "committed",
+					resumePoint: arg("--resume"),
+					evidenceRef: arg("--evidence") || undefined,
+				},
+				{
+					runId: arg("--run"),
+					threadId: arg("--thread"),
+					workspace: arg("--workspace"),
+					owner: arg("--owner"),
+					epoch: /^[1-9]\d*$/.test(epoch) ? Number(epoch) : NaN,
+				},
+			);
+			console.log(JSON.stringify(t));
+		} catch {
+			console.error(
+				"record denied: valid --run/--thread/--workspace/--owner/--epoch, --phase/--resume and a live unkilled lease are required",
+			);
+			process.exitCode = 1;
+		}
 	} finally {
 		db.close();
 	}
@@ -46,7 +64,11 @@ if (cmd === "init") {
 	const db = openDb(dbPath);
 	try {
 		initSchema(db);
-		const t = getLastTransition(db, arg("--run", "run-1"));
+		const t = getLastTransition(
+			db,
+			arg("--run", "run-1"),
+			arg("--thread") || undefined,
+		);
 		console.log(JSON.stringify(t ?? { ok: false, reason: "no transitions" }));
 	} finally {
 		db.close();
@@ -70,6 +92,9 @@ if (cmd === "init") {
 } else {
 	console.log(
 		"usage: loom <init|record|status|check-framework> [--db PATH] [--run ID]",
+	);
+	console.log(
+		"record requires --run ID --thread ID --workspace ID --owner ID --epoch N --phase NAME --resume POINT; lease acquisition is host-only",
 	);
 	process.exit(cmd === "help" ? 0 : 1);
 }

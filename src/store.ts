@@ -25,6 +25,95 @@ export interface Lease {
 	expiresAt: number;
 }
 
+export interface WriteContext {
+	runId: string;
+	threadId: string;
+	workspace: string;
+	owner: string;
+	epoch: number;
+	nowMs?: number;
+}
+
+function checkScope(value: string): void {
+	if (/\s/.test(checkedText(value, "scope key")))
+		throw new Error("Invalid scope key");
+}
+
+function checkedTime(value: number): number {
+	if (
+		!Number.isSafeInteger(value) ||
+		value < 0 ||
+		value > 8_640_000_000_000_000
+	)
+		throw new Error("Invalid lease time");
+	return value;
+}
+
+function checkEpoch(value: number): void {
+	if (!Number.isSafeInteger(value) || value <= 0)
+		throw new Error("Invalid lease epoch");
+}
+
+function readLease(db: Database, workspace: string): Lease | null {
+	const row = db
+		.query<
+			Lease,
+			[string]
+		>(`SELECT workspace, owner, epoch, acquired_at AS acquiredAt,
+    expires_at AS expiresAt FROM leases WHERE workspace = ?`)
+		.get(workspace);
+	if (row) {
+		checkScope(row.owner);
+		checkEpoch(row.epoch);
+		checkedTime(row.expiresAt);
+		if (
+			typeof row.acquiredAt !== "string" ||
+			!Number.isFinite(Date.parse(row.acquiredAt))
+		)
+			throw new Error("Invalid lease history");
+	}
+	return row;
+}
+
+function isKilled(db: Database, runId: string): boolean {
+	return (
+		db
+			.query<{ scope: string }, [string]>(
+				"SELECT scope FROM kills WHERE scope = 'global' OR scope = ? LIMIT 1",
+			)
+			.get(`run:${runId}`) !== null
+	);
+}
+
+/** Trusted synchronous transaction check, not a transferable execution grant. */
+export function writeGate(db: Database, ctx: WriteContext): void {
+	if (!db.inTransaction)
+		throw new Error("Write gate requires an active transaction");
+	checkFields(ctx, [
+		"runId",
+		"threadId",
+		"workspace",
+		"owner",
+		"epoch",
+		"nowMs",
+	]);
+	checkScope(ctx.runId);
+	checkScope(ctx.threadId);
+	checkScope(ctx.owner);
+	checkedText(ctx.workspace, "workspace", 4096);
+	checkEpoch(ctx.epoch);
+	const now = checkedTime(ctx.nowMs === undefined ? Date.now() : ctx.nowMs);
+	if (isKilled(db, ctx.runId)) throw new Error("Write gate denied: killed");
+	const lease = readLease(db, ctx.workspace);
+	if (
+		!lease ||
+		lease.owner !== ctx.owner ||
+		lease.epoch !== ctx.epoch ||
+		lease.expiresAt <= now
+	)
+		throw new Error("Write gate denied: invalid or expired lease");
+}
+
 export interface AuditEntry {
 	id: number;
 	runId: string;
@@ -255,7 +344,8 @@ export function initSchema(db: Database): void {
 	}).immediate();
 }
 
-export function recordTransition(
+/** Trusted legacy fixtures/migrations only; never use for native admission. */
+export function recordTransitionForMigration(
 	db: Database,
 	t: {
 		runId: string;
@@ -280,10 +370,68 @@ export function recordTransition(
 	return row;
 }
 
+export function recordTransition(
+	db: Database,
+	t: Parameters<typeof recordTransitionForMigration>[1],
+	ctx: WriteContext,
+): Transition & { threadId: string } {
+	checkFields(t, ["runId", "phase", "status", "resumePoint", "evidenceRef"]);
+	checkScope(t.runId);
+	checkedText(t.phase, "phase");
+	checkedText(t.resumePoint, "resume point", 4096);
+	if (
+		!["pending", "running", "committed", "failed", "interrupted"].includes(
+			t.status,
+		)
+	)
+		throw new Error("Invalid transition status");
+	const evidenceRef = checkedEvidence(t.evidenceRef, true);
+	return db
+		.transaction(() => {
+			writeGate(db, ctx);
+			if (t.runId !== ctx.runId)
+				throw new Error("Transition run does not match gate context");
+			const row = db
+				.query<
+					Transition & { threadId: string },
+					[string, string, string, string, string, string | null]
+				>(
+					`INSERT INTO transitions (run_id, thread_id, phase, status, resume_point, evidence_ref)
+       VALUES (?, ?, ?, ?, ?, ?) RETURNING id, run_id AS runId, thread_id AS threadId, phase,
+       status, resume_point AS resumePoint, evidence_ref AS evidenceRef, created_at AS createdAt`,
+				)
+				.get(
+					t.runId,
+					ctx.threadId,
+					t.phase,
+					t.status,
+					t.resumePoint,
+					evidenceRef,
+				);
+			if (!row) throw new Error("Failed to record transition");
+			return row;
+		})
+		.immediate();
+}
+
 export function getLastTransition(
 	db: Database,
 	runId: string,
+	threadId?: string,
 ): Transition | null {
+	if (threadId !== undefined) {
+		checkScope(runId);
+		checkScope(threadId);
+		return (
+			db
+				.query<Transition, [string, string]>(
+					`SELECT id, run_id AS runId, phase, status, resume_point AS resumePoint,
+       evidence_ref AS evidenceRef, created_at AS createdAt FROM transitions
+       WHERE run_id = ? AND thread_id = ? ORDER BY id DESC LIMIT 1`,
+				)
+				.get(runId, threadId) ?? null
+		);
+	}
 	return (
 		db
 			.query<Transition, [string]>(
@@ -299,30 +447,40 @@ export function getLastTransition(
  * Workspace-wide lease: at most one valid owner per workspace.
  * Same owner may renew (keeps epoch); a new owner may acquire only
  * after expiry and gets epoch = prev + 1 (fencing token).
- * ponytail: single-workspace row, no per-path leases until contention demands it.
+ * shortcut: workspace-wide identity; add path-level leases only if measured contention requires it.
  */
 export function acquireWorkspaceLease(
 	db: Database,
-	args: { workspace: string; owner: string; ttlMs: number; nowMs?: number },
+	args: {
+		runId: string;
+		workspace: string;
+		owner: string;
+		ttlMs: number;
+		nowMs?: number;
+	},
 ): { ok: true; epoch: number } | { ok: false; reason: string } {
-	if (!args.workspace || !args.owner) {
-		return { ok: false, reason: "workspace and owner are required" };
-	}
-	if (!Number.isFinite(args.ttlMs) || args.ttlMs <= 0) {
-		return { ok: false, reason: "ttlMs must be > 0" };
-	}
-	const now = args.nowMs ?? Date.now();
-	const acquire = db.transaction(
-		(workspace: string, owner: string, ttlMs: number, nowMs: number) => {
-			const cur =
-				db
-					.query<Lease, [string]>(
-						`SELECT workspace, owner, epoch, acquired_at AS acquiredAt,
-                    expires_at AS expiresAt FROM leases WHERE workspace = ?`,
-					)
-					.get(workspace) ?? null;
+	return db
+		.transaction(() => {
+			let nowMs: number;
+			try {
+				checkFields(args, ["runId", "workspace", "owner", "ttlMs", "nowMs"]);
+				checkScope(args.runId);
+				checkScope(args.owner);
+				checkedText(args.workspace, "workspace", 4096);
+				nowMs = checkedTime(args.nowMs === undefined ? Date.now() : args.nowMs);
+				if (!Number.isSafeInteger(args.ttlMs) || args.ttlMs <= 0)
+					throw new Error("Invalid TTL");
+				checkedTime(nowMs + args.ttlMs);
+			} catch {
+				return { ok: false as const, reason: "Invalid lease input" };
+			}
+			const { workspace, owner, ttlMs } = args;
+			if (isKilled(db, args.runId))
+				return { ok: false as const, reason: "Lease denied: killed" };
+			const cur = readLease(db, workspace);
 			if (!cur || cur.expiresAt <= nowMs) {
 				const epoch = (cur?.epoch ?? 0) + 1;
+				checkEpoch(epoch);
 				db.query(
 					`INSERT INTO leases (workspace, owner, epoch, acquired_at, expires_at)
            VALUES (?, ?, ?, ?, ?)
@@ -341,26 +499,43 @@ export function acquireWorkspaceLease(
 			if (cur.owner === owner) {
 				db.query(
 					`UPDATE leases SET expires_at = ?, acquired_at = ? WHERE workspace = ?`,
-				).run(nowMs + ttlMs, new Date(nowMs).toISOString(), workspace);
+				).run(
+					Math.max(cur.expiresAt, nowMs + ttlMs),
+					new Date(nowMs).toISOString(),
+					workspace,
+				);
 				return { ok: true as const, epoch: cur.epoch };
 			}
 			return {
 				ok: false as const,
-				reason: `workspace held by ${cur.owner} until ${cur.expiresAt}`,
+				reason: "Workspace lease held",
 			};
-		},
-	);
-	return acquire(args.workspace, args.owner, args.ttlMs, now);
+		})
+		.immediate();
 }
 
 export function releaseWorkspaceLease(
 	db: Database,
-	args: { workspace: string; owner: string; epoch: number },
+	args: { workspace: string; owner: string; epoch: number; nowMs?: number },
 ): boolean {
-	const res = db
-		.query(`DELETE FROM leases WHERE workspace = ? AND owner = ? AND epoch = ?`)
-		.run(args.workspace, args.owner, args.epoch);
-	return res.changes > 0;
+	return db
+		.transaction(() => {
+			checkFields(args, ["workspace", "owner", "epoch", "nowMs"]);
+			checkedText(args.workspace, "workspace", 4096);
+			checkScope(args.owner);
+			checkEpoch(args.epoch);
+			const now = checkedTime(
+				args.nowMs === undefined ? Date.now() : args.nowMs,
+			);
+			readLease(db, args.workspace);
+			const res = db
+				.query(
+					`UPDATE leases SET expires_at = 0 WHERE workspace = ? AND owner = ? AND epoch = ? AND expires_at > ?`,
+				)
+				.run(args.workspace, args.owner, args.epoch, now);
+			return res.changes > 0;
+		})
+		.immediate();
 }
 
 export function appendAudit(

@@ -644,3 +644,43 @@ verdicts do not dispatch and outcome facts do not certify task completion. Actua
 gate/operator/outbox work remains later slices. Export/verify/separately approved
 retirement is documented only, with no trigger bypass/deletion path. Existing
 CLI/legacy APIs and approved reports stay intact; tests use confirmed public seams.
+
+## [ADR-015] - 2026-10-23 (T-02 gate and fencing)
+
+**Title:** Require live gate context for native ledger writes and retain lease epochs.
+
+**Status:** Owner-approved scoped design after “continue” from `aa3287b`; owner
+confirmed gated normal writes/CLI, retained lease rows and public test seams.
+
+**Context & Problem Statement:** T-03 provides audit facts, not effect authority.
+Normal recordTransition/CLI currently bypass leases. Deleting a released lease
+also deletes its epoch counter, permitting same-owner stale-token reuse after
+reacquisition. Missing lease validation permits malformed time/epoch state.
+
+**Options Evaluated:** add an opt-in gate while preserving normal bypasses;
+require gate context and explicitly isolate migration/bookkeeping exceptions;
+introduce a new authority service/schema. Owner selected the second, with retained
+expired lease rows rather than a schema migration for fencing counters.
+
+**Decision & Rationale:** required trusted run/thread/workspace/owner/epoch context
+for recordTransition and CLI record; gate checks global/run kill before live
+lease in the same immediate transaction. Rename ungated historical writer for
+fixture/migration use only and omit from package index/CLI. Acquire checks kill
+as bootstrap, release is cleanup; keep expired row so fresh acquisition increments
+previous epoch. Audit outcomes/reconciliation remain recordable under kill and
+never authorize dispatch. T-05/T-06 still own full kill and policy controls.
+
+**Consequences & Tech Debt:** deliberate normal-write interface change, every
+caller/fixture updated. No schema rewrite or old identity backfill. Host context,
+workspace identity/canonicalization, clock and direct DB access remain trusted;
+marking a migration helper is not isolation. No effect can use this partial gate
+as full production authorization. Native transaction/savepoint semantics and
+real-process fencing/recovery require fresh evidence, not old experiment claims.
+
+**Implementation event — 2026-10-23:** 45-test suite and ordered code gates pass;
+fixed-artifact T-02 AI advisory has no confirmed findings, Ishan disposition
+pending. No schema/audit lifecycle rewrite, effect authority or G1 closure claimed.
+
+**Authority event — 2026-10-24:** owner requested “commit and continue”, authorizing
+T-02 commit and the next planned T-04 slice. This is not an attestation of Ishan's
+T-02 approval; keep that human disposition pending. No push/live use/G1 closure.

@@ -14,6 +14,7 @@ export type {
 	Lease,
 	Transition,
 	TransitionStatus,
+	WriteContext,
 } from "./store.ts";
 export {
 	acquireWorkspaceLease,
@@ -28,4 +29,5 @@ export {
 	recordTransition,
 	recordVerdict,
 	releaseWorkspaceLease,
+	writeGate,
 } from "./store.ts";

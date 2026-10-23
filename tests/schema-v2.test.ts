@@ -14,9 +14,9 @@ import {
 	getLastTransition,
 	initSchema,
 	openDb,
-	recordTransition,
 	releaseWorkspaceLease,
 } from "../src/index.ts";
+import { recordTransitionForMigration } from "../src/store.ts";
 
 // Independent snapshot of the merged scaffold's on-disk schema, not production DDL.
 const legacySql = `
@@ -472,12 +472,12 @@ test("new storage constraints accept explicit facts but reject invalid counters 
 	}
 });
 
-test("public exports retain helper shapes, validation and lease compatibility after migration", () => {
+test("legacy migration helper retains shapes and lease callers use explicit run context", () => {
 	const db = openDb();
 	try {
 		initSchema(db);
 		expect(getLastTransition(db, "missing")).toBeNull();
-		const t = recordTransition(db, {
+		const t = recordTransitionForMigration(db, {
 			runId: "r",
 			phase: "slice",
 			status: "running",
@@ -494,7 +494,7 @@ test("public exports retain helper shapes, validation and lease compatibility af
 		]);
 		expect(getLastTransition(db, "r")).toEqual(t);
 		expect(() =>
-			recordTransition(db, {
+			recordTransitionForMigration(db, {
 				runId: "",
 				phase: "slice",
 				status: "running",
@@ -510,13 +510,24 @@ test("public exports retain helper shapes, validation and lease compatibility af
 			}),
 		).toThrow("required");
 		expect(
-			acquireWorkspaceLease(db, { workspace: "", owner: "a", ttlMs: 10 }).ok,
-		).toBe(false);
-		expect(
-			acquireWorkspaceLease(db, { workspace: "ws", owner: "a", ttlMs: -1 }).ok,
+			acquireWorkspaceLease(db, {
+				runId: "r",
+				workspace: "",
+				owner: "a",
+				ttlMs: 10,
+			}).ok,
 		).toBe(false);
 		expect(
 			acquireWorkspaceLease(db, {
+				runId: "r",
+				workspace: "ws",
+				owner: "a",
+				ttlMs: -1,
+			}).ok,
+		).toBe(false);
+		expect(
+			acquireWorkspaceLease(db, {
+				runId: "r",
 				workspace: "ws",
 				owner: "a",
 				ttlMs: 10,
@@ -525,6 +536,7 @@ test("public exports retain helper shapes, validation and lease compatibility af
 		).toEqual({ ok: true, epoch: 1 });
 		expect(
 			acquireWorkspaceLease(db, {
+				runId: "r",
 				workspace: "ws",
 				owner: "a",
 				ttlMs: 20,
@@ -532,15 +544,32 @@ test("public exports retain helper shapes, validation and lease compatibility af
 			}),
 		).toEqual({ ok: true, epoch: 1 });
 		expect(
-			releaseWorkspaceLease(db, { workspace: "ws", owner: "a", epoch: 1 }),
+			releaseWorkspaceLease(db, {
+				workspace: "ws",
+				owner: "a",
+				epoch: 1,
+				nowMs: 1,
+			}),
 		).toBe(true);
 	} finally {
 		db.close();
 	}
 });
 
-test("CLI init, record and status remain compatible and refuse an unknown schema", () => {
+test("CLI init, gated record and status refuse an unknown schema", () => {
 	withStoreFile((path) => {
+		const fixture = openDb(path);
+		try {
+			initSchema(fixture);
+			acquireWorkspaceLease(fixture, {
+				runId: "r",
+				workspace: "ws",
+				owner: "a",
+				ttlMs: 60_000,
+			});
+		} finally {
+			fixture.close();
+		}
 		for (const command of ["init", "record", "status"]) {
 			const result = Bun.spawnSync([
 				process.execPath,
@@ -554,6 +583,14 @@ test("CLI init, record and status remain compatible and refuse an unknown schema
 				"slice",
 				"--resume",
 				"next",
+				"--thread",
+				"main",
+				"--workspace",
+				"ws",
+				"--owner",
+				"a",
+				"--epoch",
+				"1",
 			]);
 			expect(result.exitCode).toBe(0);
 			const output: unknown = JSON.parse(result.stdout.toString());

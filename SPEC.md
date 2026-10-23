@@ -275,6 +275,205 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
 
 ## Active phase specification
 
+- **Work package:** P1 / T-02 write gate and fenced leases, started 2026-10-23.
+- **Authority:** owner requested “continue” after approved T-03 commit `aa3287b`;
+  confirmed required gate/CLI context, retained lease rows and public test seams.
+- **Branch/baseline:** clean `feat/p1-write-gate` from `aa3287b`; no push/merge.
+- **Status:** implementation and ordered code gates verified; fixed-candidate AI
+  review has no confirmed findings, Ishan disposition pending. G0 closed, G1 open.
+
+### 1. Phase Objective & Scope
+
+Gate native ledger writes with live global/run kill and workspace owner/epoch/
+expiry checks inside the same immediate transaction. Harden acquisition/renewal/
+release against invalid state, contention and epoch reuse. Owner approved changing
+normal transition/CLI write interfaces to require context; no compatibility bypass.
+Audit lifecycle remains trusted-host bookkeeping, including post-kill outcome
+reconciliation, not execution permission. No protected filesystem/network effect,
+task-completion certification, live provider, retirement or later-slice enablement.
+T-05 owns kill engage/reset/revocation; T-06 adds deadline/grant/policy between
+kill and lease checks. Do not create permissive placeholder checks for them.
+
+### 2. Environment & Upstream State
+
+Fresh baseline: `bun run lint` exit 0 (14 files), `bun run check` exit 0,
+`bun test --coverage` exit 0 (30 tests/277 assertions; functions 100%, lines
+95.67%, store 99.52%, framework 87.50%, index 100%), `bun audit` exit 0
+(14 packages/no advisories). Bun 1.4.4, SQLite 3.53.4; no install/upgrade.
+Installed `node_modules/bun-types/sqlite.d.ts` transaction/inTransaction declarations
+and official `bun-v1.4.4/src/js/bun/sqlite.ts` inspected: `.immediate()` starts
+BEGIN IMMEDIATE, nested transactions use savepoints, synchronous callback returns
+commit. Never put async/network work in these transactions. No Pi API change.
+
+### 3. Architecture & File Manifest
+
+| File | Responsibility |
+| --- | --- |
+| `src/store.ts` | WriteContext, live gate, gated native transition, scoped read, lease validation/retained expiry |
+| `src/index.ts` | Normal gated exports/types; no migration-only writer export |
+| `src/cli.ts` | Required record context, scoped status and safe write errors; no automatic acquisition |
+| `tests/write-gate.test.ts` | Owner-confirmed gate/transition/lease/query/CLI seams, real process contention/recovery |
+| `tests/schema-v2.test.ts`, `tests/smoke.test.ts` | Explicit migration-fixture helper and updated lease/CLI inputs; preserve assertions |
+| `SPEC.md`, `ROADMAP.md`, `decisions.md` | Contract, decisions and fresh evidence |
+| `research/reviews/2026-10-23-p1-t02.md` | Fixed-artifact advisory for Ishan; disposition separate |
+
+Callers traced: CLI and existing schema/smoke tests call recordTransition; leases
+have test-only callers. T-03 tests use audit exports, unchanged. DDL/schema version,
+legacy rows, lock/config/runtime pins and approved review bodies stay unchanged.
+
+**Interface and invariants:**
+- `WriteContext={runId,threadId,workspace,owner,epoch,nowMs?}` is established by
+  a trusted host supervisor/operator, never runner self-assertion. Run/thread/owner
+  are nonempty trimmed/control-free whitespace-free keys (max 256); workspace is
+  an exact trusted host identity (max 4096, trimmed/control-free, internal spaces
+  allowed). Physical path alias resolution belongs to the supervisor; no invented
+  canonicalization or proof of isolation. Epoch is a positive safe integer.
+- Optional `nowMs` is a trusted fixture/host clock only; validate safe nonnegative
+  integer in the JS Date range. Default clock sampled inside the transaction.
+  CLI exposes no clock override. Wall-clock rollback and trusted caller misuse
+  are not solved by TTL fencing; production clock discipline remains required.
+- `writeGate(db,ctx)` throws safe value-free errors; requires active transaction,
+  validates context then checks `kills` for `global` and `run:<runId>` BEFORE
+  checking lease. Presence of either row denies regardless of its descriptive
+  fields; no scope parser substring/prefix matching. Then require valid persisted
+  lease identity/epoch/time, exact owner/epoch and expiresAt > now. No reusable
+  authorization token and no success outside a transaction. This is T-02's
+  kill/lease admission only, not complete policy/effect authorization.
+- `recordTransition(db,t,ctx)` requires context, matching t.runId, known status,
+  valid phase/resume/evidence, rejects unknown fields. Checks live gate and inserts
+  `thread_id=ctx.threadId` in one synchronous `.immediate()` transaction. Returns
+  native row with threadId. No hidden run/thread defaults or ungated overload.
+  Phase state-machine semantics remain a later owning slice; a committed ledger
+  fact is not independent task verification. Nested calls preserve outer rollback;
+  a deferred outer snapshot may fail on upgrade, never bypass a failed gate.
+- Existing legacy writer renamed `recordTransitionForMigration`, marked for
+  trusted fixture/migration use only, exported from store but NOT package index or
+  CLI. It preserves unattributed NULL thread data and old return shape. Direct
+  host DB/module access remains trusted; this marking is not a sandbox.
+- `getLastTransition(db,runId,threadId?)` preserves unscoped historical reads;
+  optional validated thread restricts results without attributing legacy rows.
+- `acquireWorkspaceLease` requires runId as well as workspace/owner/ttlMs, checks
+  global/run kill before acquisition or renewal in `.immediate()`. This is a
+  bootstrap exception to requiring an already-held lease, not an effect gate.
+  Lease row stays workspace-wide, not run-owned; trusted context supplies run.
+  Positive integer TTL and nonnegative time must fit Date/safe-integer range;
+  malformed persisted lease or exhausted epoch refuses without modifying it.
+  Busy errors propagate for bounded caller retry, never implicit success.
+- Live same-owner renewal keeps epoch and never shortens expiry. Expired/released
+  acquisition, even same owner, increments previous epoch. `releaseWorkspaceLease`
+  accepts optional trusted nowMs, returns false for wrong/stale/expired/released
+  lease and retains a row with expires_at=0 on valid release. Never delete epoch
+  history. Release is safe cleanup, allowed after kill; no reacquisition on reset.
+- All bookkeeping/bootstrap exceptions are explicit: schema/migration fixtures,
+  lease acquisition/cleanup and audit records do not authorize effects. No claim
+  that arbitrary host SQL is gated. Kill fixture INSERTs are tests only; no partial
+  engage/reset API, no new tables or trigger exceptions.
+- CLI `record` requires --run/--thread/--workspace/--owner/--epoch and existing
+  --phase/--resume; no synthetic identity or auto-lease. It fails nonzero safely
+  when missing/invalid/denied, writes no transition. `status --thread` scopes reads;
+  init/check-framework behavior unchanged. CLI still runs only on trusted host.
+
+### 4. Test Plan & Coverage Matrix
+
+Confirmed seams: writeGate, gated recordTransition, acquire/releaseWorkspaceLease,
+transition queries and CLI subprocesses. SQL only for kill/malformed fixtures and
+unchanged-history assertions; no private mocks. Test-first vertical slices.
+
+| Scenario | Required evidence |
+| --- | --- |
+| Gate/transition | Active transaction required; valid context writes attributed row; missing/unknown/mismatched context adds none |
+| Ordering/scope | Global/run kill wins over missing/stale lease; unrelated run unaffected; no new ledger writes or renewal under kill |
+| Lease fencing | Renewal keeps epoch; expiry/release/reacquire increments; stale/wrong/expired finalization and release fail |
+| Validation | Invalid time/TTL/epoch/persisted rows fail without mutations; overflow refuses |
+| Transaction/recovery | Outer rollback, busy writer, abrupt process exit, reopen preserve truthful state |
+| Contention | Eight real processes compete for one workspace; exactly one effective owner/writer |
+| CLI/compatibility | Missing gate flags fail, valid lease writes, scoped status; legacy migration fixture behavior and all T-03 assertions retained |
+
+Fixtures own disposable directories under `/tmp/opencode`, with cleanup; no real
+data, credentials, sleeps as synchronization or application coverage exclusions.
+
+### 5. Security, Observability & Edge Cases
+
+Parameterized SQL, bounded runtime validation and safe errors without input/row
+dumps. Kill checked in the mutating transaction; release cannot erase fencing
+history. Gate doesn't freeze arbitrary processes or atomically cancel remote
+requests. No live credentials/cache/env inspection, provider calls, production
+DBs or workspace writes. Existing audit records remain writable for reconciliation
+even under kill, but grant no dispatch/approval authority. No generic async
+transaction callback, policy placeholder or arbitrary effect runner introduced.
+
+### 6. Blast Radius & Rollback Plan
+
+Owner-approved breaking change to normal transition and CLI recording inputs;
+update every caller/fixture, retaining legacy data and explicit migration seam.
+Lease releases now retain expired records: expected readers must treat TTL, not
+row presence, as ownership. Same v2 schema and audit contract; no data migration.
+Rollback only authorized code, never delete retained epoch rows or historical
+audit. Do not run old delete-release code against an active qualified system.
+No production authority exists; G1 stays open pending T-04–T-07 and conformance.
+
+### 7. Definition of Done (DoD)
+
+`bun run lint` → `bun run check` → `bun test --coverage` →
+`bun test tests/write-gate.test.ts` → `bun audit` → trusted verified Gitleaks scan
+of exact changed files, all exit 0. Compare baseline above; retain all meaningful
+regressions without coverage suppression. Run historical document-validator
+heredoc, `git diff --check`, and protected-file comparison for package/lock/config,
+runtime/framework pins, `.github`, `.opencode`, unchanged audit lifecycle tests and
+all approved prior review records. Review fixed candidate with `ishan-reviewer`,
+persist report and exact evidence; Ishan approval remains separate. Leave diff
+uncommitted unless requested; no push, live use or later slice advancement.
+
+**Execution evidence (2026-10-23, Bun 1.4.4 / SQLite 3.53.4):**
+- Observed behavioral reds before fixes: release/reacquire reset epoch to 1;
+  missing writeGate export; normal recordTransition ignored missing context;
+  acquisition succeeded under kill; renewal shortened expiry; fractional TTL
+  accepted; CLI ignored valid gate flags; explicit NULL clocks silently defaulted.
+  Recovery/negative-state regressions then exercised the implemented paths.
+- `bun run lint`: exit 0, 15 files; `bun run check`: exit 0.
+- `bun test --coverage`: exit 0, 45 tests/421 assertions, 100% functions,
+  95.71% overall lines (baseline 95.67%); store 99.63% (99.52%), framework
+  unchanged 87.50%, index unchanged 100%. No tests removed or skipped; original
+  30 retained, schema/smoke fixtures updated explicitly for approved interfaces.
+- `bun test tests/write-gate.test.ts`: exit 0, 15 tests/144 assertions. Eight real
+  contenders produce exactly one owner and ledger writer. Busy writer cannot
+  finalize; stale deferred snapshot cannot write after competing kill commits.
+  Outer rollback and abrupt process exit preserve committed facts and kill rows.
+  These supersede R-10 prototype proof for in-repo gate/fencing behavior; historical
+  external experiments remain evidence, not deleted or treated as application code.
+- `bun audit`: exit 0, 14 packages/no advisories. No auto-fix or dependency upgrade.
+- Trusted Gitleaks 8.30.1 archive digest
+  `551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb`
+  and executable/archive byte match verified. Exact scan pattern:
+  `env -i PATH=/usr/bin:/bin <verified-gitleaks> dir <file> --no-banner --redact=100 --ignore-gitleaks-allow --gitleaks-ignore-path /tmp/opencode/loom-t01-no-ignore`.
+  Task-file scans clean, final governance/report rescan required after review.
+- Historical document-validator heredoc, protected-file comparison and
+  `git diff --check` pass. No production clock/power-loss/restore, isolation,
+  live provider, full kill actuation or complete policy qualification claimed.
+- Fixed-artifact [T-02 advisory](research/reviews/2026-10-23-p1-t02.md): READY FOR
+  HUMAN REVIEW, no confirmed findings. Baseline
+  `aa3287bb61867d0e772595eb5bd830155279e13d` plus overlay manifest SHA-256
+  `d6660a59fe85fd09f31abbfcc03eec9c6832a4662b237e7a090975a8c34ef704`.
+  Parent confirmed unchanged reviewed source/test hashes, removed only its owned
+  temporary repository snapshot, and completed final ten-file trusted secret scan,
+  document/whitespace/protected-file checks. Original schema DDL and T-03 source
+  suffix/tests remain unchanged. Report's pending closeout is historical; human
+  disposition remains pending. No commit, push, live use or next slice authorized.
+
+**Owner continuation (2026-10-24):** owner requested “commit and continue”. This
+authorizes committing the verified T-02 implementation/report and beginning the
+next planned T-04 work package, with its detailed contract before code. It does
+not attest Ishan's T-02 approval: that disposition remains pending. Pre-commit
+ordered gates repeated successfully with unchanged reviewed source/test hashes:
+45 tests/421 assertions, 100% functions/95.71% lines, focused 15 tests/144
+assertions, dependency audit clean; trusted task-file scans and document/protected
+checks pass. No push, G1 closure, live provider or production effects authorized.
+
+## T-03 completed execution record (historical)
+
+The approved T-03 contract/evidence below describes `aa3287b`; the active T-02
+specification above governs the authorized gated-write interface changes.
+
 - **Work package:** P1 / T-03 native audit lifecycle, started 2026-10-23.
 - **Authority:** owner requested “commit and continue”; confirmed lifecycle
   function test seams and keeping archival retirement/deletion disabled.

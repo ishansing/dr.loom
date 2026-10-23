@@ -7,7 +7,7 @@ import {
 	getLastTransition,
 	initSchema,
 	openDb,
-	recordTransition,
+	recordTransitionForMigration,
 	releaseWorkspaceLease,
 } from "../src/store.ts";
 
@@ -29,6 +29,7 @@ describe("leases", () => {
 		try {
 			initSchema(db);
 			const first = acquireWorkspaceLease(db, {
+				runId: "r1",
 				workspace: "ws",
 				owner: "a",
 				ttlMs: 1000,
@@ -38,6 +39,7 @@ describe("leases", () => {
 			const epochA = first.ok ? first.epoch : -1;
 
 			const blocked = acquireWorkspaceLease(db, {
+				runId: "r1",
 				workspace: "ws",
 				owner: "b",
 				ttlMs: 1000,
@@ -46,6 +48,7 @@ describe("leases", () => {
 			expect(blocked.ok).toBe(false);
 
 			const next = acquireWorkspaceLease(db, {
+				runId: "r1",
 				workspace: "ws",
 				owner: "b",
 				ttlMs: 1000,
@@ -74,13 +77,13 @@ describe("ledger recovery + audit", () => {
 		const path = `/tmp/opencode/loom-test-${Date.now()}.sqlite`;
 		const db = openDb(path);
 		initSchema(db);
-		recordTransition(db, {
+		recordTransitionForMigration(db, {
 			runId: "r1",
 			phase: "slice",
 			status: "running",
 			resumePoint: "slice-2",
 		});
-		const committed = recordTransition(db, {
+		const committed = recordTransitionForMigration(db, {
 			runId: "r1",
 			phase: "slice",
 			status: "committed",

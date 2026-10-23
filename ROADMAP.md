@@ -299,6 +299,23 @@ has no confirmed findings. Owner subsequently relayed Ishan's approval and reque
 “commit” on 2026-10-23; implementation/report approval recorded, no independent
 signature claimed. G1 remains open; no push or subsequent slice authorized.
 
+**T-02 started (2026-10-23):** owner subsequently requested “continue” from
+approved T-03 commit `aa3287b`. Clean branch `feat/p1-write-gate`; owner confirmed
+required transition/CLI gate context, retained expired lease rows for monotonic
+fencing, and public test seams. Audit reconciliation remains bookkeeping, not
+execution authority. Kill actuation/policy/effects stay in later slices; G1 open.
+
+**T-02 candidate (2026-10-23):** native transition/CLI writes require live gate
+context; released leases retain monotonic fencing history. Ordered lint/typecheck,
+45-test coverage and dependency audit pass, coverage above baseline.
+[Fixed-artifact AI review](research/reviews/2026-10-23-p1-t02.md) has no confirmed
+findings and is ready for human review; Ishan disposition pending. No commit/push,
+next-slice or live-use authorization.
+
+**Owner continuation (2026-10-24):** owner subsequently requested “commit and
+continue”, authorizing T-02 commit and T-04 contract/discovery. Ishan's T-02
+disposition remains pending; no approval inferred, push/live use or G1 closure.
+
 **Outcome:** the control plane can record, authorize, stop and recover a run
 without trusting an agent process. Existing SPEC milestone 1; no live model needed.
 

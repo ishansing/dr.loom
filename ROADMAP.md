@@ -203,7 +203,8 @@ choices are exercised. P5/H1 dates are forecasts, not commitments.
 ### P0 — Product contract and irreversible decisions
 
 **Execution status (2026-10-23): G0 ACCEPTED / CLOSED** by the owner's explicit
-“G0 accepted” decision. P1 implementation has not started. Earlier P0 preparation
+“G0 accepted” decision. P1 was subsequently started by a separate owner request
+(see P1 status below). Earlier P0 preparation
 started in the [support profile and acceptance matrix](research/phase-0/05-p0-support-profile.md).
 Existing Bun/TypeScript workflow, Linux/local evaluation and offline-only calls
 confirmed. The owner accepted coding-agent SDK `1.4.0` in
@@ -272,6 +273,11 @@ credential exposure or the first deployment boundary. The developer/operator
 approves scope and failure assumptions. Pin changes, if any, are explicit commits.
 
 ### P1 — Authoritative core and safe effect admission
+
+**Started 2026-10-23:** owner stated “merged. start P1”; PR #4 merge verified at
+`2be0e4f`. First slice is approved T-01 on `feat/p1-schema-migrations`.
+Discovery/baseline and exact contract precede test-first implementation. G1 is
+open; no live provider, production migration or later-slice completion implied.
 
 **Outcome:** the control plane can record, authorize, stop and recover a run
 without trusting an agent process. Existing SPEC milestone 1; no live model needed.

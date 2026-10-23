@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { mkdirSync } from "node:fs";
 import { checkFramework, parseFrameworkRef } from "../src/framework.ts";
 import {
 	acquireWorkspaceLease,
@@ -69,7 +70,8 @@ describe("leases", () => {
 
 describe("ledger recovery + audit", () => {
 	test("last committed transition survives reopen; partial audit never reads as success", async () => {
-		const path = `/tmp/loom-test-${Date.now()}.sqlite`;
+		mkdirSync("/tmp/opencode", { recursive: true });
+		const path = `/tmp/opencode/loom-test-${Date.now()}.sqlite`;
 		const db = openDb(path);
 		initSchema(db);
 		recordTransition(db, {
@@ -105,6 +107,6 @@ describe("ledger recovery + audit", () => {
 		} finally {
 			db2.close();
 		}
-		await Bun.$`rm -f ${path} ${path}-wal ${path}-journal`.quiet();
+		await Bun.$`rm -f ${path} ${path}-wal ${path}-shm ${path}-journal`.quiet();
 	});
 });

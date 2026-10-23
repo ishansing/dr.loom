@@ -275,6 +275,192 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
 
 ## Active phase specification
 
+- **Work package:** P1 / T-01 schema and safe migrations, started 2026-10-23.
+- **Authority:** owner stated “merged. start P1”; PR #4 merge verified at
+  `2be0e4fe7a593887ce690062e68a8dfaeaf170a7`. G0 closed; T-01 scope approved.
+- **Branch:** `feat/p1-schema-migrations`, clean start from that merge.
+- **Status:** T-01 implementation and regression tests written; final ordered
+  gates and exact-artifact review required before sign-off.
+  Owner confirmed store/SQL/CLI test seams, legacy NULL identities and a temporary
+  verified Gitleaks download. No other P1 slice, live provider or release enabled.
+
+### 1. Phase Objective & Scope
+
+Implement schema v2 in the existing store: atomic fresh/recognized-scaffold
+migration, explicit durability, immutable audit, scoped latest views and empty
+kill/budget/usage/grant structures. Preserve existing public helper signatures,
+return objects and CLI JSON; old helpers remain unattributed claim writers,
+not effect/approval authority. T-03 will own native lifecycle validation.
+No Pi/runtime dependency, runner, provider call, policy, outbox relay, kill/reset
+implementation, production migration, automatic backup job or new CLI command.
+No commit/push/merge without separate request.
+
+Owner-approved seams: public `openDb`/`initSchema` and reopen behavior; SQL
+schema/views/immutability on their returned Database; CLI subprocess regressions.
+No private-helper mocks. Legacy rows keep their exact existing values and NULL
+new identities; no inferred actor, main thread, action ID, grant or approval.
+
+### 2. Environment & Upstream State
+
+Linux x86_64 `7.2.8-9-omarchy`, Bun **1.4.4** (already installed; no upgrade),
+SQLite **3.53.4**, Node `26.7.0`, installed TypeScript/Biome and unchanged lock.
+Installed Bun declarations confirm synchronous `transaction().immediate`,
+`inTransaction`, `serialize` and readonly connections. Official SQLite driver
+docs checked at https://bun.com/docs/runtime/sqlite (old bun.sh URL returned 404).
+Docs are evidence; ADR-008 requires FULL, not the docs' optional NORMAL tuning.
+
+Fresh ordered baseline: `bun run lint` exit 0 (12 files), `bun run check` exit 0,
+`bun test --coverage` exit 0 (3 pass, 100% functions / **89.73% lines**;
+store 91.95%, framework 87.50%), `bun audit` exit 0 (14 packages, no advisories).
+Historical Bun 1.4.3 coverage was 90.99% lines; source is unchanged and baseline
+runtime differs, so use today's fresh baseline rather than claim equivalence.
+Gitleaks/TruffleHog absent on PATH. Owner authorized Gitleaks **8.30.1** under
+`/tmp/opencode`, verified against published checksums/release digest; no global
+installation, telemetry, credential/cache access or Loom dependency.
+
+### 3. Architecture & File Manifest
+
+| File | Responsibility |
+| --- | --- |
+| `src/store.ts` | Sole schema owner; recognition, PRAGMAs, atomic migration, SQL definitions and compatibility helper preservation |
+| `tests/schema-v2.test.ts` | Fresh/legacy/refusal/rollback/immutability/views/durability/clone-restore/public-helper/CLI tests |
+| `tests/smoke.test.ts` | Keep three existing cases; move disposable file fixture under `/tmp/opencode` if touched |
+| `SPEC.md`, `decisions.md`, `ROADMAP.md` | Exact contract, significant legacy/durability decision, phase status/evidence |
+| `research/reviews/2026-10-23-p1-t01.md` | AI-assisted exact-artifact report for Ishan; human disposition separate |
+
+`src/cli.ts` opens/initializes in init/record/status; `src/index.ts` re-exports
+store functions/types. Test these callers without changing their shapes. Preserve
+package/config/lock/framework pin and approved P0 reports. CLI read-only status
+hardening is later T-07; do not claim it is implemented by T-01.
+
+**Exact schema/migration contract:**
+- Recognize only empty unversioned DB; exact known scaffold (implicit v1,
+  `user_version=0`, no migration table); or intact v2 with `user_version=2` and
+  one nonempty `schema_migrations(version=2, applied_at)` row. Other metadata,
+  extra/missing/changed application schema objects or versions fail closed.
+  Compare SQLite's stored schema declarations to references built from shipped
+  DDL (including views/triggers/indexes), not table names alone. Ignore SQLite
+  internal objects; no arbitrary SQL from the database is executed as migration.
+- Reject unsupported DBs before changing persistent journal mode. Reject nested
+  initialization transactions rather than silently using savepoints. Close the
+  owned connection if open/configuration fails; caller retains directly supplied
+  connections on initialization failure.
+- File-backed connections require WAL, synchronous=FULL (2), foreign_keys=1,
+  recursive_triggers=1 with read-back. In-memory fixtures explicitly use MEMORY
+  journal, not file-backed durability proof. Configure outside transactions;
+  recheck schema under `BEGIN IMMEDIATE`, migrate/mark version in one transaction.
+- Keep original transitions/leases/audit columns and rows, including IDs,
+  timestamps/evidence/status strings and AUTOINCREMENT high-water marks.
+  Add nullable `thread_id TEXT` to transitions/audit, and nullable
+  `action_id TEXT`, `actor TEXT`, `tier TEXT` to audit. No legacy rewriting.
+- Add `schema_migrations(version INTEGER PRIMARY KEY, applied_at TEXT NOT NULL)`;
+  only version 2 is recorded at actual migration time; do not invent v1 history.
+- Add `kills(scope TEXT PRIMARY KEY, engaged_at TEXT NOT NULL, actor TEXT NOT
+  NULL, reason TEXT NOT NULL)`; `budgets(run_id TEXT, kind TEXT, used INTEGER,
+  "limit" INTEGER NULL, updated_at TEXT)` keyed by run/kind with nonnegative
+  integer used/limit; kinds time-ms/retries/cost-tokens/cost-minor-units/threads/
+  tool-calls. NULL limit represents unset, not a seeded allowance.
+  Stored counter/expiry integers are bounded to JavaScript's safe range
+  (0..9007199254740991); no floating-point counter or silent integer rounding.
+- Add `usage(id INTEGER PRIMARY KEY AUTOINCREMENT, run_id TEXT, thread_id TEXT,
+  kind TEXT, amount INTEGER, evidence_ref TEXT NULL, created_at TEXT)` with required
+  nonempty IDs/kind and nonnegative integer amount; immutable inserts, no provider
+  ingestion/accounting enabled. Add `grants(grant_id TEXT PRIMARY KEY, run_id TEXT,
+  thread_id TEXT, tool TEXT, pattern TEXT, expires_at INTEGER)` with nonempty text
+  fields and nonnegative integer expiry. All new authority/counter tables empty.
+- `latest_transition`: latest id per run/thread for known, nonempty thread IDs.
+  `latest_audit`: latest id per run/thread/action with complete nonempty
+  identities and tier standard/high-risk/critical. Legacy NULL rows are excluded;
+  their original query APIs still read them as claims. Views are observations,
+  not authorization. No seeded policies, synthetic identities or effective grants.
+- Audit and usage UPDATE/DELETE fail by BEFORE triggers. Recursive triggers
+  plus BEFORE INSERT collision guards prevent REPLACE/UPSERT from rewriting
+  existing immutable rows. Schema validation rejects removed/altered guards.
+- Rollback uses verified consistent backups into a separate path, never schema
+  downgrade/reset or deletion of live WAL. Fixtures use SQLite `VACUUM INTO`
+  outside transactions; test clone integrity/version/data, not production RTO.
+
+### 4. Test Plan & Coverage Matrix
+
+| Seam/case | Required observation |
+| --- | --- |
+| Fresh and repeat init | Exact tables/columns/constraints/indexes/views/guards; one migration record; no duplicate facts |
+| Recognized legacy | Every original field preserved; NULL new identities, same sequences, no new authority rows or view promotion |
+| Unknown/newer/partial/drifted | Refusal with original schema/rows/version/journal unchanged; no reset or repair-by-guessing |
+| Mid-migration disk exhaustion | SQLite max_page_count fault; original DDL/data/version intact after failure/reopen, then retry succeeds |
+| Immutable records | UPDATE, DELETE, OR REPLACE, UPSERT/ID collision cannot alter audit/usage; normal INSERT still works |
+| Scoped views | Latest-per-key; separate run/thread/action; legacy claims excluded |
+| File durability/read-only/nesting | Mandatory PRAGMA read-back, rejected unsafe init context, connection/resource cleanup |
+| Backup/restore/reopen | Consistent clone and integrity_check; source unchanged; version mismatch rejected |
+| Public compatibility/CLI | Existing helpers/JSON preserved; init/record/status subprocesses work, unknown schema exits nonzero |
+| Coverage/security | Fresh baseline comparison; no coverage removal/suppression; read-only audit and trusted secret scan |
+
+Vertical test-first slices: one failing behavior, minimal implementation, repeat.
+No infrastructure-only test failure relabeled as a behavioral red. All fixture
+files synthetic under `/tmp/opencode` and cleaned with exact owned paths.
+
+### 5. Security, Observability & Edge Cases
+
+Unknown DB content is not migration authority. Parameterize values; fixed shipped
+DDL only. Owner accepted nullable legacy identity exception to R-11/R-13 proposals;
+no unknown claim enters authoritative scoped views. Preserve original schemas
+and data on refused migration. Trusted host/operator/DB access remains a boundary
+assumption; raw Database handles can drop triggers, so this is not a hostile-
+same-process sandbox. Validate guards on initialization, not a claimed SQL firewall.
+No live model, credentials, raw .env, network provider or production DB access.
+Errors must be explicit without dumping record contents. No accidental debug logs.
+Scanner absence/failure blocks T-01 sign-off; do not substitute regex review.
+
+### 6. Blast Radius & Rollback Plan
+
+Affected layer is the local store and schema, plus its existing CLI/library
+consumers. Test only disposable DBs; no user database is opened/migrated. Existing
+claims remain readable; native identity APIs/lifecycle/authorization wait for
+their later slices. SQL schema is a deliberate v2 change; unknown layouts refuse.
+For real upgrades require operator-approved consistent backup and restore review;
+code rollback is not a downgrade. Revert only authorized task changes, preserving
+user work, P0 history and verified backup artifacts. No production support claim.
+
+### 7. Definition of Done (DoD)
+
+Run in order: `bun run lint` → `bun run check` → `bun test --coverage` →
+`bun test tests/schema-v2.test.ts` → `bun audit` → verified Gitleaks local scan.
+Compare coverage with today's 100% functions/89.73% lines and per-file baseline;
+record any denominator/runtime differences. Run `git diff --check` and the
+document/structure validator retained below (active-section selection stops at
+the next level-two heading). Verify unchanged config/lock/pin with
+`git diff --exit-code -- package.json bun.lock biome.json tsconfig.json .github FRAMEWORK_REF`.
+Review the exact diff/candidate with `ishan-reviewer`, persist report and pending
+Ishan disposition. Record commands/results, red/green proof and limitations here;
+G1 stays open. No automatic commit/push or advancement to another slice.
+
+**Implementation proof so far (2026-10-23):** registry, nullable legacy metadata,
+strict schema refusal, append-only and durability behaviors each had intended
+failing tests before implementation. Disk-full fault and competing writer tests
+show atomic rollback/refusal and clean retry without private mocks. A discovered
+`LIKE 'sqlite_%'` wildcard mistake was reproduced by an extra `sqlitexrogue`
+table and fixed with literal-prefix `GLOB 'sqlite_*'`; its regression passed.
+CLI and backup/clone checks are synthetic only. Current verified temporary scanner
+binary: `/tmp/opencode/loom-gitleaks-8.30.1.pje2WE/gitleaks`; archive SHA-256
+`551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb`, matching
+published checksum and GitHub release digest; checksum-list digest also matched.
+Initial 84-file tracked-source-plus-new-test snapshot scan found no leaks;
+final candidate checks and review results must be recorded below or in its report.
+
+| Fresh gate (2026-10-23) | Result | Limitation |
+| --- | --- | --- |
+| `bun run lint` | Exit 0; 13 files | Configured Biome rules only; initial formatting errors corrected in task files |
+| `bun run check` | Exit 0 | Existing strict TS configuration unchanged |
+| `bun test --coverage` | Exit 0; 16 pass/115 assertions; 100% functions, 95.63% lines | Fresh baseline 100%/89.73%; store improves 91.95%→99.40%, framework unchanged 87.50%; index now measured at 100%. Durability read-back mismatch guard not fault-injected on a platform honoring those PRAGMAs |
+| `bun test tests/schema-v2.test.ts` | Exit 0; 13 pass/103 assertions | Public store/SQL, file-backed/native faults, backup/CLI fixtures; no production migration or runner conformance |
+| `bun audit` | Exit 0; no vulnerabilities among 14 packages | No full license/provenance assessment; no auto-fix or dependency changes |
+| Trusted secret scan and final artifact review | Initial verified Gitleaks scan passed; final candidate snapshot/result/identity recorded in T-01 report | Current source snapshot only, not credential stores or full Git history; Ishan disposition separate; G1 remains open |
+
+## P0 completed execution record (historical)
+
+Historical scope/commands/results below describe P0 and are not P1 authorization.
+Current work is governed by the active P1 specification above.
+
 - **Work package:** P0 G0 acceptance record, 2026-10-23; prior preparation/evidence dated 2026-10-22.
 - **Authority:** user authorized starting P0 after PR #1 merged; confirmed existing
   TS repository, Linux/local evaluation and offline-only experiments.
@@ -627,7 +813,7 @@ for file in changed:
     assert all(line == line.rstrip() for line in file.read_text().splitlines()), file
 names = [p.name.casefold() for p in root.iterdir() if p.is_file()]
 assert len(names) == len(set(names)), 'case-only duplicate root file'
-active = pathlib.Path('SPEC.md').read_text().split('## Active phase specification\n', 1)[1]
+active = pathlib.Path('SPEC.md').read_text().split('## Active phase specification\n', 1)[1].split('\n## ', 1)[0]
 assert re.findall(r'^### (\d)\. ', active, re.M) == list('1234567')
 records = pathlib.Path('decisions.md').read_text()
 ids = re.findall(r'^## \[(ADR-\d+)\]', records, re.M)

@@ -563,3 +563,41 @@ gates. No live calls, login, allowance consumption, additional spend, dependency
 promotion, deployment, commit/push or P1 implementation is authorized by this
 acceptance alone. Approved reports remain unchanged; this is a later owner
 gate disposition, not an expansion of Ishan's artifact-specific approval.
+
+## [ADR-013] - 2026-10-23 (T-01 schema and legacy claims)
+
+**Title:** Recognize exact store schemas and preserve unknown legacy identities.
+
+**Status:** Accepted scoped design after owner approved store/SQL/CLI test seams
+and “Preserve unknowns as NULL”; implementation and fresh gates required.
+
+**Context & Problem Statement:** owner authorized P1 after PR #4 merged. The old
+R-11/R-13 research proposes non-null identities/main-thread defaults, but current
+G0 requires preserving legacy claims without fabricated authority. The scaffold
+has no schema registry, durability read-back or immutable audit enforcement.
+
+**Options Evaluated:** backfill guessed identities; move legacy records to new
+archive APIs; preserve old fields and add nullable unknown identities with scoped
+views excluding unattributed claims. Owner selected the latter.
+
+**Decision & Rationale:** extend `src/store.ts` only; recognize empty/known
+unversioned scaffold/intact v2, refuse all other layouts. Migration and registry
+commit under BEGIN IMMEDIATE, with WAL/FULL/foreign-key/recursive-trigger read-back
+on file-backed connections. Preserve helper signatures/JSON; legacy helpers write
+claims, not authority. Native lifecycle identity enforcement belongs to T-03.
+Use deterministic shipped-DDL schema references to detect drift rather than trust
+table names or a version marker. New authority structures start empty.
+
+**Consequences & Tech Debt:** nullable metadata is an explicit owner-approved
+legacy exception to older proposals, not permission to certify an unknown actor.
+Migration compatibility is intentionally limited to known declarations. Trigger
+guards protect supported writes including replacement collisions; raw same-process
+SQL/DDL authority is outside this protection, so worker isolation remains required.
+No real DB migration or model use authorized. Restore uses verified clones, not
+automatic downgrade. Tests use confirmed public seams and native SQLite faults.
+
+**Tooling/environment event:** already-installed Bun is 1.4.4; fresh 3-test
+baseline is 100% functions/89.73% lines, versus historical 90.99% on 1.4.3 with
+unchanged source. No runtime upgrade performed. Owner authorized temporary
+Gitleaks 8.30.1 download/checksum verification/local scan under `/tmp/opencode`;
+no project dependency or global installation. Its scan result is still required.

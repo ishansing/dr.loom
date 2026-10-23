@@ -1,8 +1,9 @@
 # P0 — G0 decision pack
 
-Prepared **2026-10-22**, from `5ae0737`. **G0 is OPEN; P1 has not started.**
+Prepared **2026-10-22**, from `5ae0737`; owner accepted **2026-10-23**.
+**G0 ACCEPTED / CLOSED; P1 implementation has not started.**
 This pack turns the [roadmap's P0 requirements](../../ROADMAP.md#p0--product-contract-and-irreversible-decisions)
-into explicit owner decisions and a blocked implementation backlog. Accepted
+into explicit owner decisions and a scoped implementation backlog. Accepted
 design choices, remaining proposals and implementation evidence are different states.
 Accepting a target does not install it or certify production support.
 
@@ -19,8 +20,8 @@ Accepting a target does not install it or certify production support.
 | Operator/transport | Accepted design [ADR-009](../../decisions.md#adr-009---2026-10-22-p0-operatortransport-proposal) | Trusted local operator channel, narrow runner pipe and command-family contract below; concrete schemas/auth implementation/review still required. |
 | Durability/retention | Accepted design [ADR-008](../../decisions.md#adr-008---2026-10-22-p0-durability-proposal) | Explicit authoritative WAL/FULL, consistent backups and recovery targets below; destination/protection and drills not implemented. |
 | Host/capacity/deployment | Lab target accepted; rootless setup installed | Owner authorized the user-level rootless lab install on 2026-10-22; CPU/memory/PID limits and whole-container cleanup were observed. A fixed 2 GiB ext4 workspace cap was provisioned and ENOSPC-tested; mount/log integration and boot persistence remain. Final image pin, port publishing, broker and production qualification remain open. Not production support. |
-| Independent review | Original report approved; follow-up separate | Ishan Singh, Principal Developer; owner relayed approval of the `fc0e05e` report. R-001 is corrected in the new document candidate; original report preserved. Follow-up review/disposition applies to the corrected artifact, not inherited approval. |
-| Build authorization | OPEN | Complete G0 decision/evidence review, then explicitly authorize P1. No G0 exception or phase advancement is granted here. |
+| Independent review | Original/follow-up reports approved, owner-relayed | Ishan Singh, Principal Developer; approval provenance recorded in each report. R-001 resolved in the follow-up candidate. Preserve report identities; later implementation needs its own review. |
+| Gate acceptance / build start | G0 ACCEPTED; P1 NOT STARTED | Owner stated “G0 accepted” on 2026-10-23; T-01 scope previously approved. Detailed active P1 specification/migration contract and fresh baseline precede code; phase start is separate. |
 
 ## 2. First qualification journey
 
@@ -296,8 +297,8 @@ not completed P1/P2 implementation (which would be circular). Required before P1
 - Named owner/booking for independent boundary/recovery review; reviewer availability
   is a real dependency, not an AI self-review checkbox. Named: Ishan Singh,
   Principal Developer; owner-stated availability “always available”; owner relayed
-  report approval for `fc0e05e` on 2026-10-22. R-001 correction is prepared for
-  follow-up review; approval does not transfer to the corrected artifact.
+  approvals for the original and follow-up reports are recorded separately;
+  R-001 is resolved in the follow-up candidate, not by transferring approval.
 - Version/profile evidence and setup/qualification owners, no unresolved choice
   changing state ownership or credential/deployment boundaries; approvals recorded
   in ADRs and the support matrix. User-level rootless setup is installed; one
@@ -312,7 +313,7 @@ not completed P1/P2 implementation (which would be circular). Required before P1
   E2E. Resolve trusted secret-scanner availability before affected code-phase
   closure; the limited Biome rule set is not a broad static/security audit.
 
-## 7. Next two-week P1 backlog — blocked until G0 approval
+## 7. Next two-week P1 backlog — G0 accepted; implementation not started
 
 One package in progress; do not promote the Pi dependency merely to build the DB core.
 Reuse the [core implementation plan](../pi/09-milestone-1-implementation.md) and
@@ -364,8 +365,10 @@ closed; setup, precise implementation contracts and evidence are not implied.
    to Ishan on 2026-10-22; no direct signature or independent identity check claimed.
    An [AI-assisted report for `fc0e05e`](../reviews/2026-10-22-g0-fc0e05e.md)
    records scope, evidence and that disposition. R-001's mismatch is corrected
-   to the accepted one-hour target; the new candidate needs follow-up disposition.
-   No waiver, G0 closure or P1 authorization is inferred.
+   to the accepted one-hour target; follow-up approval is recorded in
+   `research/reviews/2026-10-22-g0-follow-up.md`. The owner's separate
+   “G0 accepted” decision on 2026-10-23 closes G0; no waiver or P1 execution
+   permission is inferred from review approval.
 3. Operator has authorized the user-level rootless lab setup; remaining operator
    decisions cover workspace-cap integration/boot persistence, backup
    destination/protection, production host and any boot/linger policy. Review
@@ -374,10 +377,10 @@ closed; setup, precise implementation contracts and evidence are not implied.
 
 The [closure packet](09-g0-closure-readiness.md) maps each remaining task to its
 gate/owner. Owner has approved T-01's schema/safe-migration scope as the first
-slice (“T-01 approved”). Final G0 package acceptance remains outstanding;
-detailed migration contracts and phase authorization precede code. Later implementation proof is
+slice (“T-01 approved”) and accepted G0 on 2026-10-23 (“G0 accepted”). Detailed
+migration contracts, active P1 specification and phase authorization precede code. Later implementation proof is
 not circularly required before core planning can close.
 
-Until these and the G0 checklist are resolved, continue planning or hand off;
-do not call P1 started, certify support or improvise authority. This pack is a
-docs-only handoff; neither a cloud booking nor an upstream issue was published.
+The G0 design checklist is accepted; later engineering/qualification duties
+remain in force. Do not call P1 started, certify support or improvise authority
+from this gate record. No cloud booking or upstream issue was published by it.

@@ -202,15 +202,16 @@ choices are exercised. P5/H1 dates are forecasts, not commitments.
 
 ### P0 — Product contract and irreversible decisions
 
-**Execution status (2026-10-22):** user authorized P0; days 1–2 preparation
+**Execution status (2026-10-23): G0 ACCEPTED / CLOSED** by the owner's explicit
+“G0 accepted” decision. P1 implementation has not started. Earlier P0 preparation
 started in the [support profile and acceptance matrix](research/phase-0/05-p0-support-profile.md).
 Existing Bun/TypeScript workflow, Linux/local evaluation and offline-only calls
 confirmed. The owner accepted coding-agent SDK `1.4.0` in
 [ADR-005](decisions.md#adr-005---2026-10-22-p0-runtime-recommendation).
-G0 remains open; no dependency/sandbox promotion or P1 authorization.
-The [remaining G0 decision pack](research/phase-0/06-g0-decision-pack.md) records
+No dependency/sandbox promotion or P1 implementation authorization follows from
+this acceptance alone. The [G0 decision pack](research/phase-0/06-g0-decision-pack.md) records
 the accepted disposable Loom reference/rootless Docker lab target, accepted
-framework/operator/recovery design and blocked T-01/T-03 backlog. A provider/model
+framework/operator/recovery design and planned T-01/T-03 backlog. A provider/model
 profile is now recorded (personal OpenAI account, `gpt-6.1-sol`, Plus plus Free
 subject to availability, training opt-out confirmed and Include environments off,
 both owner-attested). Owner approved deferring live qualification while SIWC
@@ -225,9 +226,10 @@ owner-stated availability “always available”). Owner relayed his approval of
 [AI-assisted G0 report for `fc0e05e`](research/reviews/2026-10-22-g0-fc0e05e.md)
 on 2026-10-22. R-001's roadmap target is corrected to accepted ADR-008's one hour;
 the original report is retained and follow-up review is separate. The
-[closure packet](research/phase-0/09-g0-closure-readiness.md) awaits final owner
-acceptance; T-01's schema/safe-migration scope is now owner-approved. G0 remains
-open; P1 is not started or authorized by this scope approval.
+[closure packet](research/phase-0/09-g0-closure-readiness.md) is now owner-accepted;
+T-01's schema/safe-migration scope is approved. Next: detailed P1/T-01 specification,
+migration contract and fresh baseline before code. Later qualification remains
+mandatory; P1 is not started by this gate-acceptance record.
 
 **Outcome:** the developer can build without guessing the product, support
 boundary or runtime. Target duration: two weeks; no open-ended research phase.

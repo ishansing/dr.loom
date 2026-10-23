@@ -519,8 +519,8 @@ remains separate. This event does not approve the uncommitted reviewer tooling.
 
 **Title:** Separate provider-independent core readiness from live integration qualification.
 
-**Status:** Accepted scope boundary and owner-approved T-01 scope; final G0
-package acceptance remains open. No P1 execution authorized by this scope record.
+**Status:** Accepted scope boundary, owner-approved T-01 scope and owner-accepted
+G0 package (2026-10-23). P1 implementation not started or authorized by this record.
 
 **Context & Problem Statement:** the G0 review found a restore-target mismatch
 and asked whether unresolved provider eligibility changes core ownership. The
@@ -552,3 +552,14 @@ closure packet, not G0 package acceptance, phase advancement, a specific SQL
 migration or release. Prepare the detailed P1 contract before code; keep live
 providers disabled. This is post-review approval metadata; approved review
 reports and their original candidate identity remain unchanged.
+
+**G0 acceptance — 2026-10-23:** owner stated “G0 accepted” after the final
+scope/failure-assumption summary and design-readiness assessment. G0 is closed
+as a build-ready design/feasibility gate, not production certification. T-01's
+schema/safe-migration scope remains approved; its detailed migration contract,
+active P1 specification and fresh baseline precede code. Deferred containment,
+backup/restore, scanner, framework and provider obligations retain their later
+gates. No live calls, login, allowance consumption, additional spend, dependency
+promotion, deployment, commit/push or P1 implementation is authorized by this
+acceptance alone. Approved reports remain unchanged; this is a later owner
+gate disposition, not an expansion of Ishan's artifact-specific approval.

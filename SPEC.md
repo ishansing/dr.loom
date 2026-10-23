@@ -275,11 +275,15 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
 
 ## Active phase specification
 
-- **Work package:** P0 G0 closure preparation and review remediation, 2026-10-22.
+- **Work package:** P0 G0 acceptance record, 2026-10-23; prior preparation/evidence dated 2026-10-22.
 - **Authority:** user authorized starting P0 after PR #1 merged; confirmed existing
   TS repository, Linux/local evaluation and offline-only experiments.
 - **Branch:** `chore/p0-subscription-provider-review`, from G0 pack `558610f`.
-- **Status:** User specified Codex subscription access and asked to consider
+- **Status (2026-10-23):** **G0 ACCEPTED / CLOSED.** Owner stated “G0 accepted”
+  after reviewing the package and scope/failure assumptions. T-01 scope is
+  approved; P1 implementation has not started. Detailed P1 specification and
+  baseline precede code. No live/provider/production authority is added.
+- **Evidence history:** User specified Codex subscription access and asked to consider
   Google Antigravity subscription. These are provider candidates, not permission
   to log in, consume quotas, add a fallback, replace Pi SDK or claim eligibility.
   Review complete: SIWC direct is a conditional candidate; consumer Antigravity
@@ -312,16 +316,26 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
   integration/data-policy proof stay gated before live use, not synthetic P1.
   Owner approved deferring live qualification with the integration disabled.
   Independent reviewer Ishan Singh's approval of the `fc0e05e` report is relayed
-  by the owner on 2026-10-22; the corrected package requires its own disposition.
-  G0 remains open pending final package acceptance; owner has approved the T-01
+  by the owner on 2026-10-22; the follow-up report approval is recorded separately.
+  Owner accepted the G0 package on 2026-10-23 and previously approved the T-01
   schema/safe-migration scope. No login, live model
   calls or executable application changes. Prior docs commits include `67a94fc`,
   `98a6975`, `7caac84` and `22fbd43`; this workspace-cap delta is covered by the
   owner's commit request.
-- **Next gate:** owner approval of the complete G0 evidence before P1. No paid
-  calls, deployment, dependency promotion or phase advancement authorized here.
+- **Next gate:** prepare the detailed seven-section P1/T-01 specification and
+  exact migration contract before code; P1 start remains a separate action.
+  G1 implementation proof is not satisfied by G0 acceptance. No paid/live calls,
+  deployment or dependency promotion authorized here.
 
 ### 1. Phase Objective & Scope
+
+**Gate acceptance record (2026-10-23):** record the owner's exact “G0 accepted”
+decision against the closure package, approved T-01 scope and stated failure
+assumptions. Synchronize current gate status in SPEC/ROADMAP/decisions and the
+support/decision/closure records; preserve the reviewed reports and their
+artifact identities. This is approval metadata only, not P1 implementation,
+new qualification, install, commit/push or live-use permission. Earlier pending
+G0 language below describes preparation before this explicit acceptance.
 
 **Closure-preparation scope (owner-requested, 2026-10-22):** resolve R-001 using
 the accepted one-hour recovery target; synchronize account attestations; record
@@ -683,3 +697,4 @@ Baseline from governance (2026-10-21): lint/typecheck passed; 3 tests passed,
 | Human disposition update (2026-10-22) | Owner relayed Ishan's approval of the report for `fc0e05e`; provenance recorded; validator passed (251 links), eight-file whitespace/approval assertions and `git diff --check` passed; application/config/pin integrity unchanged | No direct signature claimed; R-001 open, no finding waiver or G0/P1/live-use approval implied. Earlier pending-disposition entries above describe the initial report run. |
 | G0 remediation preparation (2026-10-22) | R-001 assertion first failed (exit 1), then passed after roadmap alignment to one hour; document validator exit 0 (253 links/seven sections/unique IDs); seven-file whitespace and account/disabled-provider/pending-phase assertions passed | Original approved report unchanged. Tier preference/data controls are owner-attested; no live qualification or application/host change. First T-01 slice and later proof ownership are proposed in closure packet; corrected artifact needs follow-up/human disposition. |
 | T-01 scope approval record (2026-10-22) | Owner stated “T-01 approved”; document validator passed (254 links/seven sections/unique IDs), six-file whitespace and scope/authority assertions passed; `git diff --check` passed; code/config/pins/reports unchanged | Approval metadata only; earlier candidate/report snapshots preserved. G0 package acceptance and phase start remain separate; no application tests applicable or implementation performed. |
+| G0 acceptance record (2026-10-23) | Owner stated “G0 accepted”; document validator exit 0 (254 links/seven sections/unique IDs), six-file whitespace/date/acceptance/authority assertions and `git diff --check` passed; code/config/pins/reports unchanged | G0 closed as design/feasibility gate. Existing linked heading retained after validator caught an anchor break. No application tests applicable, no P1 implementation or live/production qualification performed; later gates remain mandatory. |

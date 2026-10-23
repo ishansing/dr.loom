@@ -1,9 +1,10 @@
 # G0 closure preparation — 2026-10-22
 
-**Status: engineering preparation, not G0 acceptance or P1 execution.**
-Baseline: `dbbc576`; current document candidate will be content-hashed for
-follow-up review. Original approved report: `research/reviews/2026-10-22-g0-fc0e05e.md`.
-Ishan's original approval was relayed by the owner; it does not cover this delta.
+**Status: G0 ACCEPTED / CLOSED by owner, 2026-10-23 (“G0 accepted”).**
+Preparation baseline: `dbbc576`; reviewed overlay identity and owner-relayed
+Ishan approval are in `research/reviews/2026-10-22-g0-follow-up.md`. Original report:
+`research/reviews/2026-10-22-g0-fc0e05e.md`. Approval metadata added later does not
+change those reviewed snapshots or expand their approval scope. P1 is not started.
 
 ## Decisions now established
 
@@ -29,10 +30,10 @@ Ishan's original approval was relayed by the owner; it does not cover this delta
 | Isolation/credential boundary | ADR-006/009 accepted; external supervisor and broker own authority/credentials; disposable worker has neither | Developer tests real runner in G2; no unsafe provider route required by T-01 |
 | Durability/recovery | ADR-008 accepted; R-001 aligned to one hour | Developer verifies documentation correction; measured restore later |
 | Provider/data/spend intent | Disabled SIWC and deferred live qualification approved; attestations recorded | Owner/developer retain qualification and express-live-use gates |
-| Review | Original report approved for fc0e05e; corrected candidate requires follow-up | AI reviewer prepares report; Ishan supplies disposition for that artifact |
-| First core slice | T-01 schema/safe-migration scope approved by owner: “T-01 approved”; T-03 remains next, not authorized | Developer prepares detailed active P1 specification; exact migration contract and G0 package acceptance precede code |
+| Review | Original and follow-up approvals attributed to Ishan via owner; R-001 resolved in follow-up candidate | Preserve artifact-specific reports; actual later implementation still needs review |
+| First core slice | T-01 schema/safe-migration scope approved by owner: “T-01 approved”; T-03 remains next, not authorized | Developer prepares detailed active P1 specification and migration contract before code |
 | Engineering checks | Existing tools/mandatory tests retained; fresh baseline to record before code | Developer; missing scanner blocks affected code-phase closure, not concealed |
-| Final G0 decision | OPEN; do not infer from remediation request | Owner approves build-ready packet and scope/failure assumptions; P1 start remains explicit |
+| Final G0 decision | ACCEPTED / CLOSED, 2026-10-23: owner stated “G0 accepted” | Scope/failure assumptions accepted as design; P1 start and later qualification remain explicit |
 
 The provider deferral changes qualification timing, not storage ownership,
 runtime choice, credential exposure or the first deployment boundary. If future
@@ -122,12 +123,12 @@ pretend implementation is complete. Record actual checks in SPEC/follow-up.
 | Before real framework workflow (G2/G3) | Provision/verify exact locked children including tdd/code-review; required inputs, hash checks and complete workflow | Developer; absent/drifted child is handoff, not ambient-global substitution |
 | Before production/restore (G4) | Concrete host/backup destination/protection in separate failure domain, boot policy, backup manifests/retention and timed one-hour restore/reconciliation | Operator selects/approves resources; developer tests; no production effects before qualification |
 
-## Human closeout request
+## Human closeout record
 
 Ishan's follow-up report approval is recorded separately, as relayed by the
-owner. Owner has now approved bounded T-01 scope. Final acceptance of the G0
-package remains outstanding; keep G0 OPEN and P1 NOT STARTED until it is recorded
-and phase start is authorized. Detailed migration contracts precede code. Approval of
-the old report or of provider deferral is not approval of a different candidate,
-implementation, deployment or live quota use. No commits/pushes are authorized
-by the current preparation request.
+owner. Owner approved bounded T-01 scope and explicitly accepted G0 on
+2026-10-23 (“G0 accepted”), closing the design/feasibility gate. P1 implementation
+is NOT STARTED; its detailed migration contract, active phase specification and
+fresh baseline precede code. Later qualification obligations above are not
+waived. No live provider, production, install, commit or push permission follows
+from this gate acceptance alone.

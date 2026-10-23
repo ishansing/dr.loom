@@ -37,9 +37,10 @@ authority/workflow/verification stay provider/model-independent; this is only th
 first qualification profile. No live allowance consumption is authorized, paid
 budget stays zero. Owner relayed Ishan Singh's approval of the `fc0e05e` review
 report on 2026-10-22; no direct signature claimed. R-001 is corrected in the new
-document candidate; owner has now approved T-01 scope, with final G0 package
-acceptance still separate. Follow-up report approval is recorded in its own report.
-G0 remains open; [closure preparation](09-g0-closure-readiness.md) is not P1 execution.
+document candidate; follow-up report approval is recorded in its own report.
+Owner approved T-01 scope and stated “G0 accepted” on 2026-10-23.
+**G0 ACCEPTED / CLOSED**; the [closure record](09-g0-closure-readiness.md) does
+not start P1 implementation or certify production support.
 
 ## Observed starting point
 
@@ -145,6 +146,9 @@ return is evidence of completion. See the [normative boundaries](../../SPEC.md#r
 
 ## Open G0 register and next owners
 
+Historical heading retained for existing links. G0 is accepted/closed as of
+2026-10-23; the register now tracks remaining implementation obligations.
+
 | Item | Next owner/action | Closure evidence |
 | --- | --- | --- |
 | Representative repo/runbook families | Disposable Loom checkout selected; developer specifies the bounded first golden and required framework inputs | Approved small TS-fix matrix and task acceptance test; no full workflow proof yet |
@@ -154,8 +158,8 @@ return is evidence of completion. See the [normative boundaries](../../SPEC.md#r
 | Framework drift | Retain/revalidate design closed in ADR-007; developer scopes required-child/full-workflow qualification | Current pin unchanged; source delta reviewed, no real-workflow certificate |
 | Operator controls/transport | Local CLI/runner design accepted in ADR-009; concrete schemas/auth details and proof remain phase work | Approval/kill/reset/recovery walkthrough; no invented shipped commands |
 | Durability/capacity/recovery | WAL/FULL, backup/restore targets and lab envelope accepted; operator supplies setup/storage/backup particulars | Process/host/power-loss distinction, enforced limits and restore drill; no achieved SLO claim |
-| Independent review | Ishan Singh, Principal Developer; owner-stated availability “always available”; owner relayed report approval on 2026-10-22 | Approval applies to the `fc0e05e` report; no direct signature claimed; R-001 and G0/P1 decisions remain open; not self-certified |
-| Next implementation package | Owner approved T-01 schema/safe-migration scope; caller trace, tests and estimates in closure packet; T-03 next, not authorized | Final G0 package acceptance and phase authorization remain required; exact migration contract and active P1 spec precede code |
+| Independent review | Ishan Singh, Principal Developer; original/follow-up approvals relayed by owner and recorded in reports | No direct signature claimed; R-001 resolved in follow-up; approval is artifact-specific, not self-certified |
+| Next implementation package | G0 accepted 2026-10-23; owner approved T-01 schema/safe-migration scope; T-03 next, not authorized | Detailed migration contract, active P1 spec, fresh baseline and phase start precede code; P1 implementation not started |
 
 The initial kickoff introduced no architecture selection; runtime selection was
 subsequently accepted in ADR-005. Significant boundary and storage decisions belong in

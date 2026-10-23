@@ -37,7 +37,8 @@ authority/workflow/verification stay provider/model-independent; this is only th
 first qualification profile. No live allowance consumption is authorized, paid
 budget stays zero. Owner relayed Ishan Singh's approval of the `fc0e05e` review
 report on 2026-10-22; no direct signature claimed. R-001 is corrected in the new
-document candidate; follow-up disposition and first-slice approval are separate.
+document candidate; owner has now approved T-01 scope, with final G0 package
+acceptance still separate. Follow-up report approval is recorded in its own report.
 G0 remains open; [closure preparation](09-g0-closure-readiness.md) is not P1 execution.
 
 ## Observed starting point
@@ -154,7 +155,7 @@ return is evidence of completion. See the [normative boundaries](../../SPEC.md#r
 | Operator controls/transport | Local CLI/runner design accepted in ADR-009; concrete schemas/auth details and proof remain phase work | Approval/kill/reset/recovery walkthrough; no invented shipped commands |
 | Durability/capacity/recovery | WAL/FULL, backup/restore targets and lab envelope accepted; operator supplies setup/storage/backup particulars | Process/host/power-loss distinction, enforced limits and restore drill; no achieved SLO claim |
 | Independent review | Ishan Singh, Principal Developer; owner-stated availability “always available”; owner relayed report approval on 2026-10-22 | Approval applies to the `fc0e05e` report; no direct signature claimed; R-001 and G0/P1 decisions remain open; not self-certified |
-| Next implementation package | T-01 proposed first, T-03 next; scope, caller trace, tests and estimates in closure packet | Final owner approval of that specific slice and G0 package remains required before P1 |
+| Next implementation package | Owner approved T-01 schema/safe-migration scope; caller trace, tests and estimates in closure packet; T-03 next, not authorized | Final G0 package acceptance and phase authorization remain required; exact migration contract and active P1 spec precede code |
 
 The initial kickoff introduced no architecture selection; runtime selection was
 subsequently accepted in ADR-005. Significant boundary and storage decisions belong in

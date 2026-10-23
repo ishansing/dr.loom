@@ -225,8 +225,9 @@ owner-stated availability “always available”). Owner relayed his approval of
 [AI-assisted G0 report for `fc0e05e`](research/reviews/2026-10-22-g0-fc0e05e.md)
 on 2026-10-22. R-001's roadmap target is corrected to accepted ADR-008's one hour;
 the original report is retained and follow-up review is separate. The
-[closure packet and proposed T-01 slice](research/phase-0/09-g0-closure-readiness.md)
-await final disposition. G0 remains open; P1 is not started or authorized.
+[closure packet](research/phase-0/09-g0-closure-readiness.md) awaits final owner
+acceptance; T-01's schema/safe-migration scope is now owner-approved. G0 remains
+open; P1 is not started or authorized by this scope approval.
 
 **Outcome:** the developer can build without guessing the product, support
 boundary or runtime. Target duration: two weeks; no open-ended research phase.

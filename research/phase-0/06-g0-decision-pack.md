@@ -373,8 +373,9 @@ closed; setup, precise implementation contracts and evidence are not implied.
    setup approval.
 
 The [closure packet](09-g0-closure-readiness.md) maps each remaining task to its
-gate/owner and proposes T-01 as the first slice. Final package acceptance and
-specific slice approval remain human decisions; later implementation proof is
+gate/owner. Owner has approved T-01's schema/safe-migration scope as the first
+slice (“T-01 approved”). Final G0 package acceptance remains outstanding;
+detailed migration contracts and phase authorization precede code. Later implementation proof is
 not circularly required before core planning can close.
 
 Until these and the G0 checklist are resolved, continue planning or hand off;

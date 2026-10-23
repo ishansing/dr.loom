@@ -279,6 +279,12 @@ approves scope and failure assumptions. Pin changes, if any, are explicit commit
 Discovery/baseline and exact contract precede test-first implementation. G1 is
 open; no live provider, production migration or later-slice completion implied.
 
+**T-01 review closeout (2026-10-23):** implementation `e9f4a3d` and report
+meta-review `056b374` have no confirmed review blockers; owner relayed Ishan's
+approval of both. The [consolidated record](research/reviews/2026-10-23-p1-t01-consolidated.md)
+preserves scope, source identities, proof and residual risks. This is not a Git
+merge, G1 closure or permission to start T-03.
+
 **Outcome:** the control plane can record, authorize, stop and recover a run
 without trusting an agent process. Existing SPEC milestone 1; no live model needed.
 

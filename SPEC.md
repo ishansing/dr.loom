@@ -279,12 +279,22 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
 - **Authority:** owner stated “merged. start P1”; PR #4 merge verified at
   `2be0e4fe7a593887ce690062e68a8dfaeaf170a7`. G0 closed; T-01 scope approved.
 - **Branch:** `feat/p1-schema-migrations`, clean start from that merge.
-- **Status:** T-01 implementation and regression tests written; final ordered
-  gates and exact-artifact review required before sign-off.
+- **Status:** T-01 implementation and ordered gates verified; implementation
+  review and report meta-review approved by Ishan as relayed by the owner.
+  Consolidated disposition below preserves both original review snapshots.
   Owner confirmed store/SQL/CLI test seams, legacy NULL identities and a temporary
   verified Gitleaks download. No other P1 slice, live provider or release enabled.
 
 ### 1. Phase Objective & Scope
+
+**Review closeout (2026-10-23):** owner stated “Approved by Ishan and merge the
+meta-review and the previous agent review”. Consolidate those two reports into
+one current review/disposition record; preserve originals, hashes and their
+historical pending fields. Approval is attributed through the owner, not a direct
+signature or independent identity check. This is report consolidation only, not
+Git branch/PR merge, new implementation, push, deployment or another P1 slice.
+The consolidated rendering is a parent-authored synthesis of approved sources,
+not a third independently reviewed artifact or new human approval.
 
 Implement schema v2 in the existing store: atomic fresh/recognized-scaffold
 migration, explicit durability, immutable audit, scoped latest views and empty
@@ -327,6 +337,8 @@ installation, telemetry, credential/cache access or Loom dependency.
 | `tests/smoke.test.ts` | Keep three existing cases; move disposable file fixture under `/tmp/opencode` if touched |
 | `SPEC.md`, `decisions.md`, `ROADMAP.md` | Exact contract, significant legacy/durability decision, phase status/evidence |
 | `research/reviews/2026-10-23-p1-t01.md` | AI-assisted exact-artifact report for Ishan; human disposition separate |
+| `research/reviews/2026-10-23-p1-t01-report-review.md` | Immutable source meta-review; historical issuance/provenance retained |
+| `research/reviews/2026-10-23-p1-t01-consolidated.md` | Current combined implementation/report assessment and owner-relayed Ishan approval |
 
 `src/cli.ts` opens/initializes in init/record/status; `src/index.ts` re-exports
 store functions/types. Test these callers without changing their shapes. Preserve
@@ -455,6 +467,7 @@ final candidate checks and review results must be recorded below or in its repor
 | `bun test tests/schema-v2.test.ts` | Exit 0; 13 pass/103 assertions | Public store/SQL, file-backed/native faults, backup/CLI fixtures; no production migration or runner conformance |
 | `bun audit` | Exit 0; no vulnerabilities among 14 packages | No full license/provenance assessment; no auto-fix or dependency changes |
 | Trusted secret scan and final artifact review | Initial verified Gitleaks scan passed; final candidate snapshot/result/identity recorded in T-01 report | Current source snapshot only, not credential stores or full Git history; Ishan disposition separate; G1 remains open |
+| Review consolidation/approval record (2026-10-23) | Owner relayed Ishan approval of both reports; document validator passed (258 links/seven sections/unique IDs); source-report SHA-256, four-file whitespace/provenance/authority assertions and `git diff --check` passed; application/config/pins/original reports unchanged | Approval metadata and parent synthesis only; no additional application tests required. Original pending fields are historical; current disposition is in the consolidated record. No Git merge, later slice or live use implied |
 
 ## P0 completed execution record (historical)
 

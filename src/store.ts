@@ -385,3 +385,363 @@ export function appendAudit(
 	if (!row) throw new Error("failed to append audit entry");
 	return row;
 }
+
+export type AuditDecision =
+	| "pending"
+	| "allowed"
+	| "denied"
+	| "escalated"
+	| "expired";
+export type AuditOutcome =
+	| "pending"
+	| "completed"
+	| "failed"
+	| "interrupted"
+	| "timeout"
+	| "not-executed";
+export type AuditTier = "standard" | "high-risk" | "critical";
+
+export interface ActionKey {
+	runId: string;
+	threadId: string;
+	actionId: string;
+}
+
+export interface ActionAuditEntry extends ActionKey {
+	id: number;
+	action: string;
+	actor: string;
+	tier: AuditTier;
+	decision: AuditDecision;
+	outcome: AuditOutcome;
+	evidenceRef: string | null;
+	createdAt: string;
+}
+
+function checkedText(value: unknown, label: string, max = 256): string {
+	if (
+		typeof value !== "string" ||
+		!value ||
+		value.length > max ||
+		value !== value.trim() ||
+		/[\u0000-\u001f\u007f]/.test(value)
+	) {
+		throw new Error(`Invalid ${label}`);
+	}
+	return value;
+}
+
+function checkFields(value: object, allowed: readonly string[]): void {
+	if (!value || typeof value !== "object")
+		throw new Error("Invalid action input");
+	if (Object.keys(value).some((field) => !allowed.includes(field)))
+		throw new Error("Unknown action field");
+}
+
+function checkKey(key: ActionKey): void {
+	if (!key || typeof key !== "object") throw new Error("Invalid action key");
+	for (const value of [key.runId, key.threadId, key.actionId]) {
+		if (/\s/.test(checkedText(value, "action key")))
+			throw new Error("Invalid action key");
+	}
+	if (
+		!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(
+			key.actionId,
+		)
+	) {
+		throw new Error("Invalid action ID");
+	}
+}
+
+function checkActor(actor: string): void {
+	if (!/^(agent|human|system):\S+$/.test(checkedText(actor, "actor")))
+		throw new Error("Invalid actor");
+}
+
+function checkTier(tier: AuditTier): void {
+	if (!["standard", "high-risk", "critical"].includes(tier))
+		throw new Error("Invalid tier");
+}
+
+function checkedEvidence(value: unknown, optional = false): string | null {
+	if (value === undefined && optional) return null;
+	const evidence = checkedText(value, "evidence reference", 4096);
+	if (!/^(cmd|file|session|url|trace|approval|archive):\S/.test(evidence))
+		throw new Error("Invalid evidence reference");
+	return evidence;
+}
+
+const actionColumns = `id, run_id AS runId, thread_id AS threadId, action_id AS actionId,
+  action, actor, tier, decision, outcome, evidence_ref AS evidenceRef, created_at AS createdAt`;
+
+function checkActionStep(
+	previous: ActionAuditEntry | undefined,
+	event: Omit<ActionAuditEntry, "id" | "createdAt">,
+): void {
+	checkKey(event);
+	checkActor(event.actor);
+	checkTier(event.tier);
+	checkedText(event.action, "action");
+	if (previous || event.evidenceRef !== null)
+		checkedEvidence(event.evidenceRef);
+	if (!previous) {
+		if (event.decision !== "pending" || event.outcome !== "pending")
+			throw new Error("Action history must begin with a request");
+		return;
+	}
+	if (
+		event.runId !== previous.runId ||
+		event.threadId !== previous.threadId ||
+		event.actionId !== previous.actionId ||
+		event.action !== previous.action ||
+		event.tier !== previous.tier
+	) {
+		throw new Error("Action identity changed");
+	}
+	const verdict =
+		previous.outcome === "pending" &&
+		["pending", "escalated"].includes(previous.decision) &&
+		["allowed", "denied", "escalated", "expired"].includes(event.decision) &&
+		event.outcome ===
+			(["denied", "expired"].includes(event.decision)
+				? "not-executed"
+				: "pending");
+	const finish =
+		previous.decision === "allowed" &&
+		previous.outcome === "pending" &&
+		event.decision === "allowed" &&
+		["completed", "failed", "interrupted", "timeout"].includes(event.outcome);
+	if (!verdict && !finish) throw new Error("Invalid action transition");
+}
+
+function insertActionRow(
+	db: Database,
+	event: Omit<ActionAuditEntry, "id" | "createdAt">,
+	previous?: ActionAuditEntry,
+): ActionAuditEntry {
+	checkActionStep(previous, event);
+	const row = db
+		.query<
+			ActionAuditEntry,
+			[
+				string,
+				string,
+				string,
+				string,
+				string,
+				AuditTier,
+				AuditDecision,
+				AuditOutcome,
+				string | null,
+			]
+		>(
+			`INSERT INTO audit (run_id, thread_id, action_id, action, actor, tier, decision, outcome, evidence_ref)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING ${actionColumns}`,
+		)
+		.get(
+			event.runId,
+			event.threadId,
+			event.actionId,
+			event.action,
+			event.actor,
+			event.tier,
+			event.decision,
+			event.outcome,
+			event.evidenceRef,
+		);
+	if (!row || !Number.isSafeInteger(row.id) || row.id <= 0)
+		throw new Error("Failed to record action");
+	return row;
+}
+
+// shortcut: validate full run history; use a verified indexed projection if measured run sizes make this costly.
+function readActions(
+	db: Database,
+	runId: string,
+): Map<string, ActionAuditEntry> {
+	if (/\s/.test(checkedText(runId, "run ID")))
+		throw new Error("Invalid run ID");
+	const rows = db
+		.query<ActionAuditEntry, [string]>(
+			`SELECT ${actionColumns} FROM audit WHERE run_id = ? AND
+     (thread_id IS NOT NULL OR action_id IS NOT NULL OR actor IS NOT NULL OR tier IS NOT NULL)
+     ORDER BY id`,
+		)
+		.all(runId);
+	const actions = new Map<string, ActionAuditEntry>();
+	for (const row of rows) {
+		checkedText(row.createdAt, "action timestamp");
+		if (
+			!Number.isSafeInteger(row.id) ||
+			row.id <= 0 ||
+			!Number.isFinite(Date.parse(row.createdAt))
+		)
+			throw new Error("Invalid action history");
+		checkActionStep(actions.get(row.actionId), row);
+		actions.set(row.actionId, row);
+	}
+	return actions;
+}
+
+export function getAction(
+	db: Database,
+	key: ActionKey,
+): ActionAuditEntry | null {
+	checkFields(key, ["runId", "threadId", "actionId"]);
+	checkKey(key);
+	const row = readActions(db, key.runId).get(key.actionId) ?? null;
+	if (row && row.threadId !== key.threadId)
+		throw new Error("Action belongs to another thread");
+	return row;
+}
+
+export function listOpenActions(
+	db: Database,
+	args: { runId: string; threadId?: string },
+): ActionAuditEntry[] {
+	checkFields(args, ["runId", "threadId"]);
+	if (
+		args.threadId !== undefined &&
+		/\s/.test(checkedText(args.threadId, "thread ID"))
+	)
+		throw new Error("Invalid thread ID");
+	return [...readActions(db, args.runId).values()]
+		.filter(
+			(row) =>
+				row.outcome === "pending" &&
+				(args.threadId === undefined || row.threadId === args.threadId),
+		)
+		.sort((a, b) => a.id - b.id);
+}
+
+export function openAction(
+	db: Database,
+	args: ActionKey & {
+		action: string;
+		actor: string;
+		tier: AuditTier;
+		evidenceRef?: string;
+	},
+): ActionAuditEntry {
+	checkFields(args, [
+		"runId",
+		"threadId",
+		"actionId",
+		"action",
+		"actor",
+		"tier",
+		"evidenceRef",
+	]);
+	checkKey(args);
+	checkedText(args.action, "action");
+	checkActor(args.actor);
+	checkTier(args.tier);
+	const evidenceRef = checkedEvidence(args.evidenceRef, true);
+	return db
+		.transaction(() => {
+			if (readActions(db, args.runId).has(args.actionId))
+				throw new Error("Action already exists");
+			return insertActionRow(db, {
+				runId: args.runId,
+				threadId: args.threadId,
+				actionId: args.actionId,
+				action: args.action,
+				actor: args.actor,
+				tier: args.tier,
+				decision: "pending",
+				outcome: "pending",
+				evidenceRef,
+			});
+		})
+		.immediate();
+}
+
+export function recordVerdict(
+	db: Database,
+	args: ActionKey & {
+		actor: string;
+		decision: Exclude<AuditDecision, "pending">;
+		evidenceRef: string;
+	},
+): ActionAuditEntry {
+	checkFields(args, [
+		"runId",
+		"threadId",
+		"actionId",
+		"actor",
+		"decision",
+		"evidenceRef",
+	]);
+	checkKey(args);
+	checkActor(args.actor);
+	if (!["allowed", "denied", "escalated", "expired"].includes(args.decision))
+		throw new Error("Invalid verdict");
+	const evidenceRef = checkedEvidence(args.evidenceRef);
+	return db
+		.transaction(() => {
+			const previous = getAction(db, {
+				runId: args.runId,
+				threadId: args.threadId,
+				actionId: args.actionId,
+			});
+			if (!previous) throw new Error("Action not found");
+			return insertActionRow(
+				db,
+				{
+					...previous,
+					actor: args.actor,
+					decision: args.decision,
+					outcome: ["denied", "expired"].includes(args.decision)
+						? "not-executed"
+						: "pending",
+					evidenceRef,
+				},
+				previous,
+			);
+		})
+		.immediate();
+}
+
+export function recordFinish(
+	db: Database,
+	args: ActionKey & {
+		actor: string;
+		outcome: Exclude<AuditOutcome, "pending" | "not-executed">;
+		evidenceRef: string;
+	},
+): ActionAuditEntry {
+	checkFields(args, [
+		"runId",
+		"threadId",
+		"actionId",
+		"actor",
+		"outcome",
+		"evidenceRef",
+	]);
+	checkKey(args);
+	checkActor(args.actor);
+	if (!["completed", "failed", "interrupted", "timeout"].includes(args.outcome))
+		throw new Error("Invalid finish outcome");
+	const evidenceRef = checkedEvidence(args.evidenceRef);
+	return db
+		.transaction(() => {
+			const previous = getAction(db, {
+				runId: args.runId,
+				threadId: args.threadId,
+				actionId: args.actionId,
+			});
+			if (!previous) throw new Error("Action not found");
+			return insertActionRow(
+				db,
+				{
+					...previous,
+					actor: args.actor,
+					decision: "allowed",
+					outcome: args.outcome,
+					evidenceRef,
+				},
+				previous,
+			);
+		})
+		.immediate();
+}

@@ -275,6 +275,189 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
 
 ## Active phase specification
 
+- **Work package:** P1 / T-03 native audit lifecycle, started 2026-10-23.
+- **Authority:** owner requested “commit and continue”; confirmed lifecycle
+  function test seams and keeping archival retirement/deletion disabled.
+- **Baseline/branch:** clean `d8bb016` (approved T-01 plus consolidated record),
+  `feat/p1-audit-lifecycle`, stacked locally; no Git merge/push performed.
+- **Status:** T-03 implemented and ordered gates verified; artifact-specific AI
+  review has no confirmed findings, approved by Ishan as relayed by the owner.
+  Owner authorized committing T-03; G0 closed, G1 open. No push/next-slice authority.
+
+### 1. Phase Objective & Scope
+
+Add `openAction`, `recordVerdict`, `recordFinish`, `getAction`, `listOpenActions`
+to the existing store/exports. Request → verdict → outcome are immutable inserts.
+Reject invalid/rebound/duplicate/terminal transitions atomically; recover truthful
+unresolved work. Preserve existing legacy helpers, CLI JSON and schema v2.
+No authorization/effect dispatch/task-completion certification, kill/policy,
+runner/provider/production integration, retirement path or subsequent slice.
+No automatic commit/push. Owner-approved seams are these five public functions;
+SQL is only for immutable-history checks and malformed-history fixtures. Native
+file/subprocess/transaction fixtures, no private mocks.
+
+### 2. Environment & Upstream State
+
+Fresh ordered baseline: `bun run lint` exit 0 (13 files), `bun run check` exit 0,
+`bun test --coverage` exit 0 (16 pass/115 assertions, 100% functions / 95.63%
+lines; store 99.40%, framework 87.50%, index 100%), `bun audit` exit 0
+(14 packages/no advisories). Bun 1.4.4 / SQLite 3.53.4 unchanged. Installed Bun
+synchronous `transaction().immediate` and nested savepoints were checked in T-01.
+Verified temporary Gitleaks 8.30.1 remains under `/tmp/opencode`; verify its
+executable/archive before final scan. No dependency/runtime upgrade or raw env read.
+
+### 3. Architecture & File Manifest
+
+| File | Responsibility |
+| --- | --- |
+| `src/store.ts` | Native audit types, lifecycle validation/mutations and truthful recovery queries |
+| `src/index.ts` | Re-export new functions/types; preserve old exports |
+| `tests/audit-lifecycle.test.ts` | Confirmed public seams; identity/state/evidence, malformed history, atomicity/recovery |
+| `SPEC.md`, `decisions.md`, `ROADMAP.md` | Contract, retention boundary, status and fresh verification |
+| `research/reviews/2026-10-23-p1-t03.md` | Exact-artifact report for Ishan; human approval separate |
+
+No native callers exist yet. `appendAudit` is an exported legacy claim writer,
+used only in fixtures; CLI uses transition helpers. Do not invent caller identity
+or migrate existing claims. T-01 DDL/signatures/guards/views/version stay unchanged.
+
+**Exact interface/state contract:**
+- `ActionKey={runId,threadId,actionId}`. Keys max 256 chars, trimmed/nonempty,
+  no whitespace/control characters. actionId is client-generated canonical
+  lowercase UUID (version 1–8, RFC variant), unique within run and immutably bound
+  to thread. Cross-thread reuse conflicts; other runs remain isolated.
+- `ActionAuditEntry` includes existing row fields plus required threadId,
+  actionId, actor and tier. Decisions pending/allowed/denied/escalated/expired;
+  outcomes pending/completed/failed/interrupted/timeout/not-executed. Actor is
+  agent:/human:/system: plus nonempty identity (max 256), tier is standard/
+  high-risk/critical. Syntax records attribution, NOT physical human proof or
+  execution authority; future trusted supervisor/operator channels own that.
+- `openAction(db,key+{action,actor,tier,evidenceRef?})`: one pending/pending
+  request, action label max 256, trimmed/control-free; omitted evidence is NULL.
+- `recordVerdict(db,key+{actor,decision,evidenceRef})`: allowed/denied/escalated/
+  expired only from pending/pending or escalated/pending. Allowed/escalated stay
+  pending; denied/expired become terminal not-executed. Escalation is unresolved,
+  never terminal success. No duplicate allow, verdict after allow or terminal row.
+- `recordFinish(db,key+{actor,outcome,evidenceRef})`: completed/failed/interrupted/
+  timeout only from allowed/pending; preserve allowed. No duplicate finish or
+  terminal reopening. An allowed row is not proof of dispatch; a missing finish,
+  cancellation or timeout is not proof of no external effect.
+- Key, action label and tier stay immutable; later actors identify event authors.
+  Evidence is required for verdict/finish: max 4096, trimmed/control-free,
+  nonempty `kind:locator`, kind cmd/file/session/url/trace/approval/archive. Never
+  dereference evidence or infer content freshness/authorization from syntax.
+  Completed is an audit outcome observation, not verified workflow completion.
+- Mutations validate inputs and read/validate persisted native history + insert
+  in `transaction().immediate`; exceptions add no rows. Nested calls use a trusted
+  caller transaction/savepoint; outer rollback removes rows and no independent
+  commit is claimed. No network I/O under a DB writer lock.
+- Read all native histories in the requested run (any identity metadata filled),
+  not just `latest_audit`; all-four-NULL legacy claims remain excluded. Malformed,
+  incomplete, rebound or impossible history raises a safe error, never earlier
+  success or an empty-open result. Validate histories before thread filtering.
+- `getAction(db,key)` returns latest validated row or NULL for genuinely missing
+  action, rejects wrong thread. `listOpenActions(db,{runId,threadId?})` returns
+  latest pending outcomes (pending/allowed/escalated), ordered by ID. Initial
+  full-run history validation is a stated cost; no schema/cache shortcut now.
+
+### 4. Test Plan & Coverage Matrix
+
+| Case | Required proof |
+| --- | --- |
+| Happy/deny/expire/escalate | Correct inserts, identity/evidence, terminal versus unresolved reads |
+| Invalid/repeated transitions | No finish without allow, repeated verdict/finish, duplicate IDs, terminal reopening; no rows added |
+| Identity/shape/evidence | Runtime validation, run isolation/thread binding, immutable label/tier; no hidden defaults |
+| Malformed/hidden newest row | No fallback to earlier success or false empty-open query; explicit failure |
+| Recovery/atomicity | File/subprocess reopen, concurrent writer and outer rollback retain truthful state |
+| Compatibility/security | Existing tests/CLI/schema/legacy rows unchanged, guards active, baseline coverage and trusted scan |
+
+Test-first vertical slices, one behavioral red then minimal implementation. Use
+owned disposable paths under `/tmp/opencode`; no real data or private mocks.
+
+### 5. Security, Observability & Edge Cases
+
+Validate identity/evidence/state despite TS types; parameterized SQL, no audit
+update/delete/retirement exception. Read-side malformed-history validation is not
+a SQL firewall: raw host access can fabricate consistent rows or alter DDL.
+Do not equate allowed/pending with dispatch, or audit completion with task success.
+No input/row/evidence dumps, accidental debug logs, credentials/auth caches/env,
+live model or production database access. Retention plan: export → verify manifest
+→ separately approved critical retirement after authorization/backup/reconciliation
+controls; owner explicitly chose no destructive retirement implementation now.
+
+### 6. Blast Radius & Rollback Plan
+
+Opt-in new store exports only; preserve v2 schema, existing functions/CLI and
+approved T-01 reports. Roll back only authorized code changes; never erase audit
+history or downgrade schema. T-02/T-04–T-07 still gate G1. Previous approval does
+not certify this artifact. No automatic commit or advance beyond T-03.
+
+### 7. Definition of Done (DoD)
+
+Run `bun run lint` → `bun run check` → `bun test --coverage` →
+`bun test tests/audit-lifecycle.test.ts` → `bun audit` → verified Gitleaks snapshot
+scan, all exit 0. Compare fresh baseline 100% functions/95.63% overall and per-file
+coverage without test deletion/suppression. Run `git diff --check`, the document
+validator heredoc in historical P0 and
+`git diff --exit-code -- package.json bun.lock biome.json tsconfig.json .github FRAMEWORK_REF src/cli.ts tests/schema-v2.test.ts tests/smoke.test.ts .opencode research/reviews/2026-10-23-p1-t01.md research/reviews/2026-10-23-p1-t01-report-review.md research/reviews/2026-10-23-p1-t01-consolidated.md`.
+Review exact candidate with `ishan-reviewer`, persist report/proof/limitations;
+Ishan disposition separate, G1 open. No live/production qualification claims.
+
+**Execution evidence (2026-10-23, Bun 1.4.4 / SQLite 3.53.4):**
+- Initial behavioral reds: missing open/query/verdict/finish exports and silently
+  ignored unknown fields. Each was observed before its implementation. Subsequent
+  malformed-history/recovery tests exercise existing implementation paths.
+- `bun run lint`: exit 0, 14 files; `bun run check`: exit 0. First typecheck caught
+  two fixture typing errors (legacy optional evidence and nullable query result);
+  fixtures corrected without casts, then ordered gates restarted.
+- `bun test --coverage`: exit 0, 30 tests/277 assertions. Functions 100%; lines
+  95.67% overall (baseline 95.63%), store 99.52% (99.40%), framework unchanged
+  87.50%, index unchanged 100%. Original 16 tests unchanged. An intermediate
+  95.52% exposed an untested orphan-history rejection and a redundant input guard;
+  added the public regression and removed only the guard already enforced by
+  `checkFields`. No exclusions/skips or weakened validation.
+- `bun test tests/audit-lifecycle.test.ts`: exit 0, 14 tests/162 assertions.
+  Covers every outcome, denial/expiry/escalation, invalid/duplicate transitions,
+  run/thread isolation, partial/rebound/orphan history, legacy exclusion, ordered
+  unresolved queries, outer rollback, abrupt child exit and writer contention.
+  Abrupt exit is process-recovery proof, not host/power-loss qualification.
+- `bun audit`: exit 0, no advisories across 14 packages; no auto-fix/upgrade.
+- Trusted Gitleaks 8.30.1: archive SHA-256
+  `551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb`
+  verified and executable byte-matched to archive. Scoped `env -i PATH=/usr/bin:/bin
+  <verified-gitleaks> dir <file> --no-banner --redact=100 --ignore-gitleaks-allow
+  --gitleaks-ignore-path /tmp/opencode/loom-t01-no-ignore`: exit 0/no leaks for
+  source/exports/new tests and all three changed governance files. Source-only
+  scan does not certify Git history, credentials or production state.
+- No runtime/provider E2E: no such integration in this slice; store subprocess
+  recovery/concurrency regressions are the applicable E2E seam. No production
+  host/power-loss or timed restore claim, no provider login/use or audit deletion.
+- Artifact-specific [T-03 report](research/reviews/2026-10-23-p1-t03.md): AI
+  recommendation READY FOR HUMAN REVIEW, no confirmed findings. Exact baseline
+  `d8bb016df9f2083ae6646bea68bfe91c345f12e5` plus fixed overlay manifest SHA-256
+  `9f7481b42cc110fa583e3a24fc92cb589cebc87c6eeadd5206f1f9cd1186ff7f`.
+  Initial external snapshot read denied; identical in-repo temporary copy made
+  readable and reviewed, then removed. No source/test changes after that snapshot;
+  parent verified hashes, final documents and all seven task-file secret scans.
+  Document validator/protected-file comparison/`git diff --check` exit 0. Linear
+  full-run validation, trusted host SQL and process-only recovery limits retained.
+  No human approval, commit, push or phase advancement inferred.
+
+**Approval/commit closeout (2026-10-23):** owner stated “approved by Ishan,
+commit”, following the T-03 report handoff. Record approval of that reviewed
+implementation/report as owner-relayed, not an independently verified signature.
+Source/test hashes remain those in the review. Fresh pre-commit rerun of lint →
+strict typecheck → full coverage → focused regression → dependency audit and
+verified seven-file Gitleaks scan passed (exit 0); full suite 30 tests/277 assertions,
+100% functions/95.67% lines, focused 14 tests/162 assertions, no dependency
+advisories or detected secrets. Document/whitespace/protected-file checks passed.
+Commit only this T-03 slice and approval record; no push, G1 closure, live use,
+retirement or subsequent slice authorized.
+
+## T-01 completed execution record (historical)
+
+Historical T-01 contract/evidence below applies to its approved artifact;
+current work is governed by the active T-03 specification above.
+
 - **Work package:** P1 / T-01 schema and safe migrations, started 2026-10-23.
 - **Authority:** owner stated “merged. start P1”; PR #4 merge verified at
   `2be0e4fe7a593887ce690062e68a8dfaeaf170a7`. G0 closed; T-01 scope approved.

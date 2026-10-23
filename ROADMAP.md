@@ -285,6 +285,20 @@ approval of both. The [consolidated record](research/reviews/2026-10-23-p1-t01-c
 preserves scope, source identities, proof and residual risks. This is not a Git
 merge, G1 closure or permission to start T-03.
 
+**T-03 started (2026-10-23):** owner subsequently requested “commit and continue”;
+consolidated T-01 disposition committed at `d8bb016`, followed by clean branch
+`feat/p1-audit-lifecycle`. Owner confirmed lifecycle function test seams and kept
+archival retirement/deletion disabled. Native audit request/verdict/outcome and
+truthful recovery queries only; G1 remains open, no later slice/live use enabled.
+
+**T-03 candidate (2026-10-23):** five lifecycle/query exports implemented on v2
+without changing schema or legacy callers. Ordered lint/typecheck, 30-test coverage
+and dependency audit pass; coverage is above the fresh baseline, scoped trusted
+secret scan clean. [Artifact-specific review](research/reviews/2026-10-23-p1-t03.md)
+has no confirmed findings. Owner subsequently relayed Ishan's approval and requested
+“commit” on 2026-10-23; implementation/report approval recorded, no independent
+signature claimed. G1 remains open; no push or subsequent slice authorized.
+
 **Outcome:** the control plane can record, authorize, stop and recover a run
 without trusting an agent process. Existing SPEC milestone 1; no live model needed.
 

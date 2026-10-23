@@ -5,7 +5,12 @@ export {
 	parseFrameworkRef,
 } from "./framework.ts";
 export type {
+	ActionAuditEntry,
+	ActionKey,
+	AuditDecision,
 	AuditEntry,
+	AuditOutcome,
+	AuditTier,
 	Lease,
 	Transition,
 	TransitionStatus,
@@ -13,9 +18,14 @@ export type {
 export {
 	acquireWorkspaceLease,
 	appendAudit,
+	getAction,
 	getLastTransition,
 	initSchema,
+	listOpenActions,
+	openAction,
 	openDb,
+	recordFinish,
 	recordTransition,
+	recordVerdict,
 	releaseWorkspaceLease,
 } from "./store.ts";

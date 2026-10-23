@@ -612,3 +612,35 @@ verification claimed; source report hashes and candidate identity are preserved
 in `research/reviews/2026-10-23-p1-t01-consolidated.md`. New rendering is a
 parent-authored synthesis, not an additional Ishan-signed report. G1, later-slice
 authorization, Git merge/push, production migration and live use stay separate.
+
+## [ADR-014] - 2026-10-23 (T-03 audit lifecycle)
+
+**Title:** Native insert-only audit lifecycle and conservative recovery queries.
+
+**Status:** Accepted; implemented and verified for T-03. Owner confirmed five
+public lifecycle/query seams, explicitly kept retirement disabled, then relayed
+Ishan's approval and authorized the T-03 commit on 2026-10-23. G1 remains open.
+
+**Context & Problem Statement:** after approving T-01 reviews, owner requested
+“commit and continue”. Existing legacy helper cannot represent native lifecycle.
+The T-01 view can suppress incomplete newest rows; treating absence as no pending
+work would hide uncertainty. Old archival retirement notes conflict with immutable
+history and missing authorization/backup controls; owner selected no deletion.
+
+**Options Evaluated:** trust projected latest rows alone; validate native history
+at the store before transition/read; create new tables/materialized state now.
+
+**Decision & Rationale:** extend the existing store/exports with openAction,
+recordVerdict, recordFinish, getAction and listOpenActions. Reuse v2 data/guards;
+no migration. Strict native identity/state/evidence validation, atomic read/insert
+under immediate transactions, no terminal reopening. Validate all native history
+within run before exposing scoped results; partial rows fail closed rather than
+fall back to prior success. Legacy all-NULL identity claims remain untouched.
+
+**Consequences & Tech Debt:** full-run validation has linear read cost; no cache
+or schema shortcut until measurement warrants a separately verified design.
+Raw host SQL remains trusted; actor syntax is not physical-human authentication,
+verdicts do not dispatch and outcome facts do not certify task completion. Actual
+gate/operator/outbox work remains later slices. Export/verify/separately approved
+retirement is documented only, with no trigger bypass/deletion path. Existing
+CLI/legacy APIs and approved reports stay intact; tests use confirmed public seams.

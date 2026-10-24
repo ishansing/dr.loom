@@ -685,6 +685,11 @@ pending. No schema/audit lifecycle rewrite, effect authority or G1 closure claim
 T-02 commit and the next planned T-04 slice. This is not an attestation of Ishan's
 T-02 approval; keep that human disposition pending. No push/live use/G1 closure.
 
+**Approval event — 2026-10-24:** owner subsequently stated “T-02 also approved by
+Ishan”. T-02 implementation/advisory in `39cb915` approved through the owner;
+earlier pending status superseded, original AI report retained. No independent
+signature claimed; no G1 closure, push, commit, real effects or next-slice authority.
+
 ## [ADR-016] - 2026-10-24 (T-04 synthetic outbox)
 
 **Title:** Persist immutable effect intent and dispatch observations, not inferred success.
@@ -736,3 +741,8 @@ uncommitted, T-02/T-04 human dispositions pending; no G1 closure/next-slice auth
 **Authority event — 2026-10-24:** owner requested “commit” after corrected T-04
 handoff. Commit only this slice and its retained reports after fresh checks;
 T-02/T-04 human approval remains pending. No push, next slice or real effects.
+
+**Approval event — 2026-10-24:** owner relayed “Approved by Ishan” after T-04
+commit `d0a02dd`. Record corrected T-04 implementation/re-review approval through
+the owner, not independent identity verification; preserve initial R-001 report.
+T-02 remains pending. No G1 closure, live effects, push or next-slice authority.

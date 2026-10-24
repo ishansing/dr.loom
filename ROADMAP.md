@@ -338,6 +338,20 @@ and document checks pass; T-04 remains uncommitted and human disposition pending
 T-04 implementation and both reports authorized for commit after fresh gates.
 Human dispositions remain pending; no push, next slice or G1 closure authorized.
 
+**T-04 approval (2026-10-24):** owner relayed “Approved by Ishan” after committed
+T-04 artifact `d0a02dd`. Corrected implementation/re-review approved through the
+owner; initial R-001 report preserved, resolved rather than waived. T-02 approval
+remains pending. No G1 closure, push, live use or subsequent slice authorized.
+
+**T-02 approval clarification (2026-10-24):** owner then stated “T-02 also approved
+by Ishan”. T-02 artifact `39cb915` and its advisory approved through the owner;
+earlier pending references are historical. Both T-02/T-04 approvals recorded,
+without G1 closure, commit/push, live use or next-slice authorization.
+
+**Owner continuation (2026-10-24):** owner subsequently requested “commit and
+continue”: commit approval records and begin next planned T-05 contract/discovery.
+G1 stays open; no push, production effect, provider use or later-slice completion.
+
 **Outcome:** the control plane can record, authorize, stop and recover a run
 without trusting an agent process. Existing SPEC milestone 1; no live model needed.
 

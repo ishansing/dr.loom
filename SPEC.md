@@ -278,11 +278,13 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
 - **Work package:** P1 / T-04 synthetic outbox, started 2026-10-24.
 - **Authority:** “commit and continue”; owner confirmed synthetic v3 migration,
   immutable intent binding, conservative replay and public test seams.
-- **Baseline/branch:** clean `39cb915`, `feat/p1-outbox`. T-02 human review still
-  pending; continuation authority is not an attestation of Ishan's approval.
+- **Baseline/branch:** clean `39cb915`, `feat/p1-outbox`. T-02 was pending at
+  slice start; owner subsequently relayed Ishan's approval, recorded below.
 - **Status:** implementation and ordered code gates verified; fixed-artifact AI
-  re-review has no open confirmed findings, Ishan disposition pending. G0 closed,
-  G1 open. No live effects/providers.
+  re-review has no open confirmed findings. T-04 approved by Ishan as relayed by
+  the owner after commit `d0a02dd`; T-02 also approved through the owner. G0 closed,
+  G1 open.
+  No live effects/providers.
 
 ### 1. Phase Objective & Scope
 
@@ -504,10 +506,41 @@ hashes matched the persisted corrected report. Re-fetched Gitleaks 8.30.1 into
 digest/executable, then repeated all ten task-file scans successfully. No project
 dependency or scanner version changed; ephemeral archive loss is not hidden.
 
+**Approval record (2026-10-24):** following the `d0a02dd` commit handoff, owner
+stated “Approved by Ishan”. Attribute this to the corrected T-04 implementation
+and re-review in `d0a02ddb4a8b5577d5e7629242e67adab2a5053c`; preserve initial
+R-001 report and its resolved history. This is owner-relayed approval, not a direct
+signature or independent identity verification. It does not retroactively approve
+T-02, close G1, enable real effects/providers or authorize push/another slice.
+Approval-record edits remain uncommitted pending instruction. Documentation-only
+validation applies; no application behavior changed.
+Approval-record checks: historical Python document-validator heredoc exit0
+(270 links, seven active sections, unique ADRs/casing/whitespace); verified
+Gitleaks 8.30.1 four-file scans exit0/no leaks; `git diff --check` and unchanged
+application/tests/config/prior-report comparison exit0. Application tests/typecheck/
+dependency audit N/A for this documentation-only approval record, not rerun.
+
+**T-02 approval clarification (2026-10-24):** owner subsequently stated “T-02
+also approved by Ishan”. Record approval of the T-02 implementation/advisory in
+`39cb91549c7623601d76e43258684ab2027b7856`, preserving its original AI report.
+This supersedes T-02 pending-status references above and in historical handoffs;
+T-02 and T-04 are both approved as relayed by the owner, without independent
+signature/identity verification. No commit, push, next slice, G1 closure or live
+effect authority inferred. Approval-record edits remain uncommitted. Documentation
+validator, five-file trusted scan and whitespace/protected-code checks pass;
+application/typecheck/dependency gates N/A for these document-only changes.
+
+**Owner continuation (2026-10-24):** owner requested “commit and continue” after
+both approval records. Commit the T-02/T-04 owner-relayed approval documents, then
+begin T-05 contract/discovery on a new feature branch; no push, G1 closure or real
+effect/provider use. Document validator, trusted five-file scan and whitespace/
+protected-code checks pass; no application/test changes in this approval commit.
+
 ## T-02 completed execution record (historical)
 
-Historical T-02 implementation/authority below describes `39cb915`; its human
-review remains pending. Current work is governed by the active T-04 contract above.
+Historical T-02 implementation/authority below describes `39cb915`; its then-pending
+human review is superseded by the approval record above. Current work is governed
+by the active T-04 contract above until the T-05 work package is specified.
 
 - **Work package:** P1 / T-02 write gate and fenced leases, started 2026-10-23.
 - **Authority:** owner requested “continue” after approved T-03 commit `aa3287b`;

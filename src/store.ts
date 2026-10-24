@@ -19,6 +19,7 @@ export interface Transition {
 }
 
 export interface Lease {
+	runId: string | null;
 	workspace: string;
 	owner: string;
 	epoch: number;
@@ -60,10 +61,11 @@ function readLease(db: Database, workspace: string): Lease | null {
 		.query<
 			Lease,
 			[string]
-		>(`SELECT workspace, owner, epoch, acquired_at AS acquiredAt,
+		>(`SELECT workspace, owner, epoch, run_id AS runId, acquired_at AS acquiredAt,
     expires_at AS expiresAt FROM leases WHERE workspace = ?`)
 		.get(workspace);
 	if (row) {
+		if (row.runId !== null) checkScope(row.runId);
 		checkScope(row.owner);
 		checkEpoch(row.epoch);
 		checkedTime(row.expiresAt);
@@ -109,6 +111,7 @@ export function writeGate(db: Database, ctx: WriteContext): void {
 	if (
 		!lease ||
 		lease.owner !== ctx.owner ||
+		lease.runId !== ctx.runId ||
 		lease.epoch !== ctx.epoch ||
 		lease.expiresAt <= now
 	)
@@ -300,6 +303,50 @@ const outboxSql = `
 		.join("")}
 `;
 
+const killSql = `
+  CREATE TABLE kill_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    tier TEXT NOT NULL DEFAULT 'critical' CHECK (tier = 'critical'),
+    operation_id TEXT NOT NULL,
+    scope TEXT NOT NULL,
+    kind TEXT NOT NULL CHECK (kind IN ('engage','reset')),
+    stage TEXT NOT NULL CHECK (stage IN ('requested','allowed','completed')),
+    actor TEXT NOT NULL,
+    reason TEXT NOT NULL,
+    evidence_ref TEXT NOT NULL,
+    cleanup_ref TEXT,
+    previous_latch TEXT,
+    created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+    UNIQUE (operation_id, stage)
+  );
+  ALTER TABLE leases ADD COLUMN run_id TEXT;
+  ALTER TABLE kills ADD COLUMN event_id INTEGER REFERENCES kill_events(id);
+  CREATE TABLE kill_denials (
+    audit_id INTEGER PRIMARY KEY REFERENCES audit(id),
+    kill_event_id INTEGER NOT NULL REFERENCES kill_events(id)
+  );
+  ${["kill_events", "kill_denials"]
+		.map(
+			(table) => `
+    CREATE TRIGGER ${table}_no_update BEFORE UPDATE ON ${table} BEGIN
+      SELECT RAISE(ABORT, 'kill history is append-only');
+    END;
+    CREATE TRIGGER ${table}_no_delete BEFORE DELETE ON ${table} BEGIN
+      SELECT RAISE(ABORT, 'kill history is append-only');
+    END;
+  `,
+		)
+		.join("")}
+  CREATE TRIGGER kill_events_no_replace BEFORE INSERT ON kill_events
+  WHEN NEW.id != -1 AND EXISTS (SELECT 1 FROM kill_events WHERE id = NEW.id) BEGIN
+    SELECT RAISE(ABORT, 'kill history is append-only');
+  END;
+  CREATE TRIGGER kill_denials_no_replace BEFORE INSERT ON kill_denials
+  WHEN EXISTS (SELECT 1 FROM kill_denials WHERE audit_id = NEW.audit_id) BEGIN
+    SELECT RAISE(ABORT, 'kill history is append-only');
+  END;
+`;
+
 function schemaSignature(db: Database): string {
 	return JSON.stringify(
 		db
@@ -327,13 +374,17 @@ const supportedSchemas = (() => {
 		db.exec(migrationSql);
 		const v2 = schemaSignature(db);
 		db.exec(outboxSql);
-		return { empty, legacy, v2, current: schemaSignature(db) };
+		const v3 = schemaSignature(db);
+		db.exec(killSql);
+		return { empty, legacy, v2, v3, current: schemaSignature(db) };
 	} finally {
 		db.close();
 	}
 })();
 
-function schemaKind(db: Database): "empty" | "legacy" | "v2" | "current" {
+function schemaKind(
+	db: Database,
+): "empty" | "legacy" | "v2" | "v3" | "current" {
 	const version = db
 		.query<{ user_version: number }, []>("PRAGMA user_version")
 		.get()?.user_version;
@@ -342,7 +393,8 @@ function schemaKind(db: Database): "empty" | "legacy" | "v2" | "current" {
 	if (version === 0 && signature === supportedSchemas.legacy) return "legacy";
 	if (
 		(version === 2 && signature === supportedSchemas.v2) ||
-		(version === 3 && signature === supportedSchemas.current)
+		(version === 3 && signature === supportedSchemas.v3) ||
+		(version === 4 && signature === supportedSchemas.current)
 	) {
 		const rows = db
 			.query<{ version: number; applied_at: string }, []>(
@@ -358,7 +410,7 @@ function schemaKind(db: Database): "empty" | "legacy" | "v2" | "current" {
 					row.applied_at.trim(),
 			)
 		)
-			return version === 2 ? "v2" : "current";
+			return version === 2 ? "v2" : version === 3 ? "v3" : "current";
 	}
 	throw new Error("Unsupported Loom schema; database left unchanged");
 }
@@ -398,16 +450,21 @@ export function initSchema(db: Database): void {
 		const kind = schemaKind(db);
 		if (kind === "current") return;
 		if (kind === "empty") db.exec(legacySql);
-		if (kind !== "v2") {
+		if (kind === "empty" || kind === "legacy") {
 			db.exec(migrationSql);
 			db.exec(`INSERT INTO schema_migrations (version, applied_at)
         VALUES (2, strftime('%Y-%m-%dT%H:%M:%fZ','now'));`);
 		}
-		db.exec(outboxSql);
+		if (kind !== "v3") {
+			db.exec(outboxSql);
+			db.exec(`INSERT INTO schema_migrations (version, applied_at)
+        VALUES (3, strftime('%Y-%m-%dT%H:%M:%fZ','now'));`);
+		}
+		db.exec(killSql);
 		db.exec(`
       INSERT INTO schema_migrations (version, applied_at)
-      VALUES (3, strftime('%Y-%m-%dT%H:%M:%fZ','now'));
-      PRAGMA user_version = 3;
+      VALUES (4, strftime('%Y-%m-%dT%H:%M:%fZ','now'));
+      PRAGMA user_version = 4;
     `);
 	}).immediate();
 }
@@ -550,21 +607,22 @@ export function acquireWorkspaceLease(
 				const epoch = (cur?.epoch ?? 0) + 1;
 				checkEpoch(epoch);
 				db.query(
-					`INSERT INTO leases (workspace, owner, epoch, acquired_at, expires_at)
-           VALUES (?, ?, ?, ?, ?)
+					`INSERT INTO leases (workspace, owner, epoch, acquired_at, expires_at, run_id)
+           VALUES (?, ?, ?, ?, ?, ?)
            ON CONFLICT (workspace) DO UPDATE SET
              owner = excluded.owner, epoch = excluded.epoch,
-             acquired_at = excluded.acquired_at, expires_at = excluded.expires_at`,
+             acquired_at = excluded.acquired_at, expires_at = excluded.expires_at, run_id = excluded.run_id`,
 				).run(
 					workspace,
 					owner,
 					epoch,
 					new Date(nowMs).toISOString(),
 					nowMs + ttlMs,
+					args.runId,
 				);
 				return { ok: true as const, epoch };
 			}
-			if (cur.owner === owner) {
+			if (cur.owner === owner && cur.runId === args.runId) {
 				db.query(
 					`UPDATE leases SET expires_at = ?, acquired_at = ? WHERE workspace = ?`,
 				).run(
@@ -720,6 +778,7 @@ const actionColumns = `id, run_id AS runId, thread_id AS threadId, action_id AS 
 function checkActionStep(
 	previous: ActionAuditEntry | undefined,
 	event: Omit<ActionAuditEntry, "id" | "createdAt">,
+	killDenial = false,
 ): void {
 	checkKey(event);
 	checkActor(event.actor);
@@ -754,15 +813,24 @@ function checkActionStep(
 		previous.outcome === "pending" &&
 		event.decision === "allowed" &&
 		["completed", "failed", "interrupted", "timeout"].includes(event.outcome);
-	if (!verdict && !finish) throw new Error("Invalid action transition");
+	const cancelled =
+		killDenial &&
+		previous.outcome === "pending" &&
+		["pending", "escalated", "allowed"].includes(previous.decision) &&
+		event.decision === "denied" &&
+		event.outcome === "not-executed";
+	if (!verdict && !finish && !cancelled)
+		throw new Error("Invalid action transition");
 }
 
 function insertActionRow(
 	db: Database,
 	event: Omit<ActionAuditEntry, "id" | "createdAt">,
 	previous?: ActionAuditEntry,
+	killEventId?: number,
 ): ActionAuditEntry {
-	checkActionStep(previous, event);
+	if (killEventId !== undefined) validateKillDenial(db, event, killEventId);
+	checkActionStep(previous, event, killEventId !== undefined);
 	const row = db
 		.query<
 			ActionAuditEntry,
@@ -794,6 +862,13 @@ function insertActionRow(
 		);
 	if (!row || !Number.isSafeInteger(row.id) || row.id <= 0)
 		throw new Error("Failed to record action");
+	if (killEventId !== undefined) {
+		const linked = db
+			.query("INSERT INTO kill_denials VALUES (?, ?)")
+			.run(row.id, killEventId);
+		if (linked.changes !== 1)
+			throw new Error("Failed to persist kill denial link");
+	}
 	return row;
 }
 
@@ -820,7 +895,13 @@ function readActions(
 			!Number.isFinite(Date.parse(row.createdAt))
 		)
 			throw new Error("Invalid action history");
-		checkActionStep(actions.get(row.actionId), row);
+		const denial = db
+			.query<{ eventId: number }, [number]>(
+				"SELECT kill_event_id AS eventId FROM kill_denials WHERE audit_id = ?",
+			)
+			.get(row.id);
+		if (denial) validateKillDenial(db, row, denial.eventId);
+		checkActionStep(actions.get(row.actionId), row, denial !== null);
 		actions.set(row.actionId, row);
 	}
 	return actions;
@@ -882,6 +963,8 @@ export function openAction(
 	const evidenceRef = checkedEvidence(args.evidenceRef, true);
 	return db
 		.transaction(() => {
+			if (isKilled(db, args.runId))
+				throw new Error("Audit request denied: killed");
 			if (readActions(db, args.runId).has(args.actionId))
 				throw new Error("Action already exists");
 			return insertActionRow(db, {
@@ -922,6 +1005,11 @@ export function recordVerdict(
 	const evidenceRef = checkedEvidence(args.evidenceRef);
 	return db
 		.transaction(() => {
+			if (
+				["allowed", "escalated"].includes(args.decision) &&
+				isKilled(db, args.runId)
+			)
+				throw new Error("Audit verdict denied: killed");
 			const previous = getAction(db, {
 				runId: args.runId,
 				threadId: args.threadId,
@@ -1013,7 +1101,7 @@ export interface OutboxRecord extends OutboxIntent {
 	workspace: string;
 	payloadHash: string;
 	createdAt: string;
-	state: "pending" | "dispatched" | "unknown" | "applied";
+	state: "pending" | "dispatched" | "unknown" | "applied" | "cancelled";
 	attempts: OutboxAttempt[];
 }
 type OutboxRow = Omit<OutboxRecord, "state" | "attempts">;
@@ -1128,13 +1216,29 @@ export function getOutbox(db: Database, intentId: string): OutboxRecord | null {
 		});
 	}
 	const values = [...attempts.values()];
-	const state = values.some((a) => a.state === "applied")
+	let state: OutboxRecord["state"] = values.some((a) => a.state === "applied")
 		? "applied"
 		: values.some((a) => a.state === "unknown")
 			? "unknown"
 			: values.some((a) => a.state === "dispatched")
 				? "dispatched"
 				: "pending";
+	const denials = db
+		.query<
+			{ auditId: number },
+			[string, string, string]
+		>(`SELECT d.audit_id AS auditId FROM kill_denials d JOIN audit a ON a.id = d.audit_id
+    WHERE a.run_id = ? AND a.thread_id = ? AND a.action_id = ?`)
+		.all(row.runId, row.threadId, row.actionId);
+	if (denials.length) {
+		// The shared history reader proves terminal kill denial and absence of any outbox attempt.
+		getAction(db, {
+			runId: row.runId,
+			threadId: row.threadId,
+			actionId: row.actionId,
+		});
+		state = "cancelled";
+	}
 	return { ...row, state, attempts: values };
 }
 
@@ -1233,7 +1337,7 @@ export function listUnresolvedOutbox(
 			args.workspace ?? null,
 		)
 		.map((row) => requireOutbox(db, row.intentId))
-		.filter((row) => row.state !== "applied");
+		.filter((row) => row.state !== "applied" && row.state !== "cancelled");
 }
 
 function insertOutboxEvent(
@@ -1376,7 +1480,8 @@ export async function relayBatch(
 				writeGate(db, ctx);
 				relayCursor(db, ctx);
 				const current = requireOutbox(db, intentId);
-				if (current.state === "applied") return null;
+				if (current.state === "applied" || current.state === "cancelled")
+					return null;
 				if (current.replay !== replay)
 					throw new Error("Replay contract mismatch");
 				if (
@@ -1438,4 +1543,490 @@ export async function relayBatch(
 		if (observation.outcome === "unknown") break;
 	}
 	return { cursor: relayCursor(db, ctx), results };
+}
+
+export interface KillInput {
+	scope: string;
+	actor: string;
+	reason: string;
+	evidenceRef: string;
+	synthetic: true;
+}
+export interface KillLatch {
+	scope: string;
+	engagedAt: string;
+	actor: string;
+	reason: string;
+	eventId: number | null;
+}
+interface KillEvent {
+	id: number;
+	tier: string;
+	operationId: string;
+	scope: string;
+	kind: "engage" | "reset";
+	stage: "requested" | "allowed" | "completed";
+	actor: string;
+	reason: string;
+	evidenceRef: string;
+	cleanupRef: string | null;
+	previousLatch: string | null;
+	createdAt: string;
+}
+const killEventColumns = `id, tier, operation_id AS operationId, scope, kind, stage, actor, reason,
+  evidence_ref AS evidenceRef, cleanup_ref AS cleanupRef, previous_latch AS previousLatch, created_at AS createdAt`;
+
+function killRun(scope: string): string | null {
+	if (scope === "global") return null;
+	if (typeof scope !== "string" || !scope.startsWith("run:"))
+		throw new Error("Invalid kill scope");
+	const runId = scope.slice(4);
+	checkScope(runId);
+	return runId;
+}
+
+function checkControl(args: KillInput): void {
+	killRun(args.scope);
+	checkActor(args.actor);
+	if (!args.actor.startsWith("human:") || args.synthetic !== true)
+		throw new Error("Trusted human synthetic control required");
+	checkedText(args.reason, "kill reason", 4096);
+	checkedEvidence(args.evidenceRef);
+}
+
+function readKillEvent(db: Database, eventId: number): KillEvent {
+	if (!Number.isSafeInteger(eventId) || eventId <= 0)
+		throw new Error("Invalid kill history");
+	const event = db
+		.query<KillEvent, [number]>(
+			`SELECT ${killEventColumns} FROM kill_events WHERE id = ?`,
+		)
+		.get(eventId);
+	if (!event) throw new Error("Kill history not found");
+	const rows = db
+		.query<KillEvent, [string]>(
+			`SELECT ${killEventColumns} FROM kill_events WHERE operation_id = ? ORDER BY id`,
+		)
+		.all(event.operationId);
+	checkKey({
+		runId: "control",
+		threadId: "history",
+		actionId: event.operationId,
+	});
+	killRun(event.scope);
+	checkActor(event.actor);
+	checkedText(event.reason, "kill reason", 4096);
+	checkedEvidence(event.evidenceRef);
+	if (event.cleanupRef !== null) checkedEvidence(event.cleanupRef);
+	const metadata = (row: KillEvent) =>
+		JSON.stringify([
+			row.tier,
+			row.operationId,
+			row.scope,
+			row.kind,
+			row.actor,
+			row.reason,
+			row.evidenceRef,
+			row.cleanupRef,
+			row.previousLatch,
+		]);
+	if (
+		rows.length !== 3 ||
+		rows[2]?.id !== eventId ||
+		event.tier !== "critical" ||
+		!event.actor.startsWith("human:") ||
+		!["engage", "reset"].includes(event.kind) ||
+		(event.kind === "reset" && event.cleanupRef === null) ||
+		rows.some(
+			(row, index) =>
+				row.stage !== ["requested", "allowed", "completed"][index] ||
+				metadata(row) !== metadata(event) ||
+				!Number.isSafeInteger(row.id) ||
+				row.id <= 0 ||
+				!Number.isFinite(Date.parse(row.createdAt)),
+		)
+	)
+		throw new Error("Invalid kill control triple");
+	return event;
+}
+
+function readKillLatch(db: Database, scope: string): KillLatch | null {
+	const row = db
+		.query<KillLatch, [string]>(
+			"SELECT scope, engaged_at AS engagedAt, actor, reason, event_id AS eventId FROM kills WHERE scope = ?",
+		)
+		.get(scope);
+	if (row && row.eventId !== null) {
+		const event = readKillEvent(db, row.eventId);
+		if (
+			event.kind !== "engage" ||
+			event.scope !== row.scope ||
+			event.actor !== row.actor ||
+			event.reason !== row.reason ||
+			event.createdAt !== row.engagedAt
+		)
+			throw new Error("Kill latch history mismatch");
+	}
+	return row;
+}
+
+export function getKillStatus(
+	db: Database,
+	runId?: string,
+): { global: KillLatch | null; run: KillLatch | null; blocked: boolean } {
+	if (runId !== undefined) checkScope(runId);
+	return db.transaction(() => {
+		const global = readKillLatch(db, "global");
+		const run = runId === undefined ? null : readKillLatch(db, `run:${runId}`);
+		return { global, run, blocked: global !== null || run !== null };
+	})();
+}
+
+function recordKillOperation(
+	db: Database,
+	args: KillInput,
+	kind: "engage" | "reset",
+	previous: KillLatch | null,
+	cleanupRef: string | null = null,
+): KillEvent {
+	const operationId = randomUUID();
+	let completedId = 0;
+	for (const stage of ["requested", "allowed", "completed"]) {
+		const row = db
+			.query<{ id: number }, (string | null)[]>(`INSERT INTO kill_events
+      (operation_id, scope, kind, stage, actor, reason, evidence_ref, cleanup_ref, previous_latch)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id`)
+			.get(
+				operationId,
+				args.scope,
+				kind,
+				stage,
+				args.actor,
+				args.reason,
+				args.evidenceRef,
+				cleanupRef,
+				previous ? JSON.stringify(previous) : null,
+			);
+		if (!row) throw new Error("Failed to record kill control");
+		completedId = row.id;
+	}
+	return readKillEvent(db, completedId);
+}
+
+export function engageKill(
+	db: Database,
+	args: KillInput,
+): {
+	latch: KillLatch;
+	revokedLeases: number;
+	ungrantableLeases: number;
+	alreadyEngaged: boolean;
+} {
+	if (db.inTransaction)
+		throw new Error("Kill control requires no caller transaction");
+	checkFields(args, ["scope", "actor", "reason", "evidenceRef", "synthetic"]);
+	checkControl(args);
+	const runId = killRun(args.scope);
+	return db
+		.transaction(() => {
+			const previous = readKillLatch(db, args.scope);
+			if (previous?.eventId)
+				return {
+					latch: previous,
+					revokedLeases: 0,
+					ungrantableLeases: 0,
+					alreadyEngaged: true,
+				};
+			const event = recordKillOperation(db, args, "engage", previous);
+			const actions = scopedKillActions(db, runId);
+			for (const row of scopedKillOutbox(db, runId))
+				requireOutbox(db, row.intentId);
+			const leases = db
+				.query<{ epoch: number }, [string | null, string | null]>(
+					"SELECT epoch FROM leases WHERE ? IS NULL OR run_id = ?",
+				)
+				.all(runId, runId);
+			const ungrantableLeases = leases.filter(
+				(lease) =>
+					!Number.isSafeInteger(lease.epoch) ||
+					lease.epoch <= 0 ||
+					lease.epoch >= Number.MAX_SAFE_INTEGER,
+			).length;
+			// Scope the update directly: legacy SQLite TEXT PRIMARY KEY rows may have NULL keys.
+			const revoked = db
+				.query(`UPDATE leases SET epoch = CASE WHEN typeof(epoch) = 'integer' AND epoch > 0 AND epoch < ? THEN epoch + 1 ELSE epoch END,
+        expires_at = 0 WHERE ? IS NULL OR run_id = ?`)
+				.run(Number.MAX_SAFE_INTEGER, runId, runId);
+			if (revoked.changes !== leases.length)
+				throw new Error("Lease revocation incomplete");
+			const latched = db
+				.query(`INSERT INTO kills (scope, engaged_at, actor, reason, event_id) VALUES (?, ?, ?, ?, ?)
+      ON CONFLICT(scope) DO UPDATE SET engaged_at=excluded.engaged_at, actor=excluded.actor, reason=excluded.reason, event_id=excluded.event_id`)
+				.run(args.scope, event.createdAt, args.actor, args.reason, event.id);
+			if (latched.changes !== 1)
+				throw new Error("Failed to persist kill latch");
+			for (const action of actions) {
+				if (
+					action.outcome === "pending" &&
+					!hasOutboxEvent(db, action.runId, action.actionId)
+				) {
+					insertActionRow(
+						db,
+						{
+							...action,
+							actor: args.actor,
+							decision: "denied",
+							outcome: "not-executed",
+							evidenceRef: `trace:kill-event-${event.id}`,
+						},
+						action,
+						event.id,
+					);
+				}
+			}
+			const latch = readKillLatch(db, args.scope);
+			if (!latch || latch.eventId !== event.id)
+				throw new Error("Failed to latch kill");
+			return {
+				latch,
+				revokedLeases: leases.length,
+				ungrantableLeases,
+				alreadyEngaged: false,
+			};
+		})
+		.immediate();
+}
+
+// Even an orphan observation refutes automatic non-execution; never filter to dispatch rows alone.
+function hasOutboxEvent(
+	db: Database,
+	runId: string,
+	actionId: string,
+): boolean {
+	return (
+		db
+			.query<
+				{ id: number },
+				[string, string]
+			>(`SELECT e.id FROM outbox_events e JOIN outbox o ON o.intent_id = e.intent_id
+    WHERE o.run_id = ? AND o.action_id = ? LIMIT 1`)
+			.get(runId, actionId) !== null
+	);
+}
+
+function validateKillDenial(
+	db: Database,
+	action: Omit<ActionAuditEntry, "id" | "createdAt">,
+	eventId: number,
+): void {
+	const event = readKillEvent(db, eventId);
+	if (
+		event.kind !== "engage" ||
+		(event.scope !== "global" && event.scope !== `run:${action.runId}`) ||
+		action.actor !== event.actor ||
+		action.evidenceRef !== `trace:kill-event-${event.id}` ||
+		action.decision !== "denied" ||
+		action.outcome !== "not-executed" ||
+		hasOutboxEvent(db, action.runId, action.actionId)
+	)
+		throw new Error("Invalid kill denial proof");
+}
+
+function scopedKillActions(
+	db: Database,
+	runId: string | null,
+): ActionAuditEntry[] {
+	const runs =
+		runId === null
+			? db
+					.query<
+						{ runId: string },
+						[]
+					>(`SELECT DISTINCT run_id AS runId FROM audit WHERE
+    thread_id IS NOT NULL OR action_id IS NOT NULL OR actor IS NOT NULL OR tier IS NOT NULL ORDER BY run_id`)
+					.all()
+					.map((row) => row.runId)
+			: [runId];
+	return runs.flatMap((run) => [...readActions(db, run).values()]);
+}
+
+function scopedKillOutbox(
+	db: Database,
+	runId: string | null,
+): { intentId: string }[] {
+	return db
+		.query<{ intentId: string }, [string | null, string | null]>(
+			"SELECT intent_id AS intentId FROM outbox WHERE ? IS NULL OR run_id = ? ORDER BY id",
+		)
+		.all(runId, runId);
+}
+
+export interface KillResetPlan {
+	scope: string;
+	latchEventId: number;
+	snapshotHash: string;
+	blocked: boolean;
+	actions: ActionAuditEntry[];
+	outbox: OutboxRecord[];
+	leases: Lease[];
+	legacyAuditCount: number;
+	legacyTransitionCount: number;
+}
+
+function buildKillResetPlan(db: Database, scope: string): KillResetPlan {
+	const runId = killRun(scope);
+	const latch = readKillLatch(db, scope);
+	if (!latch) throw new Error("Kill is not engaged");
+	if (latch.eventId === null)
+		throw new Error("Re-engage legacy kill before reset");
+	const actions = scopedKillActions(db, runId);
+	const outbox = scopedKillOutbox(db, runId).map((row) =>
+		requireOutbox(db, row.intentId),
+	);
+	const leases = db
+		.query<
+			Lease,
+			[string | null, string | null]
+		>(`SELECT workspace, owner, epoch, run_id AS runId,
+    acquired_at AS acquiredAt, expires_at AS expiresAt FROM leases WHERE ? IS NULL OR run_id = ? ORDER BY workspace`)
+		.all(runId, runId);
+	const latches = db
+		.query<
+			KillLatch,
+			[string | null, string]
+		>(`SELECT scope, engaged_at AS engagedAt, actor, reason, event_id AS eventId
+    FROM kills WHERE ? IS NULL OR scope = 'global' OR scope = ? ORDER BY scope`)
+		.all(runId, scope);
+	for (const active of latches) readKillLatch(db, active.scope);
+	const controls = db
+		.query<
+			KillEvent,
+			[string | null, string]
+		>(`SELECT ${killEventColumns} FROM kill_events
+    WHERE ? IS NULL OR scope = 'global' OR scope = ? ORDER BY id`)
+		.all(runId, scope);
+	const operations = new Map<string, number>();
+	for (const event of controls) operations.set(event.operationId, event.id);
+	for (const id of operations.values()) readKillEvent(db, id);
+	const audit = db
+		.query<Record<string, unknown>, [string | null, string | null]>(
+			"SELECT * FROM audit WHERE ? IS NULL OR run_id = ? ORDER BY id",
+		)
+		.all(runId, runId);
+	const transitions = db
+		.query<Record<string, unknown>, [string | null, string | null]>(
+			"SELECT * FROM transitions WHERE ? IS NULL OR run_id = ? ORDER BY id",
+		)
+		.all(runId, runId);
+	const events = db
+		.query<
+			Record<string, unknown>,
+			[string | null, string | null]
+		>(`SELECT e.* FROM outbox_events e JOIN outbox o ON o.intent_id = e.intent_id
+    WHERE ? IS NULL OR o.run_id = ? ORDER BY e.id`)
+		.all(runId, runId);
+	const cursors = db
+		.query<Record<string, unknown>, [string | null, string | null]>(
+			"SELECT * FROM relay_cursors WHERE ? IS NULL OR run_id = ? ORDER BY run_id,thread_id,workspace",
+		)
+		.all(runId, runId);
+	const snapshotHash = createHash("sha256")
+		.update(
+			JSON.stringify({
+				scope,
+				latch,
+				actions,
+				outbox,
+				leases,
+				latches,
+				controls,
+				audit,
+				transitions,
+				events,
+				cursors,
+			}),
+		)
+		.digest("hex");
+	const blocked =
+		actions.some((action) => action.outcome === "pending") ||
+		outbox.some((row) =>
+			row.attempts.some(
+				(attempt) =>
+					attempt.state === "dispatched" || attempt.state === "unknown",
+			),
+		);
+	return {
+		scope,
+		latchEventId: latch.eventId,
+		snapshotHash,
+		blocked,
+		actions,
+		outbox,
+		leases,
+		legacyAuditCount: audit.filter(
+			(row) =>
+				row.thread_id === null &&
+				row.action_id === null &&
+				row.actor === null &&
+				row.tier === null,
+		).length,
+		legacyTransitionCount: transitions.filter((row) => row.thread_id === null)
+			.length,
+	};
+}
+
+export function prepareKillReset(
+	db: Database,
+	args: { scope: string },
+): KillResetPlan {
+	checkFields(args, ["scope"]);
+	killRun(args.scope);
+	return db.transaction(() => buildKillResetPlan(db, args.scope))();
+}
+
+export function resetKill(
+	db: Database,
+	args: KillInput & { cleanupEvidenceRef: string; snapshotHash: string },
+): { scope: string; eventId: number } {
+	if (db.inTransaction)
+		throw new Error("Kill control requires no caller transaction");
+	checkFields(args, [
+		"scope",
+		"actor",
+		"reason",
+		"evidenceRef",
+		"synthetic",
+		"cleanupEvidenceRef",
+		"snapshotHash",
+	]);
+	checkControl(args);
+	checkedEvidence(args.cleanupEvidenceRef);
+	if (
+		typeof args.snapshotHash !== "string" ||
+		!/^[0-9a-f]{64}$/.test(args.snapshotHash)
+	)
+		throw new Error("Invalid reset snapshot");
+	return db
+		.transaction(() => {
+			const plan = buildKillResetPlan(db, args.scope);
+			if (plan.snapshotHash !== args.snapshotHash)
+				throw new Error("Reset plan is stale");
+			if (plan.blocked)
+				throw new Error("Reset requires unresolved work reconciliation");
+			const latch = readKillLatch(db, args.scope);
+			const event = recordKillOperation(
+				db,
+				args,
+				"reset",
+				latch,
+				args.cleanupEvidenceRef,
+			);
+			const removed = db
+				.query("DELETE FROM kills WHERE scope = ? AND event_id = ?")
+				.run(args.scope, plan.latchEventId);
+			if (removed.changes !== 1)
+				throw new Error("Kill latch changed during reset");
+			return { scope: args.scope, eventId: event.id };
+		})
+		.immediate();
 }

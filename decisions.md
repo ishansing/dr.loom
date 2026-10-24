@@ -746,3 +746,70 @@ T-02/T-04 human approval remains pending. No push, next slice or real effects.
 commit `d0a02dd`. Record corrected T-04 implementation/re-review approval through
 the owner, not independent identity verification; preserve initial R-001 report.
 T-02 remains pending. No G1 closure, live effects, push or next-slice authority.
+
+## [ADR-017] - 2026-10-24 (T-05 scoped kill and guarded reset)
+
+**Title:** Bind run leases and preserve immutable kill-denial/reset evidence.
+
+**Status:** Owner-confirmed design after “commit and continue” from approval
+closeout `08292d9`; scoped migration, synthetic reset and test seams confirmed.
+
+**Context & Problem Statement:** leases don't persist run identity, so scoped
+revocation would guess or over-revoke. Ordinary audit state rejects a second
+verdict; allowed-but-undispatched cancellation needs distinct durable proof.
+Admitted work must not become not-executed, and reset must not revive old authority.
+
+**Options Evaluated:** globally revoke for a run kill; trust transient run mapping/
+actor strings; persist scoped binding/control evidence with fresh-plan reset.
+
+**Decision & Rationale:** additive atomic v4 migration, nullable unknown legacy
+identities, bound native acquisition/gate, immutable critical kill triples and
+audit-denial links. One transaction revokes, latches, denies/cancels only never-
+admitted work. Healthy epochs bump; invalid/exhausted epochs expire and remain
+ungrantable rather than overflow into authority. Keep in-flight observations.
+Reset recomputes exact scoped plan, requires trusted host human attribution and
+fresh fixture verification/cleanup evidence, blocks unresolved admitted work,
+clears only its latch and never re-grants/resurrects.
+
+**Consequences & Tech Debt:** schema v4/unknown-run fencing changes native-write
+eligibility intentionally. Host context/clock/SQL/evidence remain trusted, not
+authentication/containment proof. CLI critical controls, real cleanup/identity and
+production reset qualification remain later work. Corrupt storage can fail the
+atomic operation; never claim a successful partial kill. Existing guards/data,
+fixed-artifact review and original safety regressions remain required.
+
+**Implementation investigation — 2026-10-24:** public status stress fixture found
+210 false clear readings while one legacy kill scope was continuously active;
+separate global/run reads observed different snapshots. A single short read
+transaction corrected it; minimized atomic scope-switch fixture passes without
+raising test timeouts. Native control/reset process races are tested separately.
+After crash, concurrent connection setup also returned SQLITE_BUSY_RECOVERY before
+reset: stage connections sequentially, then release reset attempts together. Busy
+startup remains a caller retry condition, not a successful control operation.
+
+**Implementation event — 2026-10-24:**82-test ordered code gates pass, focused
+22-test corpus passes three consecutive runs. Orphan outbox observations now
+invalidate automatic kill non-execution proof; cancellation reuses that shared
+history validator. Scope/reset/late-fact/rollback/process proofs remain synthetic;
+fixed-artifact advisory and Ishan disposition pending, no production authority.
+
+**Revocation edge-case event — 2026-10-24:** legacy SQLite TEXT PRIMARY KEY can
+contain NULL. A public failing fixture showed per-key equality updates skipped
+such a row. Revocation now uses one parameterized scope-wide UPDATE, preserves
+unknown keys, safely bumps only valid bounded integer epochs and expires all
+selected rows. A second failing SQL-ignore fixture added a cardinality check so
+incomplete revocation aborts the whole control transaction, never partial success.
+
+**Review event — 2026-10-24:** initial T-05 R-001 and adjacent latch-adoption
+question reproduced as public false-success failures under ignored SQL writes.
+Require one persisted denial link, one latch write and exact completed-event
+reference; rollback all state on mismatch. Corrected86-test gates pass; preserve
+initial advisory and require new-artifact re-review, not a waiver or human sign-off.
+
+**Re-review event — 2026-10-24:** fixed-artifact review T05-20261024-02 reports
+R-001 and the adjacent latch question resolved, no open confirmed finding, for
+overlay manifest `f98ab70bd281c8121579e716c054561e2f1065482989b6bd3bbec1457ab61519`.
+Report SHA-256 `6f6645d1090eabc5713f19ff4eb991a1d506915fc7265b735cf001e9b4ceeab8`.
+Reviewed source/test/fixture hashes match the current files. This is an AI
+advisory only: Ishan disposition, commit/push and any later-slice or production
+authority remain separate and pending.

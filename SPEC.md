@@ -275,6 +275,249 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
 
 ## Active phase specification
 
+- **Work package:** P1 / T-05 synthetic kill engage/reset, started 2026-10-24.
+- **Authority:** owner requested “commit and continue”; confirmed scoped v4
+  binding/history migration, guarded synthetic reset and public test seams.
+- **Baseline/branch:** clean `08292d9`, `feat/p1-kill-switch`; T-02/T-04 approved
+  as relayed by owner. No push/production/provider/next-slice authority.
+- **Status:** implementation, ordered code gates and fixed-artifact re-review
+  verified with no open confirmed findings; Ishan disposition pending. G0 closed,
+  G1 open.
+
+### 1. Phase Objective & Scope
+
+Atomic global/per-run admission stop: revoke scoped leases, latch kill, deny only
+undispatched native approvals/actions, cancel linked undispatched intents and halt
+relay through its existing live gate. Keep admitted effects unresolved/observable.
+Separate fresh-plan synthetic reset, never automatic re-grants/resurrection.
+Add kill state to CLI status, but no CLI engage/reset command (T-07). Production
+identity/transport, execution cleanup, providers, full policy and G1 closure remain
+unqualified. This is trusted-host synthetic control, not runtime containment.
+
+### 2. Environment & Upstream State
+
+Fresh clean baseline: lint exit0 (16 files), strict check exit0, full coverage
+exit0 (60 tests/555 assertions; functions100%, lines95.76%, store99.78%, framework
+87.50%, index100%), audit exit0 (14 packages/no advisories). Bun1.4.4/SQLite3.53.4;
+no runtime/dependency upgrade. Reuse verified synchronous immediate/savepoint and
+WAL/FULL behavior; never await under a DB writer lock. R-17 is design context,
+not proof of implemented containment. Gitleaks8.30.1 remains temporary, pinned
+archive digest/executable must be verified before scans.
+Installed Bun transaction declarations and official `bun-v1.4.4/src/js/bun/sqlite.ts`
+controller/wrapper source rechecked against the unchanged runtime; fresh
+`SELECT sqlite_version()` confirms3.53.4. Default read snapshots, immediate writers
+and rollback/savepoint behavior are exercised by the current corpus, not assumed
+from current upstream main.
+
+### 3. Architecture & File Manifest
+
+| File | Responsibility |
+| --- | --- |
+| `src/store.ts` | Exact v4 migration, persisted lease run binding, immutable control triples/denials, engage/status/reset plan/reset, audit/outbox cancellation integration |
+| `src/index.ts` | Export kill types/seams, retain existing normal APIs |
+| `src/cli.ts` | Show global/run kill state in status JSON; no critical operator command |
+| `tests/kill.test.ts` | Owner-confirmed control/gate/lease/audit/outbox/status and process seams |
+| `tests/fixtures/schema-v3.sql` | Independent additive v3 DDL snapshot layered over known-v2 fixture |
+| `tests/schema-v2.test.ts`, `tests/write-gate.test.ts`, `tests/outbox.test.ts` | Advance current version; explicit column fixtures/run identities, preserve substantive assertions |
+| `SPEC.md`, `ROADMAP.md`, `decisions.md` | Scoped authority/contract/evidence |
+| `research/reviews/2026-10-24-p1-t05.md` | Fixed-artifact advisory, human disposition separate |
+
+Callers traced: isKilled serves writeGate/acquisition; no engage/reset exists.
+leases omit persisted run; audit forbids second verdict; outbox lacks cancelled
+projection. Address those owners once rather than inventing identities, revoking
+unrelated runs or treating admitted work as not-executed. Existing v2/v3 DDL,
+facts and immutable guards preserved; v4 is additive and versioned atomically.
+
+**Exact interface/invariants:**
+- `scope` is exactly global or run:<validated runId>; no thread/prefix matching.
+  Kill operations require explicit `synthetic:true`, human: actor, bounded reason
+  and evidenceRef. Trusted host must establish actual human authority; syntax and
+  fixture flag do not authenticate a human or qualify production operations.
+- v4 adds nullable leases.run_id, nullable kills.event_id, immutable kill_events
+  and kill_denials. Unknown legacy lease-run/latch identities stay NULL; don't
+  fabricate authority. Native acquisition binds run; live same-owner renewal
+  must match run. Unknown/cross-run bindings cannot authorize/renew native writes;
+  trusted cleanup or expiry then fresh acquisition increments epoch normally.
+- Kill events are a dedicated critical control audit: three immutable rows per
+  operation (requested → allowed → completed), one operation UUID, matching scope/
+  actor/reason/evidence, ordered IDs. Completed means its whole local transaction
+  committed, not process containment. Global controls use explicit global scope,
+  never fabricated run/thread identities. Legacy latch adoption preserves prior
+  latch values in immutable command evidence before establishing native history.
+- `engageKill(db,{scope,actor,reason,evidenceRef,synthetic:true})` requires no caller
+  transaction and executes one immediate transaction. Idempotent while the native
+  latch remains active; repeated engage returns original latch, not changed reason.
+  A legacy flag may be re-engaged to establish audited native state, never silently
+  reset. Validate scoped histories before committing; any error rolls back the
+  complete local operation and must not be reported as successful kill.
+- Revoke all scoped bound lease rows (global includes unknown legacy rows): expire
+  to0, increment healthy safe epoch. Invalid/exhausted epochs remain ungrantable,
+  expired, and reported; never overflow/repair them into valid authority. Run kill
+  does not modify unrelated bound leases; unknown run leases already cannot admit.
+- Freeze pending/escalated/allowed unresolved native actions only when NO outbox
+  dispatch attempt was EVER admitted. Append denied/not-executed with kill actor
+  and immutable kill-event evidence. Only private kill-denial path permits this
+  allowed→denied exception; ordinary recordVerdict still rejects duplicate verdicts.
+  Readers verify the immutable kill link and scope; resetting a latch does not
+  invalidate historical proof. Any admitted attempt, even later not-applied,
+  remains excluded from this automatic non-execution inference.
+- Outbox derives cancelled only from a verified linked kill denial and zero
+  attempts; malformed contradictions fail closed. Intent/events stay immutable.
+  Cancelled intents remain queryable but not unresolved relay work; resetting
+  never resurrects them. New native requests/allow/escalation during kill reject;
+  finish and reconciliation remain recordable for already admitted facts.
+- `getKillStatus(db,runId?)` reports global/run latch and blocked flag; validates
+  native control triple/reference, distinguishes legacy flag without audit. Gate
+  continues presence-based fail-closed denial, even malformed descriptive data.
+  Both scope reads share one short synchronous SQLite snapshot, never mixed states.
+  CLI status includes kill state before transition fields, including no-transition
+  response. Host CLI is not a replacement for T-07 trusted critical controls.
+- `prepareKillReset(db,{scope})` requires active native latch; returns exact
+  triage snapshot/digest: in-scope native action heads, all outbox intents/attempts
+  (including unknown attempts behind an applied intent), leases, relevant latch/
+  control state. Identify cancelled undispatched work separately from unresolved
+  admitted effects. Block reset on non-terminal native actions or unresolved
+  admitted attempts. Unknown legacy claims remain visible as unattributed history,
+  never invented dispatch proof. No exposure of raw secrets or credential stores.
+- `resetKill(db,{scope,actor,reason,evidenceRef,cleanupEvidenceRef,snapshotHash,
+  synthetic:true})` refuses caller transactions, non-human syntax, missing evidence,
+  stale plan, unresolved native work or legacy/unbound latch. In one immediate
+  transaction recompute exact plan, record a separate critical control triple and
+  clear ONLY that latch. Cleanup/refreshed verification evidence is trusted host
+  attestation for disposable fixtures, not independently proven containment.
+  Concurrent observations/changes invalidate old plans; no network verification
+  under lock. Fresh preparation after reconciliation required.
+- Reset never restores epochs, leases, approvals or intents. Another active kill
+  scope still blocks. Lease acquisition/cleanup and late facts remain their explicit
+  host-bookkeeping exceptions. Full operator identity, real cleanup and production
+  reset qualification stay later gates, not replaced by a Boolean or actor string.
+
+### 4. Test Plan & Coverage Matrix
+
+Confirmed engageKill/prepareKillReset/resetKill/getKillStatus plus gate, lease,
+audit/outbox APIs and CLI status. SQL only migration/malformed/kill fixtures and
+history assertions; actual processes for restart/contention, no private mocks.
+
+| Scenario | Required proof |
+| --- | --- |
+| Migration/binding | Known v3 preserved, NULL legacy run stays unknown, current v4 registry/guards exact and atomic |
+| Scoped kill | Global/run latch + epoch expiry + undispatched denial/cancel commit together; unrelated run unaffected |
+| In-flight honesty | Kill between batch items blocks later dispatch; late results preserved, admitted actions never denied/not-executed |
+| History | Immutable critical triples/denial links, duplicate ordinary verdict still rejected, historical links survive reset |
+| Admission | Kill denies new requests/allowances/renewal/writes; scoped live run binding enforced; cleanup/late evidence available |
+| Reset | Fresh snapshot and host human evidence required; stale/unresolved/legacy plans reject; no re-grants/resurrection |
+| Failure/recovery | Throw/lock/corruption leaves atomic state, reopen retains latch and revoked epochs, competing engage/reset serialize |
+| CLI/compatibility | Status shows kill even without transitions; old data/guards preserved, fixture adaptations explicit |
+
+Test-first vertical slices, owned disposable state under `/tmp/opencode`; no real
+effects/provider calls or invented human/environment verification.
+
+### 5. Security, Observability & Edge Cases
+
+Parameterized SQL, bounded runtime context/evidence, no raw input/row/error dumps.
+Only trusted host calls critical functions; executable agents/production channels
+remain disabled. Kill is local admission closure, not rollback or proof a process
+stopped. Invalid storage/history can fail the whole operation: report explicit
+failure/escalate rather than claim partial success. Exhausted/invalid leases are
+expired but not repaired/re-granted. No silent reset, trigger bypass, audit deletion,
+fabricated legacy identities or universal cleanup/latency guarantee.
+
+### 6. Blast Radius & Rollback Plan
+
+Additive v4: old binaries refuse; migration preserves existing rows/DDL. New binding
+invalidates unknown legacy native-write authority intentionally; operator must
+release/expire and reacquire. Kill-specific cancellation is terminal; use new
+action/intent after reset, never rewrite history. Rollback only via verified backup
+restore to separate disposable state with post-migration facts retained for triage;
+no downgrade/delete path. No production migration/backup/restore authorized.
+
+### 7. Definition of Done (DoD)
+
+`bun run lint` → `bun run check` → `bun test --coverage` →
+`bun test tests/kill.test.ts` → `bun audit` → verified task-file Gitleaks scans,
+all exit0. Compare fresh 60-test/95.76% baseline and per-file functions/lines;
+preserve all substantive regressions, no skipped/suppressed coverage. Historical
+document-validator heredoc, `git diff --check`, protected package/lock/config/pins/
+.github/.opencode/prior-review comparisons pass. Review exact fixed candidate with
+ishan-reviewer, persist evidence/report, human approval separate. Leave T-05
+uncommitted unless requested; no push/live effects/providers/G1 closure/next slice.
+
+**Execution evidence (2026-10-24, Bun1.4.4 / SQLite3.53.4):**
+- Observed intended reds before implementation: intact v3 remained3; cross-run
+  writer accepted same lease; missing engage/status and prepare/reset exports;
+  kill left undispatched approvals pending; CLI omitted kill state. Each seam
+  implemented after its acceptance failure, not fixtures/import failures.
+- Additional public red: orphan outbox observation did not invalidate historical
+  kill non-execution proof. Any outbox event now refutes automatic non-execution,
+  including malformed orphan evidence; shared action-history validation owns this
+  proof and outbox cancellation reuses it instead of duplicating impossible guards.
+- Status stress at public getKillStatus found210 false clears while an atomic
+  legacy scope-switch fixture always retained one kill. One short read transaction
+  fixes mixed global/run snapshots; the regression runs1000 fixture flips/100000
+  reads, with no false clears. An earlier larger native-control stress probe hit
+  the default5s fixture timeout; minimized to this bounded direct status fixture,
+  removed its owned leftover state, and did not raise timeouts or skip safety tests.
+- Crash/reset process fixture initially hit SQLITE_BUSY_RECOVERY during concurrent
+  connection setup, before reset. Captured cause, staged participant opens before
+  the readiness barrier, then raced real reset calls; no retry loop or new runtime
+  assumption added to application code. Ordinary SQLite busy remains caller-owned.
+- Final `bun run lint`: exit0 (17 files); `bun run check`: exit0;
+  `bun test --coverage`: exit0,82 tests/697 assertions,100% functions,95.78% lines
+  (baseline95.76%); store99.85% (99.78%), framework87.50% and index100% unchanged.
+  Prior60 tests retained; current-version/column fixtures explicitly updated forv4.
+- `bun test tests/kill.test.ts`: exit0,22 tests/142 assertions; three consecutive
+  focused runs pass. Covers v3 preservation, binding, global/run scope, immutable
+  triples/denials, any-admission exclusion, late facts, cancellation, unresolved
+  attempts behind applied intents, stale reset digest, no re-grants/resurrection,
+  corrupt history, SQL fault rollback, CLI status, abrupt exit and competing resets.
+- `bun audit`: exit0,14 packages/no advisories; no install/upgrade/auto-fix.
+- Verified Gitleaks8.30.1 archive digest
+  `551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb`
+  and executable bytes before task-file scans. Exact command pattern:
+  `env -i PATH=/usr/bin:/bin <verified-gitleaks> dir <file> --no-banner --redact=100 --ignore-gitleaks-allow --gitleaks-ignore-path /tmp/opencode/loom-t01-no-ignore`.
+  Task-file scans clean; final review/governance edits require rescan.
+- Document-validator/protected-file/whitespace checks pass. No real operator
+  authentication, execution-domain containment/cleanup, provider, production
+  restore, timeout/power-loss guarantee, full policy or G1 closure claimed.
+- Additional revocation reds: a NULL-key legacy lease was skipped by per-key
+  equality UPDATE, and an ignored UPDATE still reported success. One scope-wide
+  parameterized UPDATE now handles NULL keys without guessing identities; verify
+  matched row count or roll back the complete control operation. Final ordered
+  gates restarted and pass: lint17 files, strict check,84 tests/702 assertions,
+  100% functions/95.78% overall lines/store99.85%; focused24 tests/147 assertions
+  pass three consecutive runs; audit14 packages/no advisories. Earlier82-test
+  evidence is historical, not substituted for this corrected-candidate proof.
+- Initial [T-05 advisory](research/reviews/2026-10-24-p1-t05-initial.md) requested
+  R-001: ignored kill-denial link INSERT could commit incomplete history. Its
+  adjacent question about ignored legacy-latch adoption was also reproduced.
+  Exact red command `bun test tests/kill.test.ts -t "ignored kill-denial|ignored legacy latch"`
+  produced2 false-success failures. Both writes now require exactly one changed
+  row; engagement also verifies the persisted latch points to its own completed
+  control event. Public regressions assert complete rollback of lease/action/
+  intent/latch/control history, including dropped-reference fault after upsert.
+- Corrected ordered gates pass: lint17 files, strict check,86 tests/719 assertions,
+  100% functions/95.78% lines/store99.85%; focused26 tests/164 assertions pass
+  three consecutive runs; audit14 packages/no advisories. Original84-test
+  advisory snapshot preserved.
+- [Corrected T-05 re-review](research/reviews/2026-10-24-p1-t05.md) (report
+  SHA-256 `6f6645d1090eabc5713f19ff4eb991a1d506915fc7265b735cf001e9b4ceeab8`)
+  marks R-001 and the adjacent legacy-latch question resolved, with no open
+  confirmed finding. Reviewed source/test/fixture hashes match current files;
+  the uncommitted candidate snapshot was removed after its archive matched.
+  Human disposition, commit, push and scope advancement remain pending, not
+  inferred from this advisory. Report persistence changed only one Markdown
+  hard-break trailing space; no content differs.
+- T-05 closeout checks: all13 task-file scans with the verified Gitleaks binary
+  exit0/clean; historical document validator passes (277 links, seven active
+  sections, unique ADRs/casing/whitespace); `git diff --check` and protected-file
+  comparison exit0. These establish documentation hygiene only, not production
+  identity, containment, restore or provider qualification.
+
+## T-04 completed execution record (historical)
+
+The approved T-04 implementation below is `d0a02dd`, approval closeout `08292d9`;
+current T-05 contract above governs the additive kill/binding/cancellation changes.
+
 - **Work package:** P1 / T-04 synthetic outbox, started 2026-10-24.
 - **Authority:** “commit and continue”; owner confirmed synthetic v3 migration,
   immutable intent binding, conservative replay and public test seams.

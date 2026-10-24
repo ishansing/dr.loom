@@ -58,7 +58,7 @@ function withStoreFile(run: (path: string) => void): void {
 	}
 }
 
-test("fresh initialization records schema v2 and v3 exactly once", () => {
+test("fresh initialization records schema v2, v3 and v4 exactly once", () => {
 	const db = openDb();
 	try {
 		initSchema(db);
@@ -69,11 +69,12 @@ test("fresh initialization records schema v2 and v3 exactly once", () => {
 				)
 				.get(),
 		).toEqual({ name: "schema_migrations" });
-		expect(db.query("PRAGMA user_version").get()).toEqual({ user_version: 3 });
+		expect(db.query("PRAGMA user_version").get()).toEqual({ user_version: 4 });
 		initSchema(db);
 		expect(db.query("SELECT version FROM schema_migrations").all()).toEqual([
 			{ version: 2 },
 			{ version: 3 },
+			{ version: 4 },
 		]);
 	} finally {
 		db.close();
@@ -119,6 +120,7 @@ test("legacy migration preserves claims and leaves identities and authority unkn
 			epoch: 4,
 			acquired_at: "old-time",
 			expires_at: 123,
+			run_id: null,
 		});
 		for (const table of ["kills", "budgets", "usage", "grants"]) {
 			expect(db.query(`SELECT count(*) AS n FROM ${table}`).get()).toEqual({
@@ -130,7 +132,7 @@ test("legacy migration preserves claims and leaves identities and authority unkn
 		initSchema(db);
 		expect(
 			db.query("SELECT count(*) AS n FROM schema_migrations").get(),
-		).toEqual({ n: 2 });
+		).toEqual({ n: 3 });
 	} finally {
 		db.close();
 	}
@@ -161,7 +163,7 @@ test("unknown, future, partial and drifted stores are refused without mutation",
 		},
 		(db: Database) => {
 			initSchema(db);
-			db.exec("UPDATE schema_migrations SET version = 99 WHERE version = 3;");
+			db.exec("UPDATE schema_migrations SET version = 99 WHERE version = 4;");
 		},
 		(db: Database) => {
 			initSchema(db);
@@ -433,7 +435,7 @@ test("new storage constraints accept explicit facts but reject invalid counters 
 	try {
 		initSchema(db);
 		db.exec(`
-      INSERT INTO kills VALUES ('global', 'now', 'human:test', 'synthetic');
+      INSERT INTO kills (scope, engaged_at, actor, reason) VALUES ('global', 'now', 'human:test', 'synthetic');
       INSERT INTO budgets VALUES ('r', 'cost-tokens', 0, NULL, 'now');
       INSERT INTO usage (run_id, thread_id, kind, amount) VALUES ('r', 'main', 'cost-tokens', 0);
       INSERT INTO grants VALUES ('g1', 'r', 'main', 'read', 'docs/*', 123);
@@ -647,7 +649,7 @@ test("a competing writer prevents migration without leaving partial schema chang
 			owner.exec("ROLLBACK");
 			initSchema(contender);
 			expect(contender.query("PRAGMA user_version").get()).toEqual({
-				user_version: 3,
+				user_version: 4,
 			});
 		} finally {
 			if (owner.inTransaction) owner.exec("ROLLBACK");

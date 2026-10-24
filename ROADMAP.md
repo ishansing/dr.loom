@@ -352,6 +352,26 @@ without G1 closure, commit/push, live use or next-slice authorization.
 continue”: commit approval records and begin next planned T-05 contract/discovery.
 G1 stays open; no push, production effect, provider use or later-slice completion.
 
+**T-05 started (2026-10-24):** approval records committed `08292d9`; clean branch
+`feat/p1-kill-switch`. Owner confirmed scoped v4 lease binding/kill history,
+guarded synthetic reset and public seams. No CLI critical controls, production
+identity/containment/reset qualification or full policy enabled; G1 stays open.
+
+**T-05 candidate (2026-10-24):** scoped v4 binding, audited kill/cancellation,
+snapshot-bound synthetic reset and consistent CLI status implemented. Ordered
+lint/typecheck,82-test coverage and dependency audit pass; coverage above baseline.
+Fixed-artifact advisory and Ishan disposition pending; no commit/push or live use.
+
+T-05 revocation edge cases (legacy NULL key and SQL ignored update) reproduced
+before correction; scope-wide cardinality-checked revocation now passes84-test
+ordered gates. Corrected fixed-candidate advisory/Ishan disposition pending.
+
+Initial T-05 advisory found ignored denial-link persistence; adjacent ignored
+legacy-latch adoption also reproduced. Checked writes and exact latch-reference
+postcondition now pass86-test ordered gates. [Corrected T-05 re-review](research/reviews/2026-10-24-p1-t05.md)
+marks both resolved with no open confirmed finding; original review retained.
+Ishan disposition remains pending; no commit/push/live use authorized.
+
 **Outcome:** the control plane can record, authorize, stop and recover a run
 without trusting an agent process. Existing SPEC milestone 1; no live model needed.
 

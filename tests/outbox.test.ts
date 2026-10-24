@@ -4,7 +4,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import * as store from "../src/index.ts";
 
-test("intact v2 migrates atomically to v3 without rewriting existing facts or guards", () => {
+test("intact v2 migrates atomically to current schema without rewriting existing facts or guards", () => {
 	const db = new Database(":memory:");
 	try {
 		db.exec(
@@ -18,11 +18,11 @@ test("intact v2 migrates atomically to v3 without rewriting existing facts or gu
 		);
 		const before = db.query("SELECT * FROM audit").all();
 		store.initSchema(db);
-		expect(db.query("PRAGMA user_version").get()).toEqual({ user_version: 3 });
+		expect(db.query("PRAGMA user_version").get()).toEqual({ user_version: 4 });
 		expect(db.query("SELECT * FROM audit").all()).toEqual(before);
 		expect(
 			db.query("SELECT version FROM schema_migrations ORDER BY version").all(),
-		).toEqual([{ version: 2 }, { version: 3 }]);
+		).toEqual([{ version: 2 }, { version: 3 }, { version: 4 }]);
 		store.initSchema(db);
 		expect(() => db.exec("DELETE FROM audit")).toThrow("append-only");
 	} finally {
@@ -248,7 +248,7 @@ test("each batch item rechecks kill/epoch while late applied facts retain the or
 					seen.push(row.intentId);
 					if (stop === "kill")
 						db.query(
-							"INSERT INTO kills VALUES ('run:r1','fixture','human:test','stop')",
+							"INSERT INTO kills (scope, engaged_at, actor, reason) VALUES ('run:r1','fixture','human:test','stop')",
 						).run();
 					else {
 						store.releaseWorkspaceLease(db, {
@@ -771,7 +771,7 @@ test("malformed persisted relay cursor fails explicitly instead of implying prog
 	}
 });
 
-test("v2 writer contention leaves migration intact and a clean retry reaches v3", () => {
+test("v2 writer contention leaves migration intact and a clean retry reaches current schema", () => {
 	mkdirSync("/tmp/opencode", { recursive: true });
 	const dir = mkdtempSync("/tmp/opencode/loom-outbox-migration-");
 	const path = join(dir, "store.sqlite");
@@ -798,7 +798,7 @@ test("v2 writer contention leaves migration intact and a clean retry reaches v3"
 			}).immediate();
 			store.initSchema(contender);
 			expect(contender.query("PRAGMA user_version").get()).toEqual({
-				user_version: 3,
+				user_version: 4,
 			});
 		} finally {
 			contender.close();

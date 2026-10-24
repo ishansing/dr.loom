@@ -181,7 +181,7 @@ test("kill scope wins over missing lease and prevents acquisition/renewal but no
 		try {
 			store.initSchema(db);
 			db.query(
-				"INSERT INTO kills VALUES (?, '2026-10-23T00:00:00Z', 'human:test', 'fixture')",
+				"INSERT INTO kills (scope, engaged_at, actor, reason) VALUES (?, '2026-10-23T00:00:00Z', 'human:test', 'fixture')",
 			).run(scope);
 			expect(() =>
 				db.transaction(() => store.writeGate(db, ctx)).immediate(),
@@ -418,12 +418,9 @@ test("malformed persisted leases and exhausted fencing counters cannot authorize
 				acquiredAt: "2026-10-23T00:00:00Z",
 				...patch,
 			};
-			db.query("INSERT INTO leases VALUES ('ws', ?, ?, ?, ?)").run(
-				lease.owner,
-				lease.epoch,
-				lease.acquiredAt,
-				lease.expiresAt,
-			);
+			db.query(
+				"INSERT INTO leases (workspace,owner,epoch,acquired_at,expires_at,run_id) VALUES ('ws', ?, ?, ?, ?, 'r1')",
+			).run(lease.owner, lease.epoch, lease.acquiredAt, lease.expiresAt);
 			const before = db.query("SELECT * FROM leases").all();
 			expect(() => store.recordTransition(db, transition, ctx)).toThrow();
 			expect(() =>
@@ -452,7 +449,7 @@ test("malformed persisted leases and exhausted fencing counters cannot authorize
 	try {
 		store.initSchema(db);
 		db.query(
-			"INSERT INTO leases VALUES ('ws', 'worker', ?, '2026-10-23T00:00:00Z', 0)",
+			"INSERT INTO leases (workspace,owner,epoch,acquired_at,expires_at,run_id) VALUES ('ws', 'worker', ?, '2026-10-23T00:00:00Z', 0, 'r1')",
 		).run(Number.MAX_SAFE_INTEGER);
 		expect(() =>
 			store.acquireWorkspaceLease(db, {
@@ -562,11 +559,11 @@ test("gate checks current kill state on every write while audit observations rem
 		});
 		store.recordTransition(db, transition, ctx);
 		db.query(
-			"INSERT INTO kills VALUES ('run:r10', 'fixture', 'human:test', 'unrelated')",
+			"INSERT INTO kills (scope, engaged_at, actor, reason) VALUES ('run:r10', 'fixture', 'human:test', 'unrelated')",
 		).run();
 		store.recordTransition(db, transition, ctx);
 		db.query(
-			"INSERT INTO kills VALUES ('run:r1', 'fixture', 'human:test', 'stop')",
+			"INSERT INTO kills (scope, engaged_at, actor, reason) VALUES ('run:r1', 'fixture', 'human:test', 'stop')",
 		).run();
 		expect(() => store.recordTransition(db, transition, ctx)).toThrow("killed");
 		store.appendAudit(db, {
@@ -726,7 +723,7 @@ test("a deferred outer snapshot cannot finalize after a competing kill commits",
 					`
 				import * as s from ${JSON.stringify(import.meta.dir + "/../src/index.ts")};
 				const db=s.openDb(${JSON.stringify(path)});
-				db.transaction(() => db.query("INSERT INTO kills VALUES ('run:r1', 'fixture', 'human:test', 'stop')").run()).immediate();
+				db.transaction(() => db.query("INSERT INTO kills (scope, engaged_at, actor, reason) VALUES ('run:r1', 'fixture', 'human:test', 'stop')").run()).immediate();
 				db.close();
 			`,
 				],
@@ -758,7 +755,7 @@ test("abrupt process exit rolls back gated progress and committed kill survives 
 			const db=s.openDb(${JSON.stringify(path)}); s.initSchema(db);
 			s.acquireWorkspaceLease(db, {runId:'r1',workspace:'ws',owner:'worker',ttlMs:100,nowMs:1000});
 			s.recordTransition(db, ${JSON.stringify(transition)}, ${JSON.stringify(ctx)});
-			db.query("INSERT INTO kills VALUES ('run:r2', 'fixture', 'human:test', 'stop')").run();
+			db.query("INSERT INTO kills (scope, engaged_at, actor, reason) VALUES ('run:r2', 'fixture', 'human:test', 'stop')").run();
 			db.transaction(() => {
 				s.recordTransition(db, {...${JSON.stringify(transition)},resumePoint:'uncommitted'}, ${JSON.stringify(ctx)});
 				process.exit(23);

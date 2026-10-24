@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 import { checkFramework, parseFrameworkRef } from "./framework.ts";
 import {
+	getKillStatus,
 	getLastTransition,
 	initSchema,
 	openDb,
@@ -69,7 +70,12 @@ if (cmd === "init") {
 			arg("--run", "run-1"),
 			arg("--thread") || undefined,
 		);
-		console.log(JSON.stringify(t ?? { ok: false, reason: "no transitions" }));
+		console.log(
+			JSON.stringify({
+				kills: getKillStatus(db, arg("--run", "run-1")),
+				...(t ?? { ok: false, reason: "no transitions" }),
+			}),
+		);
 	} finally {
 		db.close();
 	}

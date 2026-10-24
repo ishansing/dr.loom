@@ -3,6 +3,7 @@ import { expect, test } from "bun:test";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import * as store from "../src/index.ts";
+import { relayPolicy } from "./fixtures/relay-policy.ts";
 
 test("intact v2 migrates atomically to current schema without rewriting existing facts or guards", () => {
 	const db = new Database(":memory:");
@@ -147,10 +148,10 @@ test("relay admits exact fixture intent outside a DB lock and cursor does not im
 				return { outcome: "applied", evidenceRef: "trace:fixture-target" };
 			},
 		};
-		const result = await store.relayBatch(db, ctx, adapter);
+		const result = await store.relayBatch(db, ctx, relayPolicy(db), adapter);
 		expect(result).toEqual(expect.objectContaining({ cursor: 1 }));
 		expect(store.getOutbox(db, intent.intentId)?.state).toBe("applied");
-		await store.relayBatch(db, ctx, adapter);
+		await store.relayBatch(db, ctx, relayPolicy(db), adapter);
 		expect(seen).toEqual([intent.intentId]);
 	} finally {
 		db.close();
@@ -174,11 +175,11 @@ test("uncertain non-idempotent work refuses replay until explicit evidence-backe
 				throw new Error("synthetic failure after effect");
 			},
 		};
-		await store.relayBatch(db, ctx, adapter);
+		await store.relayBatch(db, ctx, relayPolicy(db), adapter);
 		expect(store.getOutbox(db, intent.intentId)?.state).toBe("unknown");
-		await expect(store.relayBatch(db, ctx, adapter)).rejects.toThrow(
-			"reconciliation",
-		);
+		await expect(
+			store.relayBatch(db, ctx, relayPolicy(db), adapter),
+		).rejects.toThrow("reconciliation");
 		expect(effects).toBe(1);
 		const attemptId = store.getOutbox(db, intent.intentId)?.attempts[0]
 			?.attemptId;
@@ -191,7 +192,7 @@ test("uncertain non-idempotent work refuses replay until explicit evidence-backe
 			evidenceRef: "trace:fixture-target-confirmed",
 		});
 		expect(resolved).toEqual(expect.objectContaining({ state: "applied" }));
-		await store.relayBatch(db, ctx, adapter);
+		await store.relayBatch(db, ctx, relayPolicy(db), adapter);
 		expect(effects).toBe(1);
 	} finally {
 		db.close();
@@ -232,6 +233,113 @@ function addSecond(db: Database, args: store.OutboxIntent = intent2): void {
 	enqueue(db, args);
 }
 
+test("policy denial/ask persists its audit without dispatch or cursor advancement", async () => {
+	for (const effect of ["deny", "ask"] as const) {
+		const db = ready();
+		try {
+			enqueue(db);
+			const configured = {
+				...relayPolicy(db),
+				rules: [{ scope: "global", tool: "*", pattern: "*", effect }],
+			} satisfies store.RelayPolicy;
+			let calls = 0;
+			await expect(
+				store.relayBatch(db, ctx, configured, {
+					synthetic: true,
+					kind: intent.kind,
+					target: intent.target,
+					replay: intent.replay,
+					execute: async () => {
+						calls++;
+						return { outcome: "applied", evidenceRef: "trace:test" };
+					},
+				}),
+			).rejects.toThrow("Effect gate");
+			expect(calls).toBe(0);
+			expect(store.getOutbox(db, intent.intentId)?.attempts).toEqual([]);
+			expect(db.query("SELECT count(*) AS n FROM relay_cursors").get()).toEqual(
+				{ n: 0 },
+			);
+			expect(
+				db
+					.query(
+						"SELECT count(*) AS n FROM audit WHERE action LIKE 'policy:%' AND decision=?",
+					)
+					.get(effect === "ask" ? "escalated" : "denied"),
+			).toEqual({ n: 1 });
+		} finally {
+			db.close();
+		}
+	}
+});
+
+test("every dispatch recomputes policy, deadline, grant and remaining call budget", async () => {
+	for (const stop of ["policy", "deadline", "grant", "budget"] as const) {
+		const db = ready();
+		try {
+			enqueue(db);
+			addSecond(db);
+			const configured = relayPolicy(db);
+			if (stop === "budget")
+				store.setBudgetLimit(db, { runId: "r1", kind: "tool-calls", limit: 1 });
+			let calls = 0;
+			await expect(
+				store.relayBatch(db, ctx, configured, {
+					synthetic: true,
+					kind: intent.kind,
+					target: intent.target,
+					replay: intent.replay,
+					execute: async () => {
+						calls++;
+						if (stop === "policy")
+							configured.rules = [
+								{ scope: "global", tool: "*", pattern: "*", effect: "deny" },
+							];
+						if (stop === "deadline") configured.deadlineMs = Date.now() - 1;
+						if (stop === "grant")
+							configured.authority = { kind: "grant", grantId: "missing" };
+						return { outcome: "applied", evidenceRef: "trace:test" };
+					},
+				}),
+			).rejects.toThrow(stop);
+			expect(calls).toBe(1);
+			expect(store.getOutbox(db, intent.intentId)?.state).toBe("applied");
+			expect(store.getOutbox(db, intent2.intentId)?.state).toBe("pending");
+			expect(store.getBudget(db, "r1", "tool-calls")?.used).toBe(1);
+		} finally {
+			db.close();
+		}
+	}
+});
+
+test("relay applies deadline before lease when both reject the dispatch", async () => {
+	const db = ready();
+	try {
+		enqueue(db);
+		const configured = { ...relayPolicy(db), deadlineMs: 1 };
+		store.releaseWorkspaceLease(db, {
+			workspace: ctx.workspace,
+			owner: ctx.owner,
+			epoch: ctx.epoch,
+		});
+		await expect(
+			store.relayBatch(db, ctx, configured, {
+				synthetic: true,
+				kind: intent.kind,
+				target: intent.target,
+				replay: intent.replay,
+				execute: async () => ({
+					outcome: "applied",
+					evidenceRef: "trace:test",
+				}),
+			}),
+		).rejects.toThrow("deadline");
+		expect(store.getOutbox(db, intent.intentId)?.attempts).toEqual([]);
+	} finally {
+		db.close();
+	}
+});
+
 test("each batch item rechecks kill/epoch while late applied facts retain the original admitted attempt", async () => {
 	for (const stop of ["kill", "succession"]) {
 		const db = ready();
@@ -269,9 +377,9 @@ test("each batch item rechecks kill/epoch while late applied facts retain the or
 					};
 				},
 			};
-			await expect(store.relayBatch(db, ctx, adapter)).rejects.toThrow(
-				stop === "kill" ? "killed" : "lease",
-			);
+			await expect(
+				store.relayBatch(db, ctx, relayPolicy(db), adapter),
+			).rejects.toThrow(stop === "kill" ? "killed" : "lease");
 			expect(seen).toEqual([intent.intentId]);
 			expect(store.getOutbox(db, intent.intentId)).toEqual(
 				expect.objectContaining({
@@ -316,9 +424,9 @@ test("cursor high-water does not skip older uncertainty and not-applied proof pe
 				evidenceRef: "trace:no-ack",
 			}),
 		};
-		await store.relayBatch(db, ctx, uncertain);
+		await store.relayBatch(db, ctx, relayPolicy(db), uncertain);
 		addSecond(db, { ...intent2, target: "fixture:second" });
-		const second = await store.relayBatch(db, ctx, {
+		const second = await store.relayBatch(db, ctx, relayPolicy(db), {
 			synthetic: true,
 			kind: intent.kind,
 			target: "fixture:second",
@@ -329,9 +437,9 @@ test("cursor high-water does not skip older uncertainty and not-applied proof pe
 			}),
 		});
 		expect(second.cursor).toBe(2);
-		await expect(store.relayBatch(db, ctx, uncertain)).rejects.toThrow(
-			"reconciliation",
-		);
+		await expect(
+			store.relayBatch(db, ctx, relayPolicy(db), uncertain),
+		).rejects.toThrow("reconciliation");
 		const attemptId = store.getOutbox(db, intent.intentId)?.attempts[0]
 			?.attemptId;
 		if (!attemptId) throw new Error("Missing attempt");
@@ -358,7 +466,7 @@ test("cursor high-water does not skip older uncertainty and not-applied proof pe
 		expect(() =>
 			store.reconcileOutbox(db, { ...args, outcome: "applied" }),
 		).toThrow("Conflicting");
-		const finished = await store.relayBatch(db, ctx, {
+		const finished = await store.relayBatch(db, ctx, relayPolicy(db), {
 			...uncertain,
 			execute: async () => ({
 				outcome: "applied",
@@ -382,6 +490,7 @@ test("a crash after independent target commit replays with the same dedup key, n
 	try {
 		const initial = ready(path);
 		enqueue(initial);
+		const admissionPolicy = relayPolicy(initial);
 		initial.close();
 		const target = new Database(targetPath);
 		target.exec(
@@ -397,7 +506,7 @@ test("a crash after independent target commit replays with the same dedup key, n
 			import * as s from ${JSON.stringify(import.meta.dir + "/../src/index.ts")};
 			const db=s.openDb(${JSON.stringify(path)}); s.initSchema(db);
 			const target=new Database(${JSON.stringify(targetPath)});
-			await s.relayBatch(db, ${JSON.stringify(ctx)}, {synthetic:true,kind:'fixture:counter',target:'fixture:counter',replay:'idempotent',execute:async(row) => {
+			await s.relayBatch(db, ${JSON.stringify(ctx)}, ${JSON.stringify(admissionPolicy)}, {synthetic:true,kind:'fixture:counter',target:'fixture:counter',replay:'idempotent',execute:async(row) => {
 				target.query('INSERT INTO effects VALUES (?, ?)').run(row.intentId,row.payload);
 				process.exit(23);
 			}});
@@ -412,7 +521,7 @@ test("a crash after independent target commit replays with the same dedup key, n
 		try {
 			store.initSchema(db);
 			expect(store.getOutbox(db, intent.intentId)?.state).toBe("dispatched");
-			const result = await store.relayBatch(db, ctx, {
+			const result = await store.relayBatch(db, ctx, relayPolicy(db), {
 				synthetic: true,
 				kind: intent.kind,
 				target: intent.target,
@@ -493,10 +602,10 @@ test("overlapping batches deduplicate replay and skip candidates another relay a
 				return { outcome: "applied", evidenceRef: "trace:deduplicated-target" };
 			},
 		};
-		const first = store.relayBatch(db, ctx, adapter);
+		const first = store.relayBatch(db, ctx, relayPolicy(db), adapter);
 		await firstEntered;
 		try {
-			await store.relayBatch(db, ctx, adapter);
+			await store.relayBatch(db, ctx, relayPolicy(db), adapter);
 		} finally {
 			release();
 		}
@@ -616,22 +725,26 @@ test("validation refuses unsafe adapters, invalid intent shapes and unknown reco
 				Reflect.apply(store.relayBatch, undefined, [
 					db,
 					ctx,
+					relayPolicy(db),
 					{ ...adapter, ...patch },
 				]),
 			).rejects.toThrow();
 		}
 		for (const limit of [0, 101, 0.5])
-			await expect(store.relayBatch(db, ctx, adapter, limit)).rejects.toThrow(
-				"limit",
-			);
+			await expect(
+				store.relayBatch(db, ctx, relayPolicy(db), adapter, limit),
+			).rejects.toThrow("limit");
 		let nested: ReturnType<typeof store.relayBatch> | undefined;
 		db.transaction(() => {
-			nested = store.relayBatch(db, ctx, adapter);
+			nested = store.relayBatch(db, ctx, relayPolicy(db), adapter);
 		}).immediate();
 		if (!nested) throw new Error("Missing rejected relay");
 		await expect(nested).rejects.toThrow("outside");
 		await expect(
-			store.relayBatch(db, ctx, { ...adapter, replay: "reconcile" }),
+			store.relayBatch(db, ctx, relayPolicy(db), {
+				...adapter,
+				replay: "reconcile",
+			}),
 		).rejects.toThrow("mismatch");
 		expect(store.getOutbox(db, intent2.intentId)).toBeNull();
 		expect(
@@ -655,7 +768,7 @@ test("validation refuses unsafe adapters, invalid intent shapes and unknown reco
 		expect(() =>
 			store.reconcileOutbox(db, { ...args, intentId: intent.intentId }),
 		).toThrow("not found");
-		await store.relayBatch(db, ctx, adapter);
+		await store.relayBatch(db, ctx, relayPolicy(db), adapter);
 		const applied = store.getOutbox(db, intent.intentId);
 		const attemptId = applied?.attempts[0]?.attemptId;
 		if (!attemptId) throw new Error("Missing attempt");
@@ -678,6 +791,7 @@ test("malformed target output is unknown and cannot mark an intent applied", asy
 		const result = await Reflect.apply(store.relayBatch, undefined, [
 			db,
 			ctx,
+			relayPolicy(db),
 			{
 				synthetic: true,
 				kind: intent.kind,
@@ -698,6 +812,7 @@ test("malformed target output is unknown and cannot mark an intent applied", asy
 		await Reflect.apply(store.relayBatch, undefined, [
 			db,
 			ctx,
+			relayPolicy(db),
 			{
 				synthetic: true,
 				kind: intent.kind,
@@ -725,7 +840,7 @@ test("malformed persisted relay cursor with pending work fails before any dispat
 		db.query("INSERT INTO relay_cursors VALUES ('r1','main','ws',-1)").run();
 		let calls = 0;
 		await expect(
-			store.relayBatch(db, ctx, {
+			store.relayBatch(db, ctx, relayPolicy(db), {
 				synthetic: true,
 				kind: intent.kind,
 				target: intent.target,
@@ -755,7 +870,7 @@ test("malformed persisted relay cursor fails explicitly instead of implying prog
 		).run(intent.intentId, actionId);
 		db.query("INSERT INTO relay_cursors VALUES ('r1','main','ws',-1)").run();
 		await expect(
-			store.relayBatch(db, ctx, {
+			store.relayBatch(db, ctx, relayPolicy(db), {
 				synthetic: true,
 				kind: intent.kind,
 				target: intent.target,
@@ -817,6 +932,7 @@ test("real competing non-idempotent relay processes admit only one unconfirmed a
 	try {
 		const initial = ready(path);
 		enqueue(initial, { ...intent, replay: "reconcile" });
+		const admissionPolicy = relayPolicy(initial);
 		initial.close();
 		const target = new Database(targetPath);
 		target.exec("CREATE TABLE effects (value INTEGER NOT NULL)");
@@ -827,7 +943,7 @@ test("real competing non-idempotent relay processes admit only one unconfirmed a
 			const db=s.openDb(${JSON.stringify(path)}); db.exec('PRAGMA busy_timeout=5000');
 			const target=new Database(${JSON.stringify(targetPath)}); target.exec('PRAGMA busy_timeout=5000');
 			console.log('ready'); await Bun.stdin.text();
-			try { await s.relayBatch(db, ${JSON.stringify(ctx)}, {synthetic:true,kind:'fixture:counter',target:'fixture:counter',replay:'reconcile',execute:async() => {
+			try { await s.relayBatch(db, ${JSON.stringify(ctx)}, ${JSON.stringify(admissionPolicy)}, {synthetic:true,kind:'fixture:counter',target:'fixture:counter',replay:'reconcile',execute:async() => {
 				target.query('INSERT INTO effects VALUES (1)').run();
 				return {outcome:'unknown',evidenceRef:'trace:unconfirmed'};
 			}}); } catch { process.exit(24); }

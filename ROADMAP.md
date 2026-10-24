@@ -797,3 +797,34 @@ security/data guarantees; change optional scope, runtime choice or dates.
 
 **Not done by this document:** implementation, runtime/framework re-pinning,
 production provisioning, model adoption or formal security certification.
+
+**T-06 started (2026-10-24):** owner confirmed the additive `authorize` effect
+gate, root policy-only/delegated-grant boundary, deny/ask budget breach without
+automatic kill, no schema v5, risk subset and public test seams. Branch
+`feat/p1-policy` from `aa4872b`; red tests and implementation are next. No
+push, provider use, real effect or G1 closure.
+
+**T-06 candidate (2026-10-24):** additive effect authorization, scoped ACL/grants,
+deadline inheritance, risk scoring, capped draws/actual usage/retry bucket and
+explicit per-dispatch relay policy implemented on v4. Ordered lint/typecheck,
+108 tests/1895 assertions,100% functions/97.06% lines, focused78-test corpus
+three times and dependency audit pass. Snapshot-based budget reads and post-lock
+deadline sampling have real-process regressions. Uncommitted; fixed-artifact
+advisory/Ishan disposition pending. No push/live effects/providers/G1 closure.
+
+Initial T-06 advisory found a literal-star deny bypass, missing SQLite sidecar
+classification and call-budget/lease ordering. Four intended red regressions
+reproduced all three; corrected112-test ordered gates pass (1935 assertions,
+100% functions/97.04% lines), focused82-test corpus passes three times. Original
+advisory retained; corrected-artifact re-review and Ishan disposition pending.
+
+Corrected T-06 fixed-artifact advisory `T06-20261024-02-AI-01` marks all three
+findings resolved, no new/open confirmed finding; READY FOR HUMAN REVIEW.
+Implementation remains uncommitted; Ishan disposition pending, G1 open.
+No T-07 advancement, push, provider use or real effects inferred.
+
+**T-06 approval (2026-10-24):** owner relayed “Approved by Ishan, commit”
+for corrected overlay T06-20261024-02. All three findings remain resolved;
+reviewed source/test/fixture hashes and fresh ordered gates pass. Approval is
+recorded through the owner, not an independent signature. T-06 commit explicitly
+authorized; G1 remains open. No T-07 continuation, push, providers or real effects.

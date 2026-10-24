@@ -822,3 +822,90 @@ retained. Attribution is owner-relayed, not a direct signature or independent
 identity verification. T-05 only: no G1 closure, push, production/provider use or
 real effects. The same instruction authorizes T-06 contract/discovery and
 synthetic implementation under separately confirmed seams.
+
+## [ADR-018] - 2026-10-24 (T-06 effect gate, grants and budgets)
+
+**Status:** Owner-confirmed synthetic contract; implementation and ordered code
+gates and corrected fixed-artifact advisory verified; approved by Ishan as
+relayed by the owner. T-06 commit explicitly authorized; no next-slice authority.
+
+**Context:** T-02 gates ledger writes with kill→lease; T-04 relay calls that
+gate per item but has no deadline, grant, policy, risk or budget admission.
+R-16/R-18/R-20 require one decision point, deny-wins scopes, narrowing grants,
+deadline inheritance and atomic budget draws. T-05 kill is human-only, and the
+existing v4 schema already carries `budgets`, `usage` and `grants`.
+
+**Decision:** Add `authorize(db, request, policy)` as the effect-admission gate
+in the order kill → deadline → grant → policy/risk/budget check → lease → budget
+draw → audit. Keep `writeGate` as the approved bookkeeping gate. Root/supervisor
+requests are policy-only; delegated requests require a live grant that covers
+every target and never widens policy. Deny wins globally/run/thread; no reusable
+allow token; `relayBatch` requires an explicit policy and authorizes every
+dispatch again. Budget caps fail closed by deny/ask plus audited
+`budget-breach` with kind/counter evidence; automatic kill is deferred because it would reopen T-05's
+human-only control. Use the existing v4 tables and trusted caller policy config;
+no schema v5 and no policy table. Risk uses recorded/declared observables for
+tier, workspace escape, secrets/prod/egress, fan-out, novelty, prior deny and
+irreversibility; velocity/doom-loop/failed-confirm are deferred until runtime
+records them. Paths are normalized workspace-relative; `..`/absolute escape and
+secret-adjacent targets deny before policy; compound shell commands cannot
+receive an allow through a wildcard.
+
+**Consequences:** T-06 is synthetic policy/budget machinery, not process
+containment or a live adapter. `relayBatch` callers/tests must supply policy.
+Grants are insert-only through the API; direct host SQL remains trusted in this
+boundary. Unresolved asks remain auditable pending actions and may block reset
+until resolved. Symlink physical resolution, live-thread release, automatic
+budget kill, provider metering and production restore remain later work.
+
+**Implementation investigation — 2026-10-24:** deterministic regressions found
+that retrying an audited ask removed novelty and allowed the next request;
+novelty now requires a prior allowed decision. A real competing writer showed
+an expired deadline being admitted from a pre-lock clock sample; sample the
+default host clock only after acquiring the writer lock. A second process
+reproduced false counter-corruption errors between independent budget/status
+reads; use one short deferred snapshot, including nested savepoints. Actual cost
+overage remains recorded and blocks later admission without changing kill.
+Relay must not run the bookkeeping lease check ahead of the full effect gate;
+a deadline+stale-lease regression preserves the confirmed gate order. These
+are implementation corrections, not production containment claims.
+
+**Initial review — 2026-10-24:** overlay T06-20261024-01 (manifest
+`1037b0d9a9c1bd9259a5bf4cd77d6dc22dfab88d8fd131386a08d94105d97e19`) has
+three advisory findings: wildcard literal-star precedence bypasses deny;
+SQLite sidecars miss secret classification; call-budget rejection follows
+lease rather than the specified precheck order. Reproduce and fix at the shared
+matcher/classifier/gate, then issue a new immutable candidate. Do not waive the
+contract or infer human approval. External-directory access was resolved with
+a byte-matched read-only workspace copy, not a mutable-file substitution.
+
+**Review correction — 2026-10-24:** R-001/R-002/R-003 reproduced with four
+public failing regressions. Matcher precedence now handles pattern stars before
+literal equality; DB denial includes SQLite sidecars. Extract one shared budget
+draw-state calculation for pre-lease cap validation and post-lease atomic draw;
+no usage is consumed on lease denial. Corrected112-test gates pass; retain the
+initial advisory and require new-artifact re-review. Human disposition remains
+pending. Temporary review copies are removed after archive byte-match before
+repository-wide checks; never exclude them by changing project config.
+
+**Re-review — 2026-10-24:** corrected overlay T06-20261024-02, manifest
+`546f9f058458c648bd40190279a2eb98a8ba3c56a48e71e0c358e924ff8916df`, receives
+READY FOR HUMAN REVIEW with R-001–R-003 resolved and no new/open confirmed
+findings. Report `research/reviews/2026-10-24-p1-t06.md` pre-approval SHA256
+`40ad3bbcafd10677e257234b37103327df796606e6bd643d10e202e12367aad1`.
+Reviewed source/test/fixture hashes match current files; archive retained,
+owned review copy removed after byte-match. This is AI advice; Ishan's human
+disposition, commit/push and later-slice/provider/effect authority remain pending.
+
+**Approval event — 2026-10-24:** owner stated “Approved by Ishan, commit”
+after the corrected T-06 handoff. Approval applies to overlay
+T06-20261024-02 and manifest
+`546f9f058458c648bd40190279a2eb98a8ba3c56a48e71e0c358e924ff8916df`;
+R-001–R-003 resolved, original advisory retained. Attribution is owner-relayed,
+not a direct signature or independently verified identity. Fresh ordered gates
+and reviewed source/test/fixture hash checks pass. Owner authorizes commit of
+T-06 only; no T-07 continuation, push, G1 closure, production/provider use or
+real effects.
+
+Approval-appended T-06 report SHA256:
+`5bdc73fa0da1dba40c2e5e77a9800b8f43f16d4de52daff31637a06612ff7e71`.

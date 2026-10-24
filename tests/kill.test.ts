@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import * as store from "../src/index.ts";
+import { relayPolicy } from "./fixtures/relay-policy.ts";
 
 test("v3 migration preserves old facts and adds unknown run/latch bindings without inventing authority", () => {
 	const db = new Database(":memory:");
@@ -260,7 +261,7 @@ test("kill denies only never-admitted work, cancels linked intents and keeps lat
 			store.enqueueOutbox(db, ctx, intent(2, "fixture:pending"));
 			store.enqueueOutbox(db, ctx, intent(3, "fixture:inflight"));
 		}).immediate();
-		await store.relayBatch(db, ctx, {
+		await store.relayBatch(db, ctx, relayPolicy(db), {
 			synthetic: true,
 			kind: "fixture:kill",
 			target: "fixture:inflight",
@@ -424,7 +425,7 @@ test("reset rejects unresolved effects and stale plans; resolved history never r
 			store.enqueueOutbox(db, ctx, intent(1, "fixture:uncertain"));
 			store.enqueueOutbox(db, ctx, intent(2, "fixture:pending"));
 		}).immediate();
-		await store.relayBatch(db, ctx, {
+		await store.relayBatch(db, ctx, relayPolicy(db), {
 			synthetic: true,
 			kind: "fixture:kill",
 			target: "fixture:uncertain",
@@ -505,7 +506,7 @@ test("kill inside a batch cancels later undispatched work but preserves the firs
 		}
 		const seen: string[] = [];
 		await expect(
-			store.relayBatch(db, ctx, {
+			store.relayBatch(db, ctx, relayPolicy(db), {
 				synthetic: true,
 				kind: "fixture:batch",
 				target: "fixture:batch",
@@ -786,10 +787,10 @@ test("an applied intent with another unknown admitted attempt still blocks reset
 				return { outcome: "applied", evidenceRef: "trace:dedup-applied" };
 			},
 		};
-		const first = store.relayBatch(db, ctx, adapter);
+		const first = store.relayBatch(db, ctx, relayPolicy(db), adapter);
 		await firstEntered;
 		try {
-			await store.relayBatch(db, ctx, adapter);
+			await store.relayBatch(db, ctx, relayPolicy(db), adapter);
 		} finally {
 			release();
 		}
@@ -850,7 +851,7 @@ test("any prior admission is excluded from automatic non-execution denial, even 
 				evidenceRef: "trace:unconfirmed",
 			}),
 		};
-		await store.relayBatch(db, ctx, adapter);
+		await store.relayBatch(db, ctx, relayPolicy(db), adapter);
 		const attempt = store.getOutbox(db, intentId)?.attempts[0];
 		if (!attempt) throw new Error("Missing admission");
 		store.reconcileOutbox(db, {
@@ -882,7 +883,7 @@ test("any prior admission is excluded from automatic non-execution denial, even 
 			}),
 		).toEqual({ ok: true, epoch: 3 });
 		await expect(
-			store.relayBatch(db, { ...ctx, epoch: 3 }, adapter),
+			store.relayBatch(db, { ...ctx, epoch: 3 }, relayPolicy(db), adapter),
 		).rejects.toThrow("allowed unresolved");
 	} finally {
 		db.close();

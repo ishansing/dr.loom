@@ -1,5 +1,19 @@
 import { Database } from "bun:sqlite";
 import { createHash, randomUUID } from "node:crypto";
+import type {
+	ActionClass,
+	PolicyConfig,
+	PolicyTier,
+	TargetType,
+} from "./policy.ts";
+import {
+	evaluatePolicy,
+	matchPattern,
+	RISK_BLOCK_AT,
+	RISK_ESCALATE_AT,
+	resolvePathTarget,
+	scoreRisk,
+} from "./policy.ts";
 
 export type TransitionStatus =
 	| "pending"
@@ -88,10 +102,7 @@ function isKilled(db: Database, runId: string): boolean {
 	);
 }
 
-/** Trusted synchronous transaction check, not a transferable execution grant. */
-export function writeGate(db: Database, ctx: WriteContext): void {
-	if (!db.inTransaction)
-		throw new Error("Write gate requires an active transaction");
+function checkWriteContext(ctx: WriteContext): number {
 	checkFields(ctx, [
 		"runId",
 		"threadId",
@@ -105,8 +116,13 @@ export function writeGate(db: Database, ctx: WriteContext): void {
 	checkScope(ctx.owner);
 	checkedText(ctx.workspace, "workspace", 4096);
 	checkEpoch(ctx.epoch);
-	const now = checkedTime(ctx.nowMs === undefined ? Date.now() : ctx.nowMs);
-	if (isKilled(db, ctx.runId)) throw new Error("Write gate denied: killed");
+	return checkedTime(ctx.nowMs === undefined ? Date.now() : ctx.nowMs);
+}
+
+function checkLease(db: Database, ctx: WriteContext): void {
+	if (!db.inTransaction)
+		throw new Error("Write gate requires an active transaction");
+	const now = checkWriteContext(ctx);
 	const lease = readLease(db, ctx.workspace);
 	if (
 		!lease ||
@@ -116,6 +132,15 @@ export function writeGate(db: Database, ctx: WriteContext): void {
 		lease.expiresAt <= now
 	)
 		throw new Error("Write gate denied: invalid or expired lease");
+}
+
+/** Trusted synchronous transaction check, not a transferable execution grant. */
+export function writeGate(db: Database, ctx: WriteContext): void {
+	if (!db.inTransaction)
+		throw new Error("Write gate requires an active transaction");
+	checkWriteContext(ctx);
+	if (isKilled(db, ctx.runId)) throw new Error("Write gate denied: killed");
+	checkLease(db, ctx);
 }
 
 export interface AuditEntry {
@@ -1077,6 +1102,622 @@ export function recordFinish(
 		.immediate();
 }
 
+export type BudgetKind =
+	| "time-ms"
+	| "retries"
+	| "cost-tokens"
+	| "cost-minor-units"
+	| "threads"
+	| "tool-calls";
+export interface Budget {
+	runId: string;
+	kind: BudgetKind;
+	used: number;
+	limit: number | null;
+	updatedAt: string;
+}
+export interface BudgetInput {
+	runId: string;
+	threadId: string;
+	kind: BudgetKind;
+	amount: number;
+	evidenceRef: string;
+	nowMs?: number;
+}
+export interface Grant {
+	grantId: string;
+	runId: string;
+	threadId: string;
+	tool: string;
+	pattern: string;
+	expiresAt: number;
+}
+export type EffectAuthority =
+	| { kind: "root" }
+	| { kind: "grant"; grantId: string };
+export interface EffectRequest {
+	context: WriteContext;
+	tool: string;
+	targets: readonly string[];
+	targetType: TargetType;
+	deadlineMs: number;
+	parentDeadlineMs?: number;
+	authority: EffectAuthority;
+	tier: PolicyTier;
+	actionClass: ActionClass;
+	production: boolean;
+	dataEgress: boolean;
+}
+export interface EffectDecision {
+	decision: "allow" | "ask" | "deny";
+	reason: string;
+	risk: ReturnType<typeof scoreRisk>;
+	auditActionId: string;
+}
+export interface RelayPolicy extends PolicyConfig {
+	deadlineMs: number;
+	parentDeadlineMs?: number;
+	authority: EffectAuthority;
+}
+
+function checkAmount(value: number): void {
+	if (!Number.isSafeInteger(value) || value < 0)
+		throw new Error("Invalid budget amount");
+}
+
+function checkBudgetKind(kind: BudgetKind): void {
+	if (
+		![
+			"time-ms",
+			"retries",
+			"cost-tokens",
+			"cost-minor-units",
+			"threads",
+			"tool-calls",
+		].includes(kind)
+	)
+		throw new Error("Invalid budget kind");
+}
+
+export function getBudget(
+	db: Database,
+	runId: string,
+	kind: BudgetKind,
+): Budget | null {
+	return db.transaction(() => readBudget(db, runId, kind)).deferred();
+}
+
+function readBudget(
+	db: Database,
+	runId: string,
+	kind: BudgetKind,
+): Budget | null {
+	checkScope(runId);
+	checkBudgetKind(kind);
+	const row = db
+		.query<Budget, [string, string]>(
+			`SELECT run_id AS runId, kind, used, "limit", updated_at AS updatedAt FROM budgets WHERE run_id=? AND kind=?`,
+		)
+		.get(runId, kind);
+	if (row) {
+		checkAmount(row.used);
+		if (row.limit !== null) checkAmount(row.limit);
+		if (!Number.isFinite(Date.parse(row.updatedAt)))
+			throw new Error("Invalid budget history");
+		const total = db
+			.query<{ amount: number }, [string, string]>(
+				"SELECT coalesce(sum(amount),0) AS amount FROM usage WHERE run_id=? AND kind=?",
+			)
+			.get(runId, kind);
+		if (!total || total.amount !== row.used)
+			throw new Error("Budget counter differs from usage");
+	}
+	return row;
+}
+
+export function setBudgetLimit(
+	db: Database,
+	args: { runId: string; kind: BudgetKind; limit: number | null },
+): Budget {
+	checkFields(args, ["runId", "kind", "limit"]);
+	checkScope(args.runId);
+	checkBudgetKind(args.kind);
+	if (args.limit !== null) checkAmount(args.limit);
+	return db
+		.transaction(() => {
+			getBudget(db, args.runId, args.kind);
+			const result = db
+				.query(
+					`INSERT INTO budgets (run_id,kind,used,"limit",updated_at) VALUES (?,?,0,?,?) ON CONFLICT(run_id,kind) DO UPDATE SET "limit"=excluded."limit", updated_at=excluded.updated_at`,
+				)
+				.run(args.runId, args.kind, args.limit, new Date().toISOString());
+			if (result.changes !== 1)
+				throw new Error("Failed to persist budget limit");
+			const row = getBudget(db, args.runId, args.kind);
+			if (!row || row.limit !== args.limit)
+				throw new Error("Failed to persist budget limit");
+			return row;
+		})
+		.immediate();
+}
+
+function decisionAudit(
+	db: Database,
+	args: {
+		runId: string;
+		threadId: string;
+		action: string;
+		tier: AuditTier;
+		decision: "allow" | "ask" | "deny";
+		evidenceRef: string;
+		actor?: string;
+	},
+): string {
+	const actionId = randomUUID();
+	const request = insertActionRow(db, {
+		runId: args.runId,
+		threadId: args.threadId,
+		actionId,
+		action: args.action,
+		actor: args.actor ?? "system:policy",
+		tier: args.tier,
+		decision: "pending",
+		outcome: "pending",
+		evidenceRef: args.evidenceRef,
+	});
+	const verdict = insertActionRow(
+		db,
+		{
+			...request,
+			decision:
+				args.decision === "allow"
+					? "allowed"
+					: args.decision === "ask"
+						? "escalated"
+						: "denied",
+			outcome: args.decision === "deny" ? "not-executed" : "pending",
+		},
+		request,
+	);
+	if (args.decision === "allow")
+		insertActionRow(db, { ...verdict, outcome: "completed" }, verdict);
+	return actionId;
+}
+
+function budgetBreach(
+	db: Database,
+	args: { runId: string; threadId: string; kind: BudgetKind },
+	detail: string,
+): void {
+	decisionAudit(db, {
+		...args,
+		action: "budget-breach",
+		tier: "high-risk",
+		decision: "deny",
+		actor: "system:budget",
+		evidenceRef: `trace:budget:${args.kind}:${detail}`,
+	});
+}
+
+function budgetDrawState(
+	db: Database,
+	args: Pick<BudgetInput, "runId" | "kind" | "amount">,
+) {
+	const budget = getBudget(db, args.runId, args.kind);
+	if (!budget) throw new Error("Budget limit must be explicitly configured");
+	const used = budget.used + args.amount;
+	checkAmount(used);
+	return { budget, used, over: budget.limit !== null && used > budget.limit };
+}
+
+function budgetWrite(
+	db: Database,
+	args: BudgetInput,
+	actual: boolean,
+): { ok: boolean; over: boolean; budget: Budget } {
+	checkFields(args, [
+		"runId",
+		"threadId",
+		"kind",
+		"amount",
+		"evidenceRef",
+		"nowMs",
+	]);
+	checkScope(args.runId);
+	checkScope(args.threadId);
+	checkBudgetKind(args.kind);
+	checkAmount(args.amount);
+	const evidence = checkedEvidence(args.evidenceRef);
+	const now = checkedTime(args.nowMs ?? Date.now());
+	const { budget, used, over } = budgetDrawState(db, args);
+	if (over)
+		budgetBreach(
+			db,
+			args,
+			`used=${budget.used},draw=${args.amount},limit=${budget.limit}`,
+		);
+	if (over && !actual) return { ok: false, over, budget };
+	const inserted = db
+		.query(
+			"INSERT INTO usage (run_id,thread_id,kind,amount,evidence_ref,created_at) VALUES (?,?,?,?,?,?)",
+		)
+		.run(
+			args.runId,
+			args.threadId,
+			args.kind,
+			args.amount,
+			evidence,
+			new Date(now).toISOString(),
+		);
+	const updated = db
+		.query("UPDATE budgets SET used=?, updated_at=? WHERE run_id=? AND kind=?")
+		.run(used, new Date(now).toISOString(), args.runId, args.kind);
+	if (inserted.changes !== 1 || updated.changes !== 1)
+		throw new Error("Failed to persist budget draw");
+	const next = getBudget(db, args.runId, args.kind);
+	if (!next || next.used !== used)
+		throw new Error("Failed to persist budget draw");
+	return { ok: true, over, budget: next };
+}
+
+export function drawBudget(db: Database, args: BudgetInput) {
+	return db
+		.transaction(() => {
+			if (isKilled(db, args.runId))
+				throw new Error("Budget draw denied: killed");
+			return budgetWrite(db, args, false);
+		})
+		.immediate();
+}
+
+/** Post-spend facts remain recordable after kill and even when the cap was exceeded. */
+export function recordUsage(db: Database, args: BudgetInput) {
+	return db.transaction(() => budgetWrite(db, args, true)).immediate();
+}
+
+export function drawRetry(
+	db: Database,
+	args: Omit<BudgetInput, "kind" | "amount"> & { safe: true },
+) {
+	checkFields(args, ["runId", "threadId", "evidenceRef", "nowMs", "safe"]);
+	if (args.safe !== true)
+		throw new Error("Only safe transient retries may draw");
+	return db
+		.transaction(() => {
+			checkScope(args.runId);
+			checkScope(args.threadId);
+			const now = checkedTime(args.nowMs ?? Date.now());
+			const since = new Date(now - 60000).toISOString();
+			const calls = getBudget(db, args.runId, "tool-calls");
+			const budget = getBudget(db, args.runId, "retries");
+			if (!calls || !budget)
+				throw new Error("Retry budgets must be explicitly configured");
+			const recent = db
+				.query<{ amount: number }, [string, string, string]>(
+					"SELECT coalesce(sum(amount),0) AS amount FROM usage WHERE run_id=? AND kind='retries' AND created_at>? AND created_at<=?",
+				)
+				.get(args.runId, since, new Date(now).toISOString());
+			const capacity = Math.max(10, Math.floor(calls.used / 5));
+			if ((recent?.amount ?? 0) >= capacity) {
+				budgetBreach(db, { ...args, kind: "retries" }, "retry-exhausted");
+				return { ok: false, over: true, budget };
+			}
+			const { safe: _, ...input } = args;
+			return drawBudget(db, { ...input, kind: "retries", amount: 1 });
+		})
+		.immediate();
+}
+
+export function getGrant(db: Database, grantId: string): Grant | null {
+	checkScope(grantId);
+	const grant = db
+		.query<Grant, [string]>(
+			"SELECT grant_id AS grantId, run_id AS runId, thread_id AS threadId, tool, pattern, expires_at AS expiresAt FROM grants WHERE grant_id=?",
+		)
+		.get(grantId);
+	if (grant) {
+		checkScope(grant.runId);
+		checkScope(grant.threadId);
+		checkedText(grant.tool, "grant tool");
+		checkedText(grant.pattern, "grant pattern", 4096);
+		checkedTime(grant.expiresAt);
+	}
+	return grant;
+}
+
+export function createGrant(
+	db: Database,
+	args: Grant & { actor: string; evidenceRef: string },
+): Grant {
+	checkFields(args, [
+		"grantId",
+		"runId",
+		"threadId",
+		"tool",
+		"pattern",
+		"expiresAt",
+		"actor",
+		"evidenceRef",
+	]);
+	checkScope(args.grantId);
+	checkScope(args.runId);
+	checkScope(args.threadId);
+	checkedText(args.tool, "grant tool");
+	checkedText(args.pattern, "grant pattern", 4096);
+	checkedTime(args.expiresAt);
+	checkActor(args.actor);
+	if (!args.actor.startsWith("human:") && args.actor !== "system:supervisor")
+		throw new Error("Grant mint requires trusted supervisor");
+	const evidenceRef = checkedEvidence(args.evidenceRef);
+	return db
+		.transaction(() => {
+			if (isKilled(db, args.runId))
+				throw new Error("Grant mint denied: killed");
+			const inserted = db
+				.query("INSERT INTO grants VALUES (?,?,?,?,?,?)")
+				.run(
+					args.grantId,
+					args.runId,
+					args.threadId,
+					args.tool,
+					args.pattern,
+					args.expiresAt,
+				);
+			if (inserted.changes !== 1) throw new Error("Failed to persist grant");
+			decisionAudit(db, {
+				...args,
+				action: "grant:create",
+				tier: "critical",
+				decision: "allow",
+				evidenceRef: evidenceRef ?? "trace:grant",
+			});
+			const grant = getGrant(db, args.grantId);
+			if (
+				!grant ||
+				grant.runId !== args.runId ||
+				grant.threadId !== args.threadId ||
+				grant.pattern !== args.pattern ||
+				grant.tool !== args.tool ||
+				grant.expiresAt !== args.expiresAt
+			)
+				throw new Error("Failed to persist grant");
+			return grant;
+		})
+		.immediate();
+}
+
+export function authorize(
+	db: Database,
+	args: EffectRequest,
+	policy: PolicyConfig,
+): EffectDecision {
+	checkFields(args, [
+		"context",
+		"tool",
+		"targets",
+		"targetType",
+		"deadlineMs",
+		"parentDeadlineMs",
+		"authority",
+		"tier",
+		"actionClass",
+		"production",
+		"dataEgress",
+	]);
+	checkWriteContext(args.context);
+	checkedText(args.tool, "tool");
+	if (
+		!Array.isArray(args.targets) ||
+		args.targets.length < 1 ||
+		args.targets.length > 100
+	)
+		throw new Error("Invalid effect targets");
+	for (const target of args.targets) checkedText(target, "target", 4096);
+	if (
+		!["path", "command", "domain", "opaque"].includes(args.targetType) ||
+		!["read", "mutation", "irreversible"].includes(args.actionClass)
+	)
+		throw new Error("Invalid effect classification");
+	checkTier(args.tier);
+	if (
+		typeof args.production !== "boolean" ||
+		typeof args.dataEgress !== "boolean"
+	)
+		throw new Error("Invalid risk observables");
+	checkedTime(args.deadlineMs);
+	if (args.parentDeadlineMs !== undefined) checkedTime(args.parentDeadlineMs);
+	checkFields(
+		args.authority,
+		args.authority?.kind === "root" ? ["kind"] : ["kind", "grantId"],
+	);
+	if (args.authority.kind !== "root" && args.authority.kind !== "grant")
+		throw new Error("Invalid effect authority");
+	if (args.authority.kind === "grant") checkScope(args.authority.grantId);
+	return db
+		.transaction(() => {
+			const now = checkWriteContext(args.context);
+			const ctx = { ...args.context, nowMs: now };
+			const paths =
+				args.targetType === "path"
+					? args.targets.map((target) =>
+							resolvePathTarget(ctx.workspace, target),
+						)
+					: [];
+			const targets = paths.length
+				? paths.map((p) => p.target)
+				: [...args.targets];
+			const digest = createHash("sha256")
+				.update(JSON.stringify([args.tool, args.targetType, targets]))
+				.digest("hex");
+			const previous = db
+				.query<{ n: number }, [string, string]>(
+					"SELECT count(*) AS n FROM audit WHERE run_id=? AND action=? AND decision='allowed' AND outcome='completed'",
+				)
+				.get(ctx.runId, `policy:${digest}`);
+			const priorDeny = db
+				.query<{ n: number }, [string]>(
+					"SELECT count(*) AS n FROM audit WHERE run_id=? AND action LIKE 'policy:%' AND decision='denied'",
+				)
+				.get(ctx.runId);
+			const risk = scoreRisk({
+				tier: args.tier,
+				targetCount: targets.length,
+				outsideWorkspace: paths.some((p) => p.outside),
+				secretAdjacent: paths.some((p) => p.secretAdjacent),
+				production: args.production,
+				dataEgress: args.dataEgress,
+				novel: !previous?.n,
+				priorDeny: !!priorDeny?.n,
+				irreversible: args.actionClass === "irreversible",
+			});
+			let decision: EffectDecision["decision"] = "allow";
+			let reason = "allowed";
+			if (isKilled(db, ctx.runId)) reason = "killed";
+			else if (
+				args.deadlineMs <= now ||
+				(args.parentDeadlineMs !== undefined &&
+					args.deadlineMs > args.parentDeadlineMs)
+			)
+				reason = "deadline";
+			else if (args.authority.kind === "grant") {
+				const grant = getGrant(db, args.authority.grantId);
+				if (
+					!grant ||
+					grant.runId !== ctx.runId ||
+					grant.threadId !== ctx.threadId ||
+					grant.expiresAt <= now ||
+					!matchPattern(grant.tool, args.tool) ||
+					!targets.every((target) => matchPattern(grant.pattern, target))
+				)
+					reason = "grant";
+			}
+			if (reason !== "allowed") decision = "deny";
+			else if (paths.some((p) => p.outside || p.secretAdjacent)) {
+				decision = "deny";
+				reason = "path";
+			} else {
+				for (const target of targets) {
+					const result = evaluatePolicy(policy, {
+						runId: ctx.runId,
+						threadId: ctx.threadId,
+						tool: args.tool,
+						target,
+						targetType: args.targetType,
+					});
+					if (result.effect === "deny") {
+						decision = "deny";
+						reason = "policy";
+						break;
+					}
+					if (result.effect === "ask") {
+						decision = "ask";
+						reason = "policy";
+					}
+				}
+				if (risk.score >= RISK_BLOCK_AT) {
+					decision = "deny";
+					reason = "risk-block";
+				} else if (decision !== "deny" && risk.score >= RISK_ESCALATE_AT) {
+					decision = "ask";
+					reason = "risk-escalation";
+				}
+				if (
+					decision === "allow" &&
+					(args.targetType === "domain" || args.dataEgress)
+				) {
+					decision = "ask";
+					reason = "egress";
+				}
+				if (decision === "allow") {
+					for (const kind of ["cost-tokens", "cost-minor-units"] as const) {
+						const budget = getBudget(db, ctx.runId, kind);
+						if (
+							budget &&
+							budget.limit !== null &&
+							budget.used >= budget.limit
+						) {
+							budgetBreach(
+								db,
+								{ runId: ctx.runId, threadId: ctx.threadId, kind },
+								`used=${budget.used},limit=${budget.limit}`,
+							);
+							decision = "deny";
+							reason = "budget";
+							break;
+						}
+					}
+				}
+				if (decision === "allow") {
+					const draw = {
+						runId: ctx.runId,
+						threadId: ctx.threadId,
+						kind: "tool-calls",
+						amount: 1,
+					} as const;
+					const state = budgetDrawState(db, draw);
+					if (state.over) {
+						budgetBreach(
+							db,
+							draw,
+							`used=${state.budget.used},draw=1,limit=${state.budget.limit}`,
+						);
+						decision = "deny";
+						reason = "budget";
+					}
+				}
+				if (decision === "allow") {
+					try {
+						checkLease(db, ctx);
+					} catch (error) {
+						if (
+							!(error instanceof Error) ||
+							error.message !== "Write gate denied: invalid or expired lease"
+						)
+							throw error;
+						decision = "deny";
+						reason = "lease";
+					}
+					if (
+						decision === "allow" &&
+						!drawBudget(db, {
+							runId: ctx.runId,
+							threadId: ctx.threadId,
+							kind: "tool-calls",
+							amount: 1,
+							evidenceRef: `trace:policy:${digest}`,
+							nowMs: now,
+						}).ok
+					) {
+						decision = "deny";
+						reason = "budget";
+					}
+				}
+			}
+			const evidenceRef = `trace:policy:${reason}:score=${risk.score}:${JSON.stringify(risk.breakdown)}`;
+			let tier =
+				risk.score >= RISK_ESCALATE_AT
+					? args.tier === "standard"
+						? "high-risk"
+						: "critical"
+					: args.tier;
+			if (
+				(args.targetType === "domain" || args.dataEgress) &&
+				tier === "standard"
+			)
+				tier = "high-risk";
+			const auditActionId = decisionAudit(db, {
+				runId: ctx.runId,
+				threadId: ctx.threadId,
+				action: `policy:${digest}`,
+				tier,
+				decision,
+				evidenceRef,
+			});
+			return { decision, reason, risk, auditActionId };
+		})
+		.immediate();
+}
+
 export type OutboxReplay = "idempotent" | "reconcile";
 export type OutboxObservation = "applied" | "unknown" | "not-applied";
 export interface OutboxIntent {
@@ -1252,7 +1893,7 @@ function checkOutboxAction(
 	db: Database,
 	ctx: WriteContext,
 	actionId: string,
-): void {
+): ActionAuditEntry {
 	const action = getAction(db, {
 		runId: ctx.runId,
 		threadId: ctx.threadId,
@@ -1260,6 +1901,7 @@ function checkOutboxAction(
 	});
 	if (!action || action.decision !== "allowed" || action.outcome !== "pending")
 		throw new Error("Outbox requires an allowed unresolved action");
+	return action;
 }
 
 export function enqueueOutbox(
@@ -1447,6 +2089,7 @@ function relayCursor(db: Database, ctx: WriteContext): number {
 export async function relayBatch(
 	db: Database,
 	context: WriteContext,
+	policy: RelayPolicy,
 	adapter: SyntheticOutboxAdapter,
 	limit = 10,
 ): Promise<{ cursor: number; results: OutboxRecord[] }> {
@@ -1464,7 +2107,8 @@ export async function relayBatch(
 	checkFixture(adapter.target);
 	const { kind, target, replay, execute } = adapter;
 	const ctx = { ...context };
-	db.transaction(() => writeGate(db, ctx)).immediate();
+	checkWriteContext(ctx);
+	if (isKilled(db, ctx.runId)) throw new Error("Effect gate denied: killed");
 	const pending = listUnresolvedOutbox(db, {
 		runId: ctx.runId,
 		threadId: ctx.threadId,
@@ -1472,12 +2116,14 @@ export async function relayBatch(
 	})
 		.filter((row) => row.kind === kind && row.target === target)
 		.slice(0, limit);
+	if (!pending.length) db.transaction(() => writeGate(db, ctx)).immediate();
 	const results: OutboxRecord[] = [];
 	for (const candidate of pending) {
 		const intentId = candidate.intentId;
 		const admission = db
 			.transaction(() => {
-				writeGate(db, ctx);
+				if (isKilled(db, ctx.runId))
+					throw new Error("Effect gate denied: killed");
 				relayCursor(db, ctx);
 				const current = requireOutbox(db, intentId);
 				if (current.state === "applied" || current.state === "cancelled")
@@ -1489,7 +2135,28 @@ export async function relayBatch(
 					current.attempts.some((a) => a.state !== "not-applied")
 				)
 					throw new Error("Target reconciliation required before replay");
-				checkOutboxAction(db, ctx, current.actionId);
+				const action = checkOutboxAction(db, ctx, current.actionId);
+				const authorization = authorize(
+					db,
+					{
+						context: ctx,
+						tool: current.kind,
+						targets: [current.target],
+						targetType: "opaque",
+						deadlineMs: policy.deadlineMs,
+						...(policy.parentDeadlineMs === undefined
+							? {}
+							: { parentDeadlineMs: policy.parentDeadlineMs }),
+						authority: policy.authority,
+						tier: action.tier,
+						actionClass: "mutation",
+						production: false,
+						dataEgress: false,
+					},
+					policy,
+				);
+				if (authorization.decision !== "allow")
+					return { denied: authorization };
 				const attempt: OutboxAttempt = {
 					attemptId: randomUUID(),
 					owner: ctx.owner,
@@ -1512,6 +2179,10 @@ export async function relayBatch(
 			})
 			.immediate();
 		if (!admission) continue;
+		if ("denied" in admission)
+			throw new Error(
+				`Effect gate ${admission.denied.decision}: ${admission.denied.reason}`,
+			);
 		let observation: { outcome: "applied" | "unknown"; evidenceRef: string };
 		try {
 			observation = await execute(

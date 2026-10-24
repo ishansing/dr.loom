@@ -684,3 +684,55 @@ pending. No schema/audit lifecycle rewrite, effect authority or G1 closure claim
 **Authority event — 2026-10-24:** owner requested “commit and continue”, authorizing
 T-02 commit and the next planned T-04 slice. This is not an attestation of Ishan's
 T-02 approval; keep that human disposition pending. No push/live use/G1 closure.
+
+## [ADR-016] - 2026-10-24 (T-04 synthetic outbox)
+
+**Title:** Persist immutable effect intent and dispatch observations, not inferred success.
+
+**Status:** Owner-confirmed scoped design after “commit and continue” from T-02;
+synthetic migration/replay scope and public seams confirmed before tests/code.
+
+**Context & Problem Statement:** no outbox exists in v2. Business progress alone
+cannot establish whether an external effect happened. A crash between target
+commit and Loom marker may replay; kill cannot atomically cancel admitted work.
+
+**Options Evaluated:** optimistic applied cursor with blind replay; immutable
+intent plus admitted attempts/observations and explicit target reconciliation;
+introduce real remote adapters before production policy/containment exists.
+
+**Decision & Rationale:** additive atomic v3 migration with exact v2 recognition.
+Bind stable intent UUID to native action, target, exact JSON payload/hash and
+replay contract. Require shared business/enqueue transaction and per-item live
+gate. Commit attempt before fixture adapter call outside DB lock; admitted
+high-water cursor never suppresses unresolved older work. Keep late result facts
+even after kill/lease succession. Only proven fixture-target dedup permits
+idempotent replay; non-idempotent uncertainty needs explicit human-attributed
+evidence-backed reconciliation, never a throw-to-not-executed conversion.
+
+**Consequences & Tech Debt:** schema v3 means old binaries must refuse, not
+downgrade. Linear validated history scans initially; optimize only with measured
+need and verified projection. Host callbacks/SQL/clock and evidence attribution
+remain trusted, not authentication or isolation. No actual production effect or
+complete policy/kill claim. Fixed-artifact review and fresh migration/recovery/
+contention tests required; T-02 approval remains pending, not manufactured.
+
+**Implementation event — 2026-10-24:** v3 and 59-test suite pass ordered code
+gates, including independent target-side crash deduplication and competing
+non-idempotent relays. No exactly-once claim from Loom alone. Fixed-candidate
+advisory and Ishan disposition pending; no real effect or release authority.
+
+**Review event — 2026-10-24:** initial advisory R-001 identified cursor overwrite
+before validation with pending work. Reproduced by public regression, corrected
+by admission-transaction validation before events/cursor writes; corrected ordered
+60-test gates pass. Preserve initial report and require new-artifact re-review;
+no waiver, human approval or authority expansion inferred.
+
+**Re-review event — 2026-10-24:** corrected manifest
+`3f6bc846536f79e02064e155bfabadc0887d72d0ffa4915f2938a8024bee1d47`
+reviewed; R-001 resolved, no open confirmed findings, ready for human review.
+Initial report preserved; final scoped scans/document checks pass. T-04 remains
+uncommitted, T-02/T-04 human dispositions pending; no G1 closure/next-slice authority.
+
+**Authority event — 2026-10-24:** owner requested “commit” after corrected T-04
+handoff. Commit only this slice and its retained reports after fresh checks;
+T-02/T-04 human approval remains pending. No push, next slice or real effects.

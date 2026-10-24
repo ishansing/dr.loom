@@ -316,6 +316,28 @@ next-slice or live-use authorization.
 continue”, authorizing T-02 commit and T-04 contract/discovery. Ishan's T-02
 disposition remains pending; no approval inferred, push/live use or G1 closure.
 
+**T-04 started (2026-10-24):** T-02 committed at `39cb915`; clean branch
+`feat/p1-outbox`. Owner confirmed synthetic-only schema v3/outbox scope,
+conservative uncertainty/replay semantics and public test seams. No production
+adapter/network/provider/CLI dispatch or full kill/policy enabled; G1 remains open.
+
+**T-04 candidate (2026-10-24):** v3 migration, atomic immutable intents, admitted
+attempts/observations and synthetic relay/reconciliation implemented. Ordered
+lint/typecheck, 59-test coverage and dependency audit pass; coverage above baseline.
+Fixed-artifact review and Ishan disposition pending; no commit/push or live use.
+
+Initial T-04 review found R-001 (cursor validated only after it could be overwritten).
+Public failing regression reproduced it; admission now validates first. Corrected
+60-test ordered gates pass; fixed-artifact re-review/Ishan disposition pending.
+
+[Corrected T-04 re-review](research/reviews/2026-10-24-p1-t04.md) marks R-001
+resolved, no open confirmed findings, READY FOR HUMAN REVIEW. Final scoped scans
+and document checks pass; T-04 remains uncommitted and human disposition pending.
+
+**Commit authorization (2026-10-24):** owner subsequently requested “commit”;
+T-04 implementation and both reports authorized for commit after fresh gates.
+Human dispositions remain pending; no push, next slice or G1 closure authorized.
+
 **Outcome:** the control plane can record, authorize, stop and recover a run
 without trusting an agent process. Existing SPEC milestone 1; no live model needed.
 

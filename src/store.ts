@@ -1,4 +1,5 @@
 import { Database } from "bun:sqlite";
+import { createHash, randomUUID } from "node:crypto";
 
 export type TransitionStatus =
 	| "pending"
@@ -245,6 +246,60 @@ const migrationSql = `
       END;
 `;
 
+const outboxSql = `
+  CREATE TABLE outbox (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    intent_id TEXT NOT NULL UNIQUE,
+    run_id TEXT NOT NULL,
+    thread_id TEXT NOT NULL,
+    workspace TEXT NOT NULL,
+    action_id TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    target TEXT NOT NULL,
+    payload TEXT NOT NULL,
+    payload_hash TEXT NOT NULL,
+    replay TEXT NOT NULL CHECK (replay IN ('idempotent','reconcile')),
+    created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+    UNIQUE (run_id, action_id)
+  );
+  CREATE TABLE outbox_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    intent_id TEXT NOT NULL REFERENCES outbox(intent_id),
+    attempt_id TEXT NOT NULL,
+    state TEXT NOT NULL CHECK (state IN ('dispatched','applied','unknown','not-applied')),
+    owner TEXT NOT NULL,
+    epoch INTEGER NOT NULL,
+    actor TEXT NOT NULL,
+    evidence_ref TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+  );
+  CREATE INDEX idx_outbox_scope ON outbox(run_id, thread_id, workspace, id);
+  CREATE INDEX idx_outbox_events ON outbox_events(intent_id, id);
+  CREATE TABLE relay_cursors (
+    run_id TEXT NOT NULL,
+    thread_id TEXT NOT NULL,
+    workspace TEXT NOT NULL,
+    last_id INTEGER NOT NULL REFERENCES outbox(id),
+    PRIMARY KEY (run_id, thread_id, workspace)
+  );
+  ${["outbox", "outbox_events"]
+		.map(
+			(table) => `
+    CREATE TRIGGER ${table}_no_update BEFORE UPDATE ON ${table} BEGIN
+      SELECT RAISE(ABORT, 'outbox is append-only');
+    END;
+    CREATE TRIGGER ${table}_no_delete BEFORE DELETE ON ${table} BEGIN
+      SELECT RAISE(ABORT, 'outbox is append-only');
+    END;
+    CREATE TRIGGER ${table}_no_replace BEFORE INSERT ON ${table}
+    WHEN NEW.id != -1 AND EXISTS (SELECT 1 FROM ${table} WHERE id = NEW.id) BEGIN
+      SELECT RAISE(ABORT, 'outbox is append-only');
+    END;
+  `,
+		)
+		.join("")}
+`;
+
 function schemaSignature(db: Database): string {
 	return JSON.stringify(
 		db
@@ -270,32 +325,40 @@ const supportedSchemas = (() => {
 		db.exec(legacySql);
 		const legacy = schemaSignature(db);
 		db.exec(migrationSql);
-		return { empty, legacy, current: schemaSignature(db) };
+		const v2 = schemaSignature(db);
+		db.exec(outboxSql);
+		return { empty, legacy, v2, current: schemaSignature(db) };
 	} finally {
 		db.close();
 	}
 })();
 
-function schemaKind(db: Database): "empty" | "legacy" | "current" {
+function schemaKind(db: Database): "empty" | "legacy" | "v2" | "current" {
 	const version = db
 		.query<{ user_version: number }, []>("PRAGMA user_version")
 		.get()?.user_version;
 	const signature = schemaSignature(db);
 	if (version === 0 && signature === supportedSchemas.empty) return "empty";
 	if (version === 0 && signature === supportedSchemas.legacy) return "legacy";
-	if (version === 2 && signature === supportedSchemas.current) {
+	if (
+		(version === 2 && signature === supportedSchemas.v2) ||
+		(version === 3 && signature === supportedSchemas.current)
+	) {
 		const rows = db
 			.query<{ version: number; applied_at: string }, []>(
-				"SELECT version, applied_at FROM schema_migrations",
+				"SELECT version, applied_at FROM schema_migrations ORDER BY version",
 			)
 			.all();
 		if (
-			rows.length === 1 &&
-			rows[0]?.version === 2 &&
-			typeof rows[0].applied_at === "string" &&
-			rows[0].applied_at.trim()
+			rows.length === version - 1 &&
+			rows.every(
+				(row, index) =>
+					row.version === index + 2 &&
+					typeof row.applied_at === "string" &&
+					row.applied_at.trim(),
+			)
 		)
-			return "current";
+			return version === 2 ? "v2" : "current";
 	}
 	throw new Error("Unsupported Loom schema; database left unchanged");
 }
@@ -335,11 +398,16 @@ export function initSchema(db: Database): void {
 		const kind = schemaKind(db);
 		if (kind === "current") return;
 		if (kind === "empty") db.exec(legacySql);
-		db.exec(migrationSql);
+		if (kind !== "v2") {
+			db.exec(migrationSql);
+			db.exec(`INSERT INTO schema_migrations (version, applied_at)
+        VALUES (2, strftime('%Y-%m-%dT%H:%M:%fZ','now'));`);
+		}
+		db.exec(outboxSql);
 		db.exec(`
       INSERT INTO schema_migrations (version, applied_at)
-      VALUES (2, strftime('%Y-%m-%dT%H:%M:%fZ','now'));
-      PRAGMA user_version = 2;
+      VALUES (3, strftime('%Y-%m-%dT%H:%M:%fZ','now'));
+      PRAGMA user_version = 3;
     `);
 	}).immediate();
 }
@@ -919,4 +987,455 @@ export function recordFinish(
 			);
 		})
 		.immediate();
+}
+
+export type OutboxReplay = "idempotent" | "reconcile";
+export type OutboxObservation = "applied" | "unknown" | "not-applied";
+export interface OutboxIntent {
+	intentId: string;
+	actionId: string;
+	kind: string;
+	target: string;
+	payload: string;
+	replay: OutboxReplay;
+}
+export interface OutboxAttempt {
+	attemptId: string;
+	owner: string;
+	epoch: number;
+	state: "dispatched" | OutboxObservation;
+	evidenceRef: string;
+}
+export interface OutboxRecord extends OutboxIntent {
+	id: number;
+	runId: string;
+	threadId: string;
+	workspace: string;
+	payloadHash: string;
+	createdAt: string;
+	state: "pending" | "dispatched" | "unknown" | "applied";
+	attempts: OutboxAttempt[];
+}
+type OutboxRow = Omit<OutboxRecord, "state" | "attempts">;
+type OutboxEvent = OutboxAttempt & {
+	id: number;
+	actor: string;
+	createdAt: string;
+};
+
+function checkFixture(value: string): void {
+	if (
+		typeof value !== "string" ||
+		!/^fixture:[a-zA-Z0-9._:-]{1,200}$/.test(value)
+	)
+		throw new Error("Invalid synthetic target identity");
+}
+
+function payloadHash(payload: string): string {
+	if (typeof payload !== "string" || Buffer.byteLength(payload) > 65_536)
+		throw new Error("Invalid outbox payload");
+	try {
+		JSON.parse(payload);
+	} catch {
+		throw new Error("Invalid outbox payload");
+	}
+	return createHash("sha256").update(payload).digest("hex");
+}
+
+function checkIntent(
+	intent: OutboxIntent,
+	scope: { runId: string; threadId: string },
+): string {
+	checkKey({ ...scope, actionId: intent.intentId });
+	checkKey({ ...scope, actionId: intent.actionId });
+	checkFixture(intent.kind);
+	checkFixture(intent.target);
+	if (intent.replay !== "idempotent" && intent.replay !== "reconcile")
+		throw new Error("Invalid replay contract");
+	return payloadHash(intent.payload);
+}
+
+const outboxColumns = `id, intent_id AS intentId, action_id AS actionId, run_id AS runId,
+  thread_id AS threadId, workspace, kind, target, payload, payload_hash AS payloadHash,
+  replay, created_at AS createdAt`;
+
+export function getOutbox(db: Database, intentId: string): OutboxRecord | null {
+	checkKey({ runId: "outbox", threadId: "query", actionId: intentId });
+	const row = db
+		.query<OutboxRow, [string]>(
+			`SELECT ${outboxColumns} FROM outbox WHERE intent_id = ?`,
+		)
+		.get(intentId);
+	if (!row) return null;
+	if (
+		checkIntent(row, row) !== row.payloadHash ||
+		!Number.isSafeInteger(row.id) ||
+		row.id <= 0 ||
+		!Number.isFinite(Date.parse(row.createdAt))
+	)
+		throw new Error("Invalid outbox history");
+	checkedText(row.workspace, "workspace", 4096);
+	const attempts = new Map<string, OutboxAttempt>();
+	const events = db
+		.query<
+			OutboxEvent,
+			[string]
+		>(`SELECT id, attempt_id AS attemptId, owner, epoch, state,
+    actor, evidence_ref AS evidenceRef, created_at AS createdAt FROM outbox_events WHERE intent_id = ? ORDER BY id`)
+		.all(intentId);
+	for (const event of events) {
+		checkKey({
+			runId: row.runId,
+			threadId: row.threadId,
+			actionId: event.attemptId,
+		});
+		checkScope(event.owner);
+		checkEpoch(event.epoch);
+		checkActor(event.actor);
+		checkedEvidence(event.evidenceRef);
+		if (
+			!Number.isSafeInteger(event.id) ||
+			event.id <= 0 ||
+			!Number.isFinite(Date.parse(event.createdAt))
+		)
+			throw new Error("Invalid outbox event");
+		const previous = attempts.get(event.attemptId);
+		if (event.state === "dispatched") {
+			if (
+				previous ||
+				[...attempts.values()].some(
+					(a) =>
+						a.state === "applied" ||
+						(row.replay === "reconcile" && a.state !== "not-applied"),
+				)
+			)
+				throw new Error("Invalid outbox dispatch history");
+		} else if (
+			!previous ||
+			previous.owner !== event.owner ||
+			previous.epoch !== event.epoch ||
+			!["dispatched", "unknown"].includes(previous.state) ||
+			!["applied", "unknown", "not-applied"].includes(event.state)
+		) {
+			throw new Error("Invalid outbox observation history");
+		}
+		attempts.set(event.attemptId, {
+			attemptId: event.attemptId,
+			owner: event.owner,
+			epoch: event.epoch,
+			state: event.state,
+			evidenceRef: event.evidenceRef,
+		});
+	}
+	const values = [...attempts.values()];
+	const state = values.some((a) => a.state === "applied")
+		? "applied"
+		: values.some((a) => a.state === "unknown")
+			? "unknown"
+			: values.some((a) => a.state === "dispatched")
+				? "dispatched"
+				: "pending";
+	return { ...row, state, attempts: values };
+}
+
+function requireOutbox(db: Database, intentId: string): OutboxRecord {
+	const record = getOutbox(db, intentId);
+	if (!record) throw new Error("Outbox intent not found");
+	return record;
+}
+
+function checkOutboxAction(
+	db: Database,
+	ctx: WriteContext,
+	actionId: string,
+): void {
+	const action = getAction(db, {
+		runId: ctx.runId,
+		threadId: ctx.threadId,
+		actionId,
+	});
+	if (!action || action.decision !== "allowed" || action.outcome !== "pending")
+		throw new Error("Outbox requires an allowed unresolved action");
+}
+
+export function enqueueOutbox(
+	db: Database,
+	ctx: WriteContext,
+	args: OutboxIntent,
+): OutboxRecord {
+	if (!db.inTransaction)
+		throw new Error("Enqueue requires the business transaction");
+	writeGate(db, ctx);
+	checkFields(args, [
+		"intentId",
+		"actionId",
+		"kind",
+		"target",
+		"payload",
+		"replay",
+	]);
+	const hash = checkIntent(args, ctx);
+	checkOutboxAction(db, ctx, args.actionId);
+	const previous = getOutbox(db, args.intentId);
+	if (previous) {
+		if (
+			previous.runId !== ctx.runId ||
+			previous.threadId !== ctx.threadId ||
+			previous.workspace !== ctx.workspace ||
+			previous.actionId !== args.actionId ||
+			previous.kind !== args.kind ||
+			previous.target !== args.target ||
+			previous.payload !== args.payload ||
+			previous.replay !== args.replay
+		)
+			throw new Error("Intent already bound to different content");
+		return previous;
+	}
+	db.query(`INSERT INTO outbox (intent_id, action_id, run_id, thread_id, workspace, kind, target, payload, payload_hash, replay)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
+		args.intentId,
+		args.actionId,
+		ctx.runId,
+		ctx.threadId,
+		ctx.workspace,
+		args.kind,
+		args.target,
+		args.payload,
+		hash,
+		args.replay,
+	);
+	return requireOutbox(db, args.intentId);
+}
+
+export function listUnresolvedOutbox(
+	db: Database,
+	args: { runId: string; threadId?: string; workspace?: string },
+): OutboxRecord[] {
+	checkFields(args, ["runId", "threadId", "workspace"]);
+	checkScope(args.runId);
+	if (args.threadId !== undefined) checkScope(args.threadId);
+	if (args.workspace !== undefined)
+		checkedText(args.workspace, "workspace", 4096);
+	// shortcut: validate scoped intent histories; add a verified projection only when measured backlog requires it.
+	return db
+		.query<
+			{ intentId: string },
+			[string, string | null, string | null, string | null, string | null]
+		>(
+			`SELECT intent_id AS intentId FROM outbox WHERE run_id = ? AND (? IS NULL OR thread_id = ?)
+     AND (? IS NULL OR workspace = ?) ORDER BY id`,
+		)
+		.all(
+			args.runId,
+			args.threadId ?? null,
+			args.threadId ?? null,
+			args.workspace ?? null,
+			args.workspace ?? null,
+		)
+		.map((row) => requireOutbox(db, row.intentId))
+		.filter((row) => row.state !== "applied");
+}
+
+function insertOutboxEvent(
+	db: Database,
+	intentId: string,
+	attempt: OutboxAttempt,
+	actor: string,
+): void {
+	db.query(`INSERT INTO outbox_events (intent_id, attempt_id, state, owner, epoch, actor, evidence_ref)
+    VALUES (?, ?, ?, ?, ?, ?, ?)`).run(
+		intentId,
+		attempt.attemptId,
+		attempt.state,
+		attempt.owner,
+		attempt.epoch,
+		actor,
+		attempt.evidenceRef,
+	);
+}
+
+function observeOutbox(
+	db: Database,
+	args: {
+		intentId: string;
+		attemptId: string;
+		outcome: OutboxObservation;
+		actor: string;
+		evidenceRef: string;
+	},
+): OutboxRecord {
+	if (!["applied", "unknown", "not-applied"].includes(args.outcome))
+		throw new Error("Invalid outbox observation");
+	checkActor(args.actor);
+	checkedEvidence(args.evidenceRef);
+	return db
+		.transaction(() => {
+			const row = requireOutbox(db, args.intentId);
+			const attempt = row.attempts.find((a) => a.attemptId === args.attemptId);
+			if (!attempt) throw new Error("Dispatch attempt not found");
+			if (["applied", "not-applied"].includes(attempt.state)) {
+				if (attempt.state !== args.outcome)
+					throw new Error("Conflicting terminal observation");
+				return row;
+			}
+			insertOutboxEvent(
+				db,
+				row.intentId,
+				{ ...attempt, state: args.outcome, evidenceRef: args.evidenceRef },
+				args.actor,
+			);
+			return requireOutbox(db, row.intentId);
+		})
+		.immediate();
+}
+
+export function reconcileOutbox(
+	db: Database,
+	args: {
+		intentId: string;
+		attemptId: string;
+		outcome: OutboxObservation;
+		actor: string;
+		evidenceRef: string;
+	},
+): OutboxRecord {
+	checkFields(args, [
+		"intentId",
+		"attemptId",
+		"outcome",
+		"actor",
+		"evidenceRef",
+	]);
+	checkActor(args.actor);
+	if (!args.actor.startsWith("human:"))
+		throw new Error("Trusted human reconciliation required");
+	checkKey({
+		runId: "outbox",
+		threadId: "reconcile",
+		actionId: args.attemptId,
+	});
+	return observeOutbox(db, args);
+}
+
+export interface SyntheticOutboxAdapter {
+	synthetic: true;
+	kind: string;
+	target: string;
+	replay: OutboxReplay;
+	execute: (
+		intent: OutboxRecord,
+		attemptId: string,
+	) => Promise<{ outcome: "applied" | "unknown"; evidenceRef: string }>;
+}
+
+function relayCursor(db: Database, ctx: WriteContext): number {
+	const id =
+		db
+			.query<{ lastId: number }, [string, string, string]>(
+				"SELECT last_id AS lastId FROM relay_cursors WHERE run_id = ? AND thread_id = ? AND workspace = ?",
+			)
+			.get(ctx.runId, ctx.threadId, ctx.workspace)?.lastId ?? 0;
+	if (!Number.isSafeInteger(id) || id < 0)
+		throw new Error("Invalid relay cursor");
+	return id;
+}
+
+export async function relayBatch(
+	db: Database,
+	context: WriteContext,
+	adapter: SyntheticOutboxAdapter,
+	limit = 10,
+): Promise<{ cursor: number; results: OutboxRecord[] }> {
+	if (db.inTransaction) throw new Error("Relay must run outside a transaction");
+	if (!Number.isInteger(limit) || limit < 1 || limit > 100)
+		throw new Error("Invalid relay limit");
+	checkFields(adapter, ["synthetic", "kind", "target", "replay", "execute"]);
+	if (
+		adapter.synthetic !== true ||
+		typeof adapter.execute !== "function" ||
+		!["idempotent", "reconcile"].includes(adapter.replay)
+	)
+		throw new Error("Synthetic adapter required");
+	checkFixture(adapter.kind);
+	checkFixture(adapter.target);
+	const { kind, target, replay, execute } = adapter;
+	const ctx = { ...context };
+	db.transaction(() => writeGate(db, ctx)).immediate();
+	const pending = listUnresolvedOutbox(db, {
+		runId: ctx.runId,
+		threadId: ctx.threadId,
+		workspace: ctx.workspace,
+	})
+		.filter((row) => row.kind === kind && row.target === target)
+		.slice(0, limit);
+	const results: OutboxRecord[] = [];
+	for (const candidate of pending) {
+		const intentId = candidate.intentId;
+		const admission = db
+			.transaction(() => {
+				writeGate(db, ctx);
+				relayCursor(db, ctx);
+				const current = requireOutbox(db, intentId);
+				if (current.state === "applied") return null;
+				if (current.replay !== replay)
+					throw new Error("Replay contract mismatch");
+				if (
+					replay === "reconcile" &&
+					current.attempts.some((a) => a.state !== "not-applied")
+				)
+					throw new Error("Target reconciliation required before replay");
+				checkOutboxAction(db, ctx, current.actionId);
+				const attempt: OutboxAttempt = {
+					attemptId: randomUUID(),
+					owner: ctx.owner,
+					epoch: ctx.epoch,
+					state: "dispatched",
+					evidenceRef: "trace:synthetic-dispatch-admitted",
+				};
+				insertOutboxEvent(db, intentId, attempt, "system:outbox");
+				db.query(`INSERT INTO relay_cursors (run_id, thread_id, workspace, last_id) VALUES (?, ?, ?, ?)
+        ON CONFLICT(run_id,thread_id,workspace) DO UPDATE SET last_id = max(last_id, excluded.last_id)`).run(
+					ctx.runId,
+					ctx.threadId,
+					ctx.workspace,
+					current.id,
+				);
+				return {
+					row: requireOutbox(db, intentId),
+					attemptId: attempt.attemptId,
+				};
+			})
+			.immediate();
+		if (!admission) continue;
+		let observation: { outcome: "applied" | "unknown"; evidenceRef: string };
+		try {
+			observation = await execute(
+				Object.freeze(admission.row),
+				admission.attemptId,
+			);
+			checkFields(observation, ["outcome", "evidenceRef"]);
+			if (
+				observation.outcome !== "applied" &&
+				observation.outcome !== "unknown"
+			)
+				throw new Error("Invalid target result");
+			checkedEvidence(observation.evidenceRef);
+		} catch {
+			observation = {
+				outcome: "unknown",
+				evidenceRef: "trace:synthetic-adapter-unconfirmed",
+			};
+		}
+		results.push(
+			observeOutbox(db, {
+				intentId,
+				attemptId: admission.attemptId,
+				outcome: observation.outcome,
+				evidenceRef: observation.evidenceRef,
+				actor: "system:outbox",
+			}),
+		);
+		if (observation.outcome === "unknown") break;
+	}
+	return { cursor: relayCursor(db, ctx), results };
 }

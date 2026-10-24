@@ -275,6 +275,240 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
 
 ## Active phase specification
 
+- **Work package:** P1 / T-04 synthetic outbox, started 2026-10-24.
+- **Authority:** “commit and continue”; owner confirmed synthetic v3 migration,
+  immutable intent binding, conservative replay and public test seams.
+- **Baseline/branch:** clean `39cb915`, `feat/p1-outbox`. T-02 human review still
+  pending; continuation authority is not an attestation of Ishan's approval.
+- **Status:** implementation and ordered code gates verified; fixed-artifact AI
+  re-review has no open confirmed findings, Ishan disposition pending. G0 closed,
+  G1 open. No live effects/providers.
+
+### 1. Phase Objective & Scope
+
+Durably bind business progress to synthetic effect intent, admit each dispatch
+through the live T-02 gate and preserve uncertain outcomes across restart. Add
+atomic schema v3 migration; preserve v2 ledger/audit/lease data and guards. Only
+disposable fixture adapters/targets; no CLI dispatch, production integration,
+provider/network calls, complete policy, kill actuation or later slice. Audit
+outcomes and outbox observations remain facts, never proof of task completion.
+
+### 2. Environment & Upstream State
+
+Fresh pre-commit baseline on 2026-10-24: lint 15 files, strict check, 45-test full
+coverage (421 assertions), focused gate 15 tests/144 assertions and dependency
+audit 14 packages all exit 0. Functions 100%, overall lines 95.71%, store 99.63%,
+framework 87.50%, index 100%. Bun 1.4.4/SQLite 3.53.4 unchanged. Installed and
+official Bun 1.4.4 immediate/savepoint behavior revalidated in T-02; SQLite cannot
+atomically cancel an external effect. R-06/R-17 are design context, not new proof.
+No install/upgrade. Trusted temporary Gitleaks remains available; verify before use.
+
+### 3. Architecture & File Manifest
+
+| File | Responsibility |
+| --- | --- |
+| `src/store.ts` | Exact v2/v3 recognition and atomic migration, immutable intent/event persistence, queries, relay/reconciliation |
+| `src/index.ts` | Export new outbox types/functions, preserve gated APIs |
+| `tests/outbox.test.ts` | Confirmed public seams, independent fixture targets, recovery/contention and state regressions |
+| `tests/fixtures/schema-v2.sql` | Independent known-v2 DDL snapshot for migration regression |
+| `tests/schema-v2.test.ts` | Retain original migration/guard checks while advancing expected current version to 3 |
+| `SPEC.md`, `ROADMAP.md`, `decisions.md` | Contract, migration/replay decisions and evidence |
+| `research/reviews/2026-10-24-p1-t04.md` | Fixed-artifact AI advisory; Ishan disposition separate |
+
+Callers traced: no existing outbox caller/table. Gate and audit functions are
+reused as-is; CLI stays without relay/effect commands. v2 schema DDL and previous
+records stay intact; v3 adds outbox intents, append-only dispatch/observation events
+and scoped monotonic cursor. No event-range retirement or guard bypass.
+
+**Exact contract:**
+- `enqueueOutbox(db,ctx,args)` requires an active caller transaction; caller uses
+  the same immediate transaction as recordTransition. It rechecks gate and native
+  action's allowed/pending state. No arbitrary business-write callback or implicit
+  independent commit. Tests prove business/intent rollback together.
+- Intent has canonical UUID intentId and native actionId, ctx run/thread/workspace,
+  fixture-only kind/target identities, exact bounded JSON payload string and its
+  SHA-256, and replay mode idempotent/reconcile. Exact bytes are binding, not a
+  lossy JSON normalization. One intent per native action in a run. Same intent
+  retries return the original row only if every bound field matches; otherwise
+  reject. SQLite row ID orders records, never serves as a global target dedup key.
+- Intent and event rows are immutable by triggers. Each dispatch admission mints
+  a UUID attemptId and captures owner/epoch in the gate's transaction. Observation
+  events refer to that original attempt; late applied/unknown facts remain
+  attributable after kill or lease succession, without granting a stale write.
+- `getOutbox(db,intentId)` returns validated intent, attempts and derived state;
+  NULL only for genuine absence. `listUnresolvedOutbox(db,{runId,threadId?,workspace?})`
+  returns pending/dispatched/unknown work in ID order. Malformed payload/hash,
+  event/identity/history fails explicitly, never falls back to prior success.
+- Projection: no attempts or all proven not-applied ⇒ pending; admission with no
+  observation ⇒ dispatched; unknown observation ⇒ unknown; any proven applied
+  attempt ⇒ applied and never dispatch again. Applied/not-applied observations
+  for an attempt are terminal; unknown may be resolved with evidence. No callback
+  exception is evidence of no effect.
+- `relayBatch(db,ctx,adapter,limit=10)` refuses caller transactions (no async
+  effect inside an outer DB lock), accepts integer limit 1–100, and reads a bounded
+  ID-ordered snapshot of unresolved matching fixture work. Adapter explicitly
+  identifies synthetic kind/target and replay mode. Scoped histories are validated
+  linearly before the bounded dispatch selection; no indexed projection yet.
+  No default production adapter,
+  path/network resolver, dynamic module loading or CLI dispatcher.
+- For EACH item, reacquire an immediate transaction, recheck gate, exact intent/
+  action and current outcome, append dispatch attempt and advance scoped cursor;
+  commit BEFORE invoking the adapter. No DB lock/long-lived reader across awaits.
+  Cursor is a monotonic admitted high-water mark, NOT an applied cursor and NEVER
+  excludes older unresolved work from recovery scans. No generic async transaction.
+- Dispatch admission is the local linearization point. Kill committed before it
+  denies; an admitted operation may reach/finish at the target after kill. Mark
+  that uncertainty honestly; SQLite cannot close the external handoff gap. Check
+  kill/epoch again for subsequent items, never relabel admitted work not-executed.
+- Adapter receives exact stored intent bytes, hash, stable intentId dedup key and
+  attemptId; result is applied/unknown plus bounded evidenceRef. Throwing or invalid
+  result records unknown with safe synthetic evidence, without logging raw errors.
+  Applied evidence is target observation, not independent workflow verification.
+- Previously admitted idempotent work may retry only against a matching explicit
+  deduplication contract; fixture target must persist stable-key/exact-payload
+  deduplication independently from Loom. Concurrent admitted replays can call it
+  more than once but may apply only once. No exactly-once guarantee for arbitrary
+  targets or from the Loom marker alone.
+- Non-idempotent admitted/unknown work is never automatically replayed. Trusted
+  `reconcileOutbox(db,{intentId,attemptId,outcome,actor,evidenceRef})` records
+  applied/not-applied/unknown observation. Explicit host human attribution and
+  evidence required; syntax isn't authentication. A new attempt requires proof
+  all previous attempts were not applied. Reconciliation is bookkeeping permitted
+  after kill/expiry; it cannot dispatch, clear kill, grant a lease or erase history.
+- Relay observations are tied to the admitted attempt, not a current lease; kill
+  and expiry cannot suppress a late result. Do not auto-rewrite audit decisions or
+  outcomes; the native action and outbox intent remain linked for operator triage.
+- v3 migrates intact empty/legacy/v2 stores atomically through the recognized
+  versions; migration registry is exactly [2,3] with timestamps. Unknown/drifted/
+  partial/future layouts refuse before changes. Preserve existing fields, guards,
+  durability read-back and NULL legacy identity. No down-migration/data deletion.
+
+### 4. Test Plan & Coverage Matrix
+
+Owner-confirmed enqueue/get/list/relay/reconcile, gate/audit/transition and initSchema
+seams; SQL only migration snapshots, malformed/kill fixtures and history assertions.
+Real fixture adapters, target state independent of Loom; no private mocks.
+
+| Scenario | Required proof |
+| --- | --- |
+| Migration | Known v2 data/guards preserved, registry3 idempotent; unknown/partial/failed migrations unchanged |
+| Atomic intent | Gate/action required, shared business rollback, exact duplicate vs rebound rejection |
+| Projection | Immutable intent/events, validated payload/hash/history, ordered unresolved reads |
+| Relay | Gate per item, no DB transaction while awaiting target, kill/epoch between items blocks later admission |
+| Uncertainty | Target exception/malformed result stays unknown; late result after kill/succession attributed to original attempt |
+| Replay | Crash between target and marker deduplicates at independent target; non-idempotent refuses until evidence-backed reconciliation |
+| Recovery/contention | Cursor survives reopen without skipping old uncertainty; concurrent relays cannot double-apply fixture target |
+| Compatibility | Existing gate/audit/CLI tests retained; schema expectations advanced, no dependency/runtime/authority enablement |
+
+Test-first vertical slices, disposable owned state under `/tmp/opencode`, no real
+secrets/customer data. Observe intended reds before application changes.
+
+### 5. Security, Observability & Edge Cases
+
+Trusted host caller/adapter, never runner-provided authority. Fixture-only identity
+validation cannot sandbox malicious host callbacks; production qualification is
+separate and no real adapter is supplied. Bound inputs, parameterize SQL, redact
+errors/evidence, never dereference evidence. Audit lifecycle and outbox append-only
+guards stay intact. No network waits in writer transactions, long-lived WAL reader,
+blind retry, raw error dump or unknown-as-success inference. Deadline/grant/policy
+remain required before production effects; no permissive placeholder implements them.
+
+### 6. Blast Radius & Rollback Plan
+
+New opt-in store exports and additive schema v3; old v2 binaries will refuse v3.
+Rollback is reviewed code plus verified pre-migration backup restore to a separate
+disposable DB, not DROP/DELETE/downgrade. Never erase post-migration intent or
+effect observations to manufacture rollback. Tests use known-v2 SQL fixtures;
+production migration, backup destination/restore qualification remain unauthorized.
+
+### 7. Definition of Done (DoD)
+
+`bun run lint` → `bun run check` → `bun test --coverage` →
+`bun test tests/outbox.test.ts` → `bun audit` → verified trusted changed-file secret
+scan, all exit 0. Compare fresh 45-test/95.71% baseline and per-file coverage;
+preserve assertions, no skip/exclusion. Historical document-validator heredoc,
+`git diff --check`, protected package/lock/config/pin/.github/.opencode and previous
+review/gate/audit/smoke comparisons pass. Review fixed candidate with ishan-reviewer
+and persist advisory, exact identity/proof/limits; Ishan disposition separate.
+Leave T-04 uncommitted unless separately requested. No push, provider, real effect,
+G1 closure or advancement beyond this slice.
+
+**Execution evidence (2026-10-24, Bun 1.4.4 / SQLite 3.53.4):**
+- Observed intended behavioral reds before implementation: intact v2 stayed at
+  version2 instead of3; missing enqueueOutbox, relayBatch and reconcileOutbox.
+  Each seam then implemented with its acceptance test; later adversarial/recovery
+  tests exercise those paths rather than claiming additional behavioral reds.
+- `bun run lint`: exit 0, 16 files; `bun run check`: exit 0.
+- `bun test --coverage`: exit 0, 59 tests/551 assertions, 100% functions,
+  95.76% lines (baseline 95.71%); store 99.78% (99.63%), framework unchanged
+  87.50%, index unchanged 100%. Prior 45 tests retained; only schema-current
+  expectations/registry corruption fixture advanced to v3. No exclusions/skips.
+- `bun test tests/outbox.test.ts`: exit 0, 14 tests/130 assertions. Independent
+  v2 SQL snapshot recognized; migration preserves facts/guards; competing writer
+  leaves v2 intact and retry succeeds. Existing disk-full/unknown-layout migration
+  regressions remain green. Caller rollback, exact intent binding, append-only
+  guards, malformed history/output/cursor and invalid shape/adapter tests pass.
+- Gate checked between batch items: kill or lease succession blocks next item,
+  while late applied result stays bound to original owner/epoch/attempt. Cursor
+  high-water never suppresses older unresolved work. Non-idempotent unknowns
+  refuse replay until evidence-backed reconciliation; terminal conflicts reject.
+- Separate target SQLite commits before child exits23 without a Loom marker;
+  reopen sees dispatched uncertainty, replay uses stable key and exact payload
+  with target-side dedup, applies once. Overlapping batches preserve both attempts
+  and skip already-applied candidates. Two real non-idempotent relay processes
+  synchronize on readiness pipes and admit one unconfirmed attempt/application.
+  Process-only proof, not SIGKILL/power-loss/remote exactly-once certification.
+- `bun audit`: exit 0, 14 packages/no advisories. No dependency install/upgrade.
+- Trusted Gitleaks 8.30.1 archive SHA-256
+  `551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb`
+  and executable/archive match verified before task-file scans. Exact pattern:
+  `env -i PATH=/usr/bin:/bin <verified-gitleaks> dir <file> --no-banner --redact=100 --ignore-gitleaks-allow --gitleaks-ignore-path /tmp/opencode/loom-t01-no-ignore`.
+  No task-file leaks detected; final report/governance rescan after review required.
+- Historical document-validator heredoc, protected-file comparison and
+  `git diff --check` pass. No CLI effect command, real target/provider/login,
+  production restore, complete policy/kill or G1 closure claimed.
+- Initial [T-04 advisory](research/reviews/2026-10-24-p1-t04-initial.md) requested
+  R-001: a malformed negative cursor could be overwritten by admission when
+  pending work existed. Parent reproduced it with a failing public regression
+  (relay resolved instead of rejecting), then validated the cursor inside every
+  admission transaction before any event/cursor write. Pending-work and empty
+  malformed-cursor cases both remain covered; callback count0, pending state and
+  unchanged cursor asserted. New fixed-artifact re-review required.
+- Corrected candidate ordered gates: lint exit0 (16 files), strict check exit0,
+  full coverage exit0 (60 tests/555 assertions, 100% functions/95.76% lines,
+  store99.78%, unchanged framework/index), focused exit0 (15 tests/134 assertions),
+  audit exit0 (14 packages/no advisories). Temporary in-repo review copy initially
+  caused Biome nested-root error; removed only that owned copy after confirming
+  its archived manifest, then restarted the ordered gates. No lint config change.
+- Corrected [T-04 re-review](research/reviews/2026-10-24-p1-t04.md) recommends
+  READY FOR HUMAN REVIEW; R-001 resolved, no open confirmed findings. Baseline
+  `39cb91549c7623601d76e43258684ab2027b7856` plus corrected overlay manifest
+  `3f6bc846536f79e02064e155bfabadc0887d72d0ffa4915f2938a8024bee1d47`.
+  Parent verified unchanged reviewed implementation/test/fixture hashes, removed
+  only owned repository snapshot copies, and passed final ten-task-file trusted
+  scans and document/protected/whitespace checks. Original review retained unchanged.
+  T-02/T-04 human approval remains pending; no commit/push or next slice authorized.
+
+**Commit authorization (2026-10-24):** owner requested “commit” after the corrected
+T-04 handoff. Commit this reviewed implementation, fixture and both advisory
+reports; do not infer Ishan's approval or permission to push/continue. Pre-commit
+ordered checks passed again: lint (16 files), strict typecheck, 60-test coverage
+(555 assertions, 100% functions/95.76% lines), focused 15 tests/134 assertions and
+dependency audit (14 packages/no advisories). Reviewed source/test/fixture hashes
+unchanged; final task-file secret scans and document/protected/whitespace checks
+pass. T-02/T-04 human dispositions remain pending; G1 open, synthetic scope only.
+The temporary review archives/scanner had been cleaned before this commit task;
+full manifest re-verification was therefore unavailable. Source/test/fixture
+hashes matched the persisted corrected report. Re-fetched Gitleaks 8.30.1 into
+`/tmp/opencode/loom-gitleaks-8.30.1-pjjroa2f`, verified the same pinned archive
+digest/executable, then repeated all ten task-file scans successfully. No project
+dependency or scanner version changed; ephemeral archive loss is not hidden.
+
+## T-02 completed execution record (historical)
+
+Historical T-02 implementation/authority below describes `39cb915`; its human
+review remains pending. Current work is governed by the active T-04 contract above.
+
 - **Work package:** P1 / T-02 write gate and fenced leases, started 2026-10-23.
 - **Authority:** owner requested “continue” after approved T-03 commit `aa3287b`;
   confirmed required gate/CLI context, retained lease rows and public test seams.

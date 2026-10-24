@@ -281,8 +281,9 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
 - **Baseline/branch:** clean `08292d9`, `feat/p1-kill-switch`; T-02/T-04 approved
   as relayed by owner. No push/production/provider/next-slice authority.
 - **Status:** implementation, ordered code gates and fixed-artifact re-review
-  verified with no open confirmed findings; Ishan disposition pending. G0 closed,
-  G1 open.
+  verified; T-05 approved by Ishan as relayed by the owner and committed in
+  `f955622`. T-06 contract/discovery authorized by “commit and continue”.
+  G0 closed, G1 open.
 
 ### 1. Phase Objective & Scope
 
@@ -500,13 +501,19 @@ uncommitted unless requested; no push/live effects/providers/G1 closure/next sli
   three consecutive runs; audit14 packages/no advisories. Original84-test
   advisory snapshot preserved.
 - [Corrected T-05 re-review](research/reviews/2026-10-24-p1-t05.md) (report
-  SHA-256 `6f6645d1090eabc5713f19ff4eb991a1d506915fc7265b735cf001e9b4ceeab8`)
+  SHA-256 `69921687f9c33340b389b0a56178e281592bb7df81f4618c5f8ad04c6263690d`)
   marks R-001 and the adjacent legacy-latch question resolved, with no open
-  confirmed finding. Reviewed source/test/fixture hashes match current files;
+  confirmed finding. Reviewed source/test/fixture hashes matched current files;
   the uncommitted candidate snapshot was removed after its archive matched.
-  Human disposition, commit, push and scope advancement remain pending, not
-  inferred from this advisory. Report persistence changed only one Markdown
-  hard-break trailing space; no content differs.
+  Report persistence changed only one Markdown hard-break trailing space; the
+  appended approval record changes only disposition/authority text.
+- **Approval record (2026-10-24):** owner stated “approved by Ishan, commit and
+  continue” after the candidate handoff. T-05 implementation/re-review committed
+  as `f955622bf1c277bd914b1e738a28a5475164cb9d`; this is owner-relayed approval,
+  not a direct signature or independent identity verification. It closes T-05
+  only, not G1. The same instruction authorizes T-06 contract/discovery and
+  synthetic implementation, subject to confirmed public/security seams. No push,
+  production/provider use or real effects authorized.
 - T-05 closeout checks: all13 task-file scans with the verified Gitleaks binary
   exit0/clean; historical document validator passes (277 links, seven active
   sections, unique ADRs/casing/whitespace); `git diff --check` and protected-file

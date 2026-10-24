@@ -370,7 +370,13 @@ Initial T-05 advisory found ignored denial-link persistence; adjacent ignored
 legacy-latch adoption also reproduced. Checked writes and exact latch-reference
 postcondition now pass86-test ordered gates. [Corrected T-05 re-review](research/reviews/2026-10-24-p1-t05.md)
 marks both resolved with no open confirmed finding; original review retained.
-Ishan disposition remains pending; no commit/push/live use authorized.
+
+**T-05 approval and commit (2026-10-24):** owner relayed “approved by Ishan,
+commit and continue”. T-05 implementation/re-review committed `f955622`; approval
+recorded through the owner without independent signature. T-05 closed only; G1
+remains open. Same instruction authorizes T-06 contract/discovery and synthetic
+implementation under confirmed seams; no push, production/provider use or real
+effects.
 
 **Outcome:** the control plane can record, authorize, stop and recover a run
 without trusting an agent process. Existing SPEC milestone 1; no live model needed.

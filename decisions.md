@@ -809,7 +809,16 @@ initial advisory and require new-artifact re-review, not a waiver or human sign-
 **Re-review event — 2026-10-24:** fixed-artifact review T05-20261024-02 reports
 R-001 and the adjacent latch question resolved, no open confirmed finding, for
 overlay manifest `f98ab70bd281c8121579e716c054561e2f1065482989b6bd3bbec1457ab61519`.
-Report SHA-256 `6f6645d1090eabc5713f19ff4eb991a1d506915fc7265b735cf001e9b4ceeab8`.
-Reviewed source/test/fixture hashes match the current files. This is an AI
-advisory only: Ishan disposition, commit/push and any later-slice or production
-authority remain separate and pending.
+Report SHA-256 `69921687f9c33340b389b0a56178e281592bb7df81f4618c5f8ad04c6263690d`
+after the appended approval record. Reviewed source/test/fixture hashes matched
+the current files. This was an AI advisory; the separate approval event below
+records the human disposition.
+
+**Approval event — 2026-10-24:** owner stated “approved by Ishan, commit and
+continue” after the T-05 candidate handoff. T-05 implementation/re-review
+committed as `f955622bf1c277bd914b1e738a28a5475164cb9d` is approved through the
+owner; R-001 and the adjacent latch question remain resolved, original advisory
+retained. Attribution is owner-relayed, not a direct signature or independent
+identity verification. T-05 only: no G1 closure, push, production/provider use or
+real effects. The same instruction authorizes T-06 contract/discovery and
+synthetic implementation under separately confirmed seams.

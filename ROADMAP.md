@@ -419,6 +419,17 @@ exact-artifact CI/human demonstration/review/qualification handoffs. G1 remains
 open; no automatic P2 implementation or T-07 push. This follow-up documentation
 is not part of the frozen T-07 advisory artifact.
 
+**Pre-closure evidence (2026-10-25):** corrected artifact
+`555586b8d00e5d3350bd671054b5a97140ecfbdb` passes verified remote
+[CI40178607723](https://github.com/ishansing/dr.loom/actions/runs/40178607723).
+Owner attests personal drill execution at `ffed35e` and relays Ishan's approval
+explicitly covering `555586b`. [G1 evidence](docs/g1-closeout.md) preserves exact
+output, artifact identities and provenance limits. Actual framework installation
+qualification gates affected framework execution, not synthetic/core G1 closure;
+selected pin unchanged, mismatched installation remains unqualified. Owner
+requests this evidence committed **before** closure: G1 remains open, merge/P2
+not authorized by this record.
+
 ### P2 — One real isolated runner and verified candidate delivery
 
 **Outcome:** the first useful alpha executes a bounded task while protecting

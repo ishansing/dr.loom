@@ -1013,3 +1013,23 @@ hides standalone test/drill failures or remove the host directory to reproduce.
 Independent file runs, standalone drill and full143-test coverage pass in fresh
 tmpfs namespaces. Prior frozen advisory/owner-relayed approval remains tied to
 its original artifact; this test-only correction still needs publication/CI.
+
+**Evidence and approval before G1 closure — 2026-10-25:** owner relays
+“Approved 555586b by Ishan” and authorizes recording/committing evidence before
+G1 closure. Corrected artifact `555586b8d00e5d3350bd671054b5a97140ecfbdb`
+independently verified green in GitHub run40178607723: lint, strict check,
+143 tests/2,082 assertions (100% functions/98.11% lines), standalone drill and
+14-package audit pass. Owner attests personal drill execution and supplies
+successful output at `ffed35e299726c9868b3fecfbe725f67edd4dc29`; preserve its
+synthetic/automated-fixture label and older artifact identity. No individual
+signature, new AI review or human rerun on corrected artifact is inferred.
+
+Gate interpretation resolves the earlier over-broad actual-installation handoff:
+ROADMAP's G1 exit is synthetic/core CI and process/filesystem fixtures; its
+framework risk register blocks affected framework execution, and T-07's plan
+tests drift using fixture skills. Actual installed-framework qualification is
+therefore not a synthetic G1 blocker, but remains mandatory before affected
+framework execution. Retain selected2.1.0; last-inspected4.0.0 remains mismatched/
+unqualified. No requirement is waived, installation/re-pin authorized or actual
+qualification claimed. G1 remains open pending explicit owner closure after
+the evidence commit; merge, push and P2 remain separate actions.

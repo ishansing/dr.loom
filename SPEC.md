@@ -281,9 +281,40 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
   human default/explicit JSON, synthetic kill controls and pinned offline scope.
 - **Baseline/branch:** clean `9f3241a`, `feat/p1-cli-conformance`.
 - **Status:** implementation, ordered offline gates and fixed-artifact advisory
-  verified with no confirmed findings; T-07 committed `f888e68`, human
-  disposition pending. T-06 push is owner-reported; agent SSH verification and
-  actual framework/remote CI/human drill qualification remain unresolved. G1 open.
+  verified with no confirmed findings; corrected T-07 `555586b` has verified
+  green remote CI and Ishan approval relayed by the owner. Personal drill
+  execution attested at `ffed35e`; exact provenance/limits recorded in
+  [G1 evidence](docs/g1-closeout.md). G1 remains open pending explicit closure;
+  actual framework qualification blocks affected execution, not synthetic G1.
+
+**Pre-closure evidence recording (2026-10-25):** owner states “Approved 555586b
+by Ishan, Record the closure evidence and commit before G1 closure”. Scope is
+documentation only: this active phase, ROADMAP, ADR-019, G1 evidence and an
+append-only parent record in the original advisory. Preserve the frozen AI
+report/manifest and distinguish its original pending template from later
+owner-relayed approval; no new AI review or independently authenticated human
+signature claimed. Verify remote run40178607723 at full SHA
+`555586b8d00e5d3350bd671054b5a97140ecfbdb`: all required steps success,143 tests/
+2,082 assertions,100% functions/98.11% lines, drill/audit pass. Human evidence is
+the supplied drill output and owner personal-execution statement at
+`ffed35e299726c9868b3fecfbe725f67edd4dc29`, not a claim of a human rerun on the
+corrected SHA. No application/drill-script changes in the correction. Retain
+selected framework pin; fixture conformance satisfies G1 drift proof, actual
+installation checks still gate affected framework execution (ROADMAP G1 exit/
+risk register; T-07 fixture test contract). No installation/re-pin, closure,
+merge, push or P2 authorization. Validate docs/whitespace, append-only report
+identity, unchanged implementation and verified task-file secret scans before
+committing. Application gates N/A to this documentation-only update; cite the
+verified accepted-artifact CI instead of manufacturing a new application result.
+
+Pre-closure documentation gates exit0: canonical validator286 local links/seven
+active sections/unique ADRs/casing/whitespace; five task-file verified
+Gitleaks8.30.1 scans; `git diff --check`. Original report bytes are an unchanged
+prefix and embedded manifest hash matches; no application/test/workflow/pin
+diff. Appended report SHA256:
+`ceca07bed47c1e39bb80b01c064a508387acbbd713517bf7ca36d54a92d532fa`.
+Application tests were not rerun for this docs-only record; remote CI above
+provides the exact accepted-implementation evidence. G1 remains open.
 
 **CI correction work package (2026-10-25, owner requested “Fix it”):**
 

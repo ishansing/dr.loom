@@ -412,6 +412,17 @@ filesystem fixture environment. No claim of process containment or remote
 rollback is inferred from database tests. Synthetic effect adapters cannot
 accidentally acquire production authority.
 
+**G1 CLOSED — 2026-10-25:** owner conditionally authorized closure after checking
+SPEC first-milestone requirements. The recorded evidence satisfies synthetic/core
+G1: approved `555586b`, verified CI40178607723, personal operator demonstration
+at `ffed35e`, native-process/filesystem corpus, immutable audit and recovery/
+admission/drift proof. Evidence was committed first as `7f85871`; fresh full gates
+and empty-`/tmp`143-test coverage pass again. [G1 record](docs/g1-closeout.md)
+retains provenance and limitations; [merge draft](docs/p1-merge.md) targets
+`master` with the complete P1 stack. No merge/push/PR publication, P2 execution,
+actual framework qualification or production authority follows. Dated open/pending
+entries below remain historical rather than current gate status.
+
 **Post-commit discovery (2026-10-25):** T-07 committed
 `f888e6823c7ca67d8fb8a778d56c9b87b45d5a2b`; subsequent
 [G1 evidence matrix](docs/g1-closeout.md) records existing proof and outstanding

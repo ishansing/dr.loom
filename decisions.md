@@ -1033,3 +1033,20 @@ framework execution. Retain selected2.1.0; last-inspected4.0.0 remains mismatche
 unqualified. No requirement is waived, installation/re-pin authorized or actual
 qualification claimed. G1 remains open pending explicit owner closure after
 the evidence commit; merge, push and P2 remain separate actions.
+
+**G1 closure and merge preparation — 2026-10-25:** owner requested “Close G1 if
+it satisfies the spec and prep for merge”. Reviewed SPEC first-milestone criteria
+and ROADMAP G1 against recorded evidence; conditions met within synthetic/core
+scope, so G1 is CLOSED. Evidence was committed first as `7f85871`; Ishan's
+approval of `555586b` is owner-relayed and human drill remains bound to
+`ffed35e`. No fabricated same-SHA human rerun or new AI advisory. Fresh ordered
+gates and full coverage in an empty-`/tmp` namespace pass143 tests/2,082 assertions,
+100% functions/98.11% lines; audit14 packages/no advisories.
+
+Prepare local merge draft for the complete P1 stack into API-verified default
+`master` at `2be0e4fe7a593887ce690062e68a8dfaeaf170a7` (behind0); local ancestry
+and merge-tree check pass without conflict. Cached origin/master is stale and
+not used as the merge target. No upstream branch mutation, PR publication or
+merge authorized. Framework2.1.0 pin unchanged, actual mismatched installation
+remains blocked; P2/untrusted execution/providers/production need separate work
+authorization and qualification. Closing synthetic G1 does not close those gates.

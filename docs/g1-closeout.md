@@ -1,4 +1,4 @@
-# G1 closeout evidence — recorded; closure pending
+# G1 closeout evidence — CLOSED 2026-10-25
 
 ## Artifact and authority
 
@@ -8,6 +8,11 @@ Owner authorized the commit and continuation discovery on 2026-10-25.
 The working tree was clean immediately after committing the 22 verified files.
 This document is subsequent closeout preparation, not part of that reviewed
 artifact or permission to advance to P2. Owner separately authorized its commit.
+
+Evidence was committed as `7f85871` before closure. Owner then requested “Close
+G1 if it satisfies the spec and prep for merge”. The acceptance matrix and fresh
+checks satisfy SPEC first-milestone and ROADMAP G1 requirements in synthetic/core
+scope; this authorizes the G1 closure recorded here, not merge or P2 execution.
 
 [G1 requirements](../ROADMAP.md#p1--authoritative-core-and-safe-effect-admission) and
 [active T-07 contract](../SPEC.md#active-phase-specification) remain authoritative.
@@ -77,7 +82,7 @@ authorized here; this evidence update did not re-probe that installation.
 | Framework drift fails closed | `tests/framework.test.ts`, `tests/cli.test.ts`: actual Git/version/tree/lock/content checks, drift and replacement-ref rejection | Fixture proof passes. Actual installation remains blocked for framework execution, not synthetic G1. |
 | Deterministic corpus in CI and separate process/filesystem fixtures | Local gates: 143 tests/2,082 assertions, 100% functions/98.11% lines; focused 31/144; drill/audit pass. Tests use real subprocesses and temporary filesystem state. Pinned workflow in `.github/workflows/ci.yml`. | Verified remote run40178607723 passes at full accepted SHA. |
 | Fresh operator locates committed/pending/interrupted work, kills and resumes safely | `bun run drill`; [operator contract](cli.md#offline-operator-drill) | Owner personal execution/output recorded above; output's `automated-fixture-only` label is preserved. |
-| Human review and gate disposition | Advisory `T07-20261025-01-AI-01`; durable frozen manifest retained in report | Ishan approval of corrected artifact relayed by owner. Explicit G1 closure remains pending. |
+| Human review and gate disposition | Advisory `T07-20261025-01-AI-01`; durable frozen manifest retained in report | Ishan approval of corrected artifact relayed by owner. Owner conditionally authorized closure after acceptance check; G1 CLOSED. |
 
 ## Exact-artifact handoff
 
@@ -92,13 +97,37 @@ above. Application code/workflow/dependencies are unchanged.
 
 1. CI, human demonstration and owner-relayed approval are recorded above with
    their distinct artifact identities and provenance.
-2. Owner explicitly decides G1 closure after reviewing this evidence and its
-   limitations. The present instruction requires the record commit first.
-3. Merge/push and P2 implementation remain separately authorized actions.
+2. Evidence committed first as `7f85871`; subsequent owner closure instruction
+   accepted with the documented provenance/qualification limits intact.
+3. [Local PR draft](p1-merge.md) prepares the complete P1 stack for `master`.
+   Merge/push/PR publication and P2 implementation remain separate actions.
+
+## Closure verification and merge readiness
+
+- Fresh `bun run lint`, `bun run check`, `bun test --coverage`, focused CLI/
+  framework/runs tests, `bun run drill`, `bun audit`: all exit0 at `7f85871`.
+  Full143/2,082,100% functions/98.11% lines; focused31/144;14-package audit clean.
+- Separate process/filesystem proof: full `bun test --coverage` under
+  `bwrap --ro-bind / / --tmpfs /tmp --dev-bind /dev /dev --proc /proc` exits0
+  with identical totals/coverage. Host temporary state untouched.
+- GitHub compare: `master` at `2be0e4fe7a593887ce690062e68a8dfaeaf170a7`,
+  published feature branch behind0. Local ancestry/merge-tree check of that
+  exact target exits0, no conflict. Cached origin/master is stale.
+- No published PR exists for this head at inspection. New evidence/closure
+  documentation still needs publication and CI on the final PR head before merge;
+  the green run above covers accepted code, not unpublished documentation.
+- These are point-in-time checks; recheck target/head, CI and required branch
+  protection/reviews before merge. Do not merge older P1 branches separately.
+- Closure document checks pass289 local links/seven active sections/unique ADRs/
+  casing/whitespace,43 verified P1 merge-scope secret scans and `git diff --check`.
+  Prior review report unchanged; code/tests/workflow/pins match approved artifact.
+  Owner subsequently authorized committing the closure and PR draft; publication
+  remains separate.
 
 ## Exclusions and decision
 
-G1 remains **OPEN**. No T-08/P2 implementation, live provider usage, credentials,
+G1 is **CLOSED for synthetic/core conformance only**. No T-08/P2 implementation,
+live provider usage, credentials,
 real effects, deployment, framework installation or production authority was
 authorized or exercised. Process containment, authenticated IPC, real runtime
 and provider qualification belong to later gates; database/fixture success

@@ -284,8 +284,45 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
   verified with no confirmed findings; corrected T-07 `555586b` has verified
   green remote CI and Ishan approval relayed by the owner. Personal drill
   execution attested at `ffed35e`; exact provenance/limits recorded in
-  [G1 evidence](docs/g1-closeout.md). G1 remains open pending explicit closure;
+  [G1 evidence](docs/g1-closeout.md). G1 CLOSED on 2026-10-25 under the owner's
+  conditional closure authorization after acceptance evidence was checked;
   actual framework qualification blocks affected execution, not synthetic G1.
+
+**G1 closure / merge preparation (2026-10-25):** owner requested “Close G1 if
+it satisfies the spec and prep for merge”. The SPEC first-milestone criteria
+and ROADMAP P1/G1 exit are satisfied in their synthetic/core scope: immutable
+audit, migration/restore fixtures, native contention/recovery, final admission/
+kill/replay safety, framework drift rejection, recorded operator demonstration,
+Ishan approval relayed for `555586b`, and verified exact-artifact CI. Evidence
+was committed first as `7f85871`. Human demonstration remains attributed to
+`ffed35e`; the correction changes fixture parent setup only and reruns the drill
+in CI, not a new human demonstration. The owner authorizes closure with these
+recorded limits; no containment/provider/actual-installation qualification follows.
+
+Scope/files: documentation-only closure in SPEC, ROADMAP, ADR-019 and G1 evidence;
+local [P1 PR draft](docs/p1-merge.md), no published PR or merge. Remote default
+target is `master` at `2be0e4fe7a593887ce690062e68a8dfaeaf170a7`, ancestor of the
+whole P1 stack. GitHub compare reports behind0; local `git merge-tree --write-tree`
+against that exact target exits0 without conflict. Local origin/master is stale;
+use the API-verified target rather than claiming its cached ref is current.
+This is a point-in-time merge check, not a branch-protection/mergeability promise.
+
+Fresh closure gates at `7f85871`: lint26 files, strict check, full143 tests/
+2,082 assertions (100% functions/98.11% lines), focused31/144, automated drill
+and audit14 packages/no advisories all exit0. Full coverage also exits0 in a
+separate Bubblewrap empty-`/tmp` namespace, with identical totals/coverage.
+No application/test/workflow/dependency changes. Preserve prior advisory bytes;
+document/secret/whitespace gates apply to the closure record. Rollback/merge
+cautions remain schema5 backup/restore plus reconciliation and explicit JSON
+caller migration; never delete newer history or bypass safety tests. G1 closure
+does not authorize push, PR publication, merge, P2 implementation or deployment.
+Closure document gates: canonical validator exit0 (289 local links/seven active
+sections/unique ADRs/casing/whitespace),43 P1 merge-scope verified Gitleaks8.30.1
+scans exit0, `git diff --check` exit0. Previous advisory/report hash unchanged;
+implementation/tests/workflow/pins match accepted `555586b`. Closure/PR draft
+documents are authorized for commit by the owner's subsequent “commit” instruction;
+publication remains separate. Final published PR head CI and branch
+requirements must pass before merge; no remote check is claimed for local docs.
 
 **Pre-closure evidence recording (2026-10-25):** owner states “Approved 555586b
 by Ishan, Record the closure evidence and commit before G1 closure”. Scope is

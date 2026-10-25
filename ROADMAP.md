@@ -443,6 +443,17 @@ not authorized by this record.
 
 ### P2 — One real isolated runner and verified candidate delivery
 
+**Kickoff discovery (2026-10-25):** owner reported P1 merged and requested
+continuation; PR #5 merge verified at `ffbfd47`. New
+`feat/p2-runner-contract` starts from that clean merged tree.
+[P2 kickoff](docs/p2-runner-kickoff.md) retains accepted SDK1.4.0/rootless Docker
+direction and remaps the first slice to T-09/T-15 offline containment before SDK
+promotion. Current capped workspace mount is absent; no containers or packages
+are launched/installed by discovery. A reproduced existing relay fixture startup
+race is repaired/verified as a prerequisite baseline issue, not hidden or skipped.
+Exact implementation/image/mount/dependency authorization remains separate;
+G2 is open and live providers remain disabled.
+
 **Outcome:** the first useful alpha executes a bounded task while protecting
 the host control plane. T-15 is a prerequisite within this phase, not later polish.
 

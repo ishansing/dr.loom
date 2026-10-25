@@ -275,6 +275,111 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
 
 ## Active phase specification
 
+- **Work package:** P2 kickoff / T-09–T-15 discovery and baseline fixture repair.
+- **Authority:** owner stated “Merged, continue”; PR #5 merge independently
+  verified at `ffbfd47e042214f543593c8e5481fe1f155ab2a5`, current remote master.
+- **Baseline/branch:** clean merged tree identical to `803e5f6`;
+  `feat/p2-runner-contract`. G1 remains closed for its recorded synthetic scope;
+  G2 remains open. A newly reproduced fixture startup race blocks a clean P2
+  baseline; no runtime/dependency promotion or real execution is inferred.
+
+### 1. Phase Objective & Scope
+
+Prepare the first isolated-runner work package using accepted SDK1.4.0 and
+rootless Docker direction. Repair only the existing outbox fixture's startup
+barrier so it tests concurrent relay admission rather than simultaneous DB-open
+recovery. No SDK installation, container launch, mount/system change, framework
+installation/re-pin, provider/broker/live use or application implementation.
+
+### 2. Environment & Upstream State
+
+Fresh Bun1.4.4, Node26.7.0, rootless Docker client/server29.9.2; daemon reports
+rootless, overlayfs, systemd/cgroup2. The previously capped workspace mount is
+absent (`findmnt --mountpoint` exit1); do not recreate/mount it without scoped
+operator authorization. Pi is not a Loom dependency and prior external
+comparison installation has expired. Read-only registry SDK1.4.0 tarball matches
+ADR-005's SHA512; declarations, implementation and shipped changelog re-read,
+not executed. Source details and pending qualification are recorded in
+[P2 kickoff](docs/p2-runner-kickoff.md). Selected framework2.1.0 remains unchanged.
+
+Merged baseline lint26 files/strict check pass. Full coverage exits1 (142 pass,
+1 outbox fixture failure,2,076 assertions;100% functions/98.11% lines). Ordered
+drill/audit did not run after failure. Isolated relay race test fails3/30 runs;
+minimal two-child DB-open probe fails2/60 pairs with SQLITE_BUSY/RECOVERY in
+`schemaKind` before child readiness/busy-timeout setup. This is a fixture setup
+race, not evidence of duplicate dispatch or a reproduced upstream defect.
+
+### 3. Architecture & File Manifest
+
+- `tests/outbox.test.ts`: reuse `tests/runs.test.ts`'s sequential connection-ready
+  barrier, then release both real child processes together. Keep independent
+  target DB and all one-effect/one-admission/history/exit/stderr assertions.
+- `docs/p2-runner-kickoff.md`: remap T-08–T-11/T-15 to accepted runtime, planned
+  ownership, staged implementation scope and material setup/promotion approvals.
+- `SPEC.md`, `ROADMAP.md`, `decisions.md`: active seven-section contract,
+  verified merge, baseline issue, evidence and explicit disabled boundaries.
+- No src/exports/package/lock/CI/schema changes; no second runtime loop.
+
+### 4. Test Plan & Coverage Matrix
+
+Before correction, `bun test tests/outbox.test.ts -t 'real competing non-idempotent'`
+reproduces missing-ready failure. A diagnostic two-process bootstrap captures
+SQLite busy before relay; no instrumentation belongs in application code.
+After correction, repeat the exact test100 times, then full ordered gates and
+empty-`/tmp` full coverage. Children must both reach readiness before release;
+relay work still competes and only one unconfirmed admission/effect is retained.
+Compare coverage with100% functions/98.11% lines; no skipped tests or added retries.
+
+### 5. Security, Observability & Edge Cases
+
+Live providers, credentials/caches, extra spend and automatic fallback remain
+disabled. SDK default model/auth/resource discovery is not safe startup policy;
+explicit isolated runtime resources are needed before promotion. Docker context
+name alone is not trust proof; absent capped mount/digest image/log limit blocks
+runner launch. Bubblewrap remains a research/test fixture, never a backend
+fallback. Baseline diagnostics use synthetic DBs; preserve child cleanup and
+truthful failures. SQLite busy remains explicit; do not alter public store
+semantics to make a contention fixture green. No actual host resources removed.
+
+### 6. Blast Radius & Rollback Plan
+
+Only fixture startup scheduling changes; actual relay race is retained.
+Rollback is reverting the new fixture scheduling, no data migration or runtime
+cleanup. Preserve the complete P1 review/approval/evidence history. P2 discovery
+does not qualify containment or reopen G1 silently; this baseline failure and
+repair remain visible. Leave changes uncommitted absent commit authorization.
+
+### 7. Definition of Done (DoD)
+
+Run `bun run lint` → `bun run check` → `bun test --coverage`, then100 independent
+invocations of `bun test tests/outbox.test.ts -t 'real competing non-idempotent'`,
+then `bwrap --ro-bind / / --tmpfs /tmp --dev-bind /dev /dev --proc /proc bun test --coverage`,
+`bun run drill`, `bun audit`; all required exits0, no reduced coverage. Then
+verified scoped Gitleaks scans, canonical document validator, `git diff --check`
+and unchanged application/pin/dependency/review checks. Record actual results,
+not yet passed claims. Owner approves next package's precise dependency/image/
+mount work before runtime integration or lab effects; no push/commit inferred.
+
+Execution evidence (2026-10-25): fixture setup corrected using the existing
+phase-writer readiness pattern, then all declared checks exit0: lint26 files,
+strict check,143 tests/2,082 assertions,100% functions/98.11% lines (unchanged
+per-module coverage),100 independent targeted runs, empty-`/tmp` full143/2,082,
+automated drill and14-package audit/no advisories. No assertions deleted or
+test retries introduced. Public store/relay logic unchanged. Official tag API
+freshly confirms SDK1.4.0 source commit
+`4a080252f06caf63a525d7873c5d94d3c23887e0`; registry/source inspection is not
+dependency installation or containment proof. Exact image/mount/IPC/log contract
+and setup authorization remain next, not a new supported runtime claim.
+Final scoped checks exit0: canonical document validator291 local links/seven
+active sections/unique ADRs/casing/whitespace; five verified Gitleaks8.30.1
+task-file scans; `git diff --check`; protected application/config/pin/prior-review
+diff empty against the verified merge. No new fixed-artifact advisory or owner
+approval claimed for the fixture patch. Owner subsequently authorized committing
+the verified fixture repair and kickoff records; publication remains separate.
+no remote CI evidence exists for this patch and G2 remains open.
+
+## T-07 completed execution record (historical)
+
 - **Work package:** P1 / T-07 CLI v1 and offline conformance, started 2026-10-24.
 - **Authority:** owner requested “push and continue” after approved T-06 commit
   `9f3241a`; confirmed additive v5 run/evidence storage, lease-gated init/record,

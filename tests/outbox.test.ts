@@ -949,25 +949,24 @@ test("real competing non-idempotent relay processes admit only one unconfirmed a
 			}}); } catch { process.exit(24); }
 			db.close(); target.close();
 		`;
-		const children = [0, 1].map(() =>
-			Bun.spawn([process.execPath, "--eval", script], {
-				env: {},
-				stdin: "pipe",
-				stdout: "pipe",
-				stderr: "pipe",
-			}),
-		);
+		const children = [];
 		try {
-			await Promise.all(
-				children.map(async (child) => {
-					const reader = child.stdout.getReader();
-					const readyMessage = await reader.read();
-					reader.releaseLock();
-					expect(new TextDecoder().decode(readyMessage.value).trim()).toBe(
-						"ready",
-					);
-				}),
-			);
+			// Open connections before racing dispatch, not SQLite WAL recovery.
+			for (let i = 0; i < 2; i++) {
+				const child = Bun.spawn([process.execPath, "--eval", script], {
+					env: {},
+					stdin: "pipe",
+					stdout: "pipe",
+					stderr: "pipe",
+				});
+				children.push(child);
+				const reader = child.stdout.getReader();
+				const readyMessage = await reader.read();
+				reader.releaseLock();
+				expect(new TextDecoder().decode(readyMessage.value).trim()).toBe(
+					"ready",
+				);
+			}
 			for (const child of children) child.stdin.end();
 			const results = await Promise.all(children.map((child) => child.exited));
 			expect(

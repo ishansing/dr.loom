@@ -1050,3 +1050,38 @@ not used as the merge target. No upstream branch mutation, PR publication or
 merge authorized. Framework2.1.0 pin unchanged, actual mismatched installation
 remains blocked; P2/untrusted execution/providers/production need separate work
 authorization and qualification. Closing synthetic G1 does not close those gates.
+
+## [ADR-020] - 2026-10-25 (P2 kickoff and contention fixture boundary)
+
+**Status:** Discovery under owner continuation authority; first runner implementation
+contract/setup/promotion approval pending. Baseline fixture correction in progress.
+
+**Context:** PR #5 merged at `ffbfd47`; owner stated “Merged, continue”. P0
+selected SDK1.4.0/rootless Docker, not unrestricted execution or a package pin.
+Read-only discovery confirms rootless Docker29.9.2 and an absent capped workspace
+mount. Exact SDK archive integrity matches prior evidence; no runtime installed.
+Fresh merged coverage exposed an existing relay test failing before child ready.
+Isolated test fails3/30; minimized bootstrap captures SQLite busy/recovery in
+`openDb`/`schemaKind` before busy-timeout configuration in2/60 process pairs.
+
+**Options:** change public DB-open wait/retry behavior; retry/skip the flaky test;
+or initialize child connections to readiness sequentially and then race dispatch.
+
+**Decision:** use the third, already established by the phase-writer fixture.
+It preserves two live competing relay processes and one-attempt/one-effect proof
+while isolating the intended race from unrelated WAL startup contention. No
+automatic retries, sleeps, weakened assertions or public store changes.
+
+**Consequences:** verify100 isolated repetitions plus full gates/empty-`/tmp`
+coverage, record the initial red and do not manufacture a clean baseline by
+rerunning alone. Keep P2 runtime implementation gated by its exact contract;
+propose one offline T-09/T-15 container slice before SDK promotion. Existing
+security/material choices remain accepted, not reinvented; rootless image,
+mount/log/transport/cleanup integration still needs approval/evidence. No provider,
+credential inspection, additional spend, framework re-pin or host setup inferred.
+
+**Verification:** corrected fixture passes100 independent targeted runs; fresh
+lint/strict check,143 tests/2,082 assertions with unchanged100% functions/98.11%
+lines, empty-`/tmp` full suite, automated drill and14-package audit pass. No
+application, package, lock, workflow or prior-review change. Official tag API and
+registry archive revalidate selected SDK1.4.0, without installation/execution.

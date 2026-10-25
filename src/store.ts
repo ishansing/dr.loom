@@ -164,6 +164,24 @@ export function openDb(path: string = ":memory:"): Database {
 	}
 }
 
+export function openExistingDb(path: string, readonly = false): Database {
+	const db = new Database(
+		path,
+		readonly ? { readonly: true } : { readwrite: true },
+	);
+	try {
+		if (schemaKind(db) !== "current")
+			throw new Error(
+				"Store requires explicit host migration to current schema",
+			);
+		if (!readonly) prepareDb(db);
+		return db;
+	} catch (error) {
+		db.close();
+		throw error;
+	}
+}
+
 const legacySql = `
     CREATE TABLE IF NOT EXISTS transitions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -372,6 +390,47 @@ const killSql = `
   END;
 `;
 
+const runsSql = `
+  CREATE TABLE runs (
+    run_id TEXT PRIMARY KEY NOT NULL CHECK (length(trim(run_id)) > 0),
+    runbook TEXT NOT NULL CHECK (length(trim(runbook)) > 0),
+    goal TEXT NOT NULL CHECK (length(trim(goal)) > 0),
+    scale TEXT NOT NULL CHECK (scale IN ('small','standard','greenfield','e2e')),
+    framework_commit TEXT NOT NULL CHECK (length(framework_commit) = 40),
+    framework_version TEXT NOT NULL CHECK (length(trim(framework_version)) > 0),
+    framework_lock_sha256 TEXT NOT NULL CHECK (length(framework_lock_sha256) = 64),
+    created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+  );
+  CREATE TABLE transition_evidence (
+    transition_id INTEGER NOT NULL REFERENCES transitions(id),
+    position INTEGER NOT NULL CHECK (position >= 0),
+    evidence_ref TEXT NOT NULL CHECK (length(trim(evidence_ref)) > 0),
+    PRIMARY KEY (transition_id, position),
+    UNIQUE (transition_id, evidence_ref)
+  );
+  ${["runs", "transition_evidence"]
+		.map(
+			(table) => `
+    CREATE TRIGGER ${table}_no_update BEFORE UPDATE ON ${table} BEGIN
+      SELECT RAISE(ABORT, 'run history is append-only');
+    END;
+    CREATE TRIGGER ${table}_no_delete BEFORE DELETE ON ${table} BEGIN
+      SELECT RAISE(ABORT, 'run history is append-only');
+    END;
+  `,
+		)
+		.join("")}
+  CREATE TRIGGER runs_no_replace BEFORE INSERT ON runs
+  WHEN EXISTS (SELECT 1 FROM runs WHERE run_id = NEW.run_id) BEGIN
+    SELECT RAISE(ABORT, 'run history is append-only');
+  END;
+  CREATE TRIGGER transition_evidence_no_replace BEFORE INSERT ON transition_evidence
+  WHEN EXISTS (SELECT 1 FROM transition_evidence WHERE transition_id = NEW.transition_id
+    AND (position = NEW.position OR evidence_ref = NEW.evidence_ref)) BEGIN
+    SELECT RAISE(ABORT, 'run history is append-only');
+  END;
+`;
+
 function schemaSignature(db: Database): string {
 	return JSON.stringify(
 		db
@@ -401,7 +460,9 @@ const supportedSchemas = (() => {
 		db.exec(outboxSql);
 		const v3 = schemaSignature(db);
 		db.exec(killSql);
-		return { empty, legacy, v2, v3, current: schemaSignature(db) };
+		const v4 = schemaSignature(db);
+		db.exec(runsSql);
+		return { empty, legacy, v2, v3, v4, current: schemaSignature(db) };
 	} finally {
 		db.close();
 	}
@@ -409,7 +470,7 @@ const supportedSchemas = (() => {
 
 function schemaKind(
 	db: Database,
-): "empty" | "legacy" | "v2" | "v3" | "current" {
+): "empty" | "legacy" | "v2" | "v3" | "v4" | "current" {
 	const version = db
 		.query<{ user_version: number }, []>("PRAGMA user_version")
 		.get()?.user_version;
@@ -419,7 +480,8 @@ function schemaKind(
 	if (
 		(version === 2 && signature === supportedSchemas.v2) ||
 		(version === 3 && signature === supportedSchemas.v3) ||
-		(version === 4 && signature === supportedSchemas.current)
+		(version === 4 && signature === supportedSchemas.v4) ||
+		(version === 5 && signature === supportedSchemas.current)
 	) {
 		const rows = db
 			.query<{ version: number; applied_at: string }, []>(
@@ -435,7 +497,13 @@ function schemaKind(
 					row.applied_at.trim(),
 			)
 		)
-			return version === 2 ? "v2" : version === 3 ? "v3" : "current";
+			return version === 2
+				? "v2"
+				: version === 3
+					? "v3"
+					: version === 4
+						? "v4"
+						: "current";
 	}
 	throw new Error("Unsupported Loom schema; database left unchanged");
 }
@@ -480,16 +548,21 @@ export function initSchema(db: Database): void {
 			db.exec(`INSERT INTO schema_migrations (version, applied_at)
         VALUES (2, strftime('%Y-%m-%dT%H:%M:%fZ','now'));`);
 		}
-		if (kind !== "v3") {
+		if (kind !== "v3" && kind !== "v4") {
 			db.exec(outboxSql);
 			db.exec(`INSERT INTO schema_migrations (version, applied_at)
         VALUES (3, strftime('%Y-%m-%dT%H:%M:%fZ','now'));`);
 		}
-		db.exec(killSql);
+		if (kind !== "v4") {
+			db.exec(killSql);
+			db.exec(`INSERT INTO schema_migrations (version, applied_at)
+        VALUES (4, strftime('%Y-%m-%dT%H:%M:%fZ','now'));`);
+		}
+		db.exec(runsSql);
 		db.exec(`
       INSERT INTO schema_migrations (version, applied_at)
-      VALUES (4, strftime('%Y-%m-%dT%H:%M:%fZ','now'));
-      PRAGMA user_version = 4;
+      VALUES (5, strftime('%Y-%m-%dT%H:%M:%fZ','now'));
+      PRAGMA user_version = 5;
     `);
 	}).immediate();
 }
@@ -2615,6 +2688,16 @@ function buildKillResetPlan(db: Database, scope: string): KillResetPlan {
 				transitions,
 				events,
 				cursors,
+				runs: db
+					.query<Record<string, unknown>, [string | null, string | null]>(
+						"SELECT * FROM runs WHERE ? IS NULL OR run_id=? ORDER BY run_id",
+					)
+					.all(runId, runId),
+				evidence: db
+					.query<Record<string, unknown>, [string | null, string | null]>(
+						"SELECT e.* FROM transition_evidence e JOIN transitions t ON t.id=e.transition_id WHERE ? IS NULL OR t.run_id=? ORDER BY e.transition_id,e.position",
+					)
+					.all(runId, runId),
 			}),
 		)
 		.digest("hex");

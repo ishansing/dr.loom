@@ -275,6 +275,243 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
 
 ## Active phase specification
 
+- **Work package:** P1 / T-07 CLI v1 and offline conformance, started 2026-10-24.
+- **Authority:** owner requested “push and continue” after approved T-06 commit
+  `9f3241a`; confirmed additive v5 run/evidence storage, lease-gated init/record,
+  human default/explicit JSON, synthetic kill controls and pinned offline scope.
+- **Baseline/branch:** clean `9f3241a`, `feat/p1-cli-conformance`.
+- **Status:** implementation, ordered offline gates and fixed-artifact advisory
+  verified with no confirmed findings; owner authorized T-07 commit, human
+  disposition pending. T-06 push is owner-reported; agent SSH verification and
+  actual framework/remote CI/human drill qualification remain unresolved. G1 open.
+
+### 1. Phase Objective & Scope
+
+Make CLI orientation and recording complete without becoming a runbook executor.
+Persist runbook/goal/scale/framework proof, reject re-init and concurrent open
+phases, preserve repeatable evidence and expose a read-only resume bundle.
+Require existing host-prepared DB/live lease for init/record; no automatic lease
+acquisition or successful-task-completion inference from a committed phase.
+Add synthetic kill status/engage/plan-reset/reset through approved controls;
+fresh reset snapshot, human attribution and evidence remain mandatory. Verify
+actual installed framework revision/content and explicit installed skill roots,
+not default/supplied revision claims. Assemble deterministic CLI/process/drill
+fixtures and pin CI to qualified Bun1.4.4 with ordered gates. No providers,
+network model calls, real adapters/effects, credential inspection, framework
+installation/re-pin, sibling edits, production containment or automatic G1 closure.
+
+### 2. Environment & Upstream State
+
+Fresh baseline: lint20 files, strict check,112 tests/1935 assertions,100%
+functions/97.04% lines (store99.68%, policy98.00%), dependency audit14 packages/
+no advisories. Bun1.4.4/SQLite3.53.4 and existing locks remain unchanged.
+Configured `I2P_PATH=../I2P` has HEAD `bd0cacc5a0a81d41311782d2b20f778ee7b40392`
+(4.0.0), not selected `4fe0869ae41b0d81cbe3c6bc643f10ff2049ceed` (2.1.0).
+Read selected revision's lock/hash script through Git objects; do not adopt the
+sibling's current26-entry lock in place of pinned23 entries. Official pinned
+hash method sorts relative paths with `localeCompare`, hashes each path+NUL+
+bytes+NUL; use Bun/stdlib, no upstream installer or network version checker.
+Synthetic fixtures may supply their own explicit framework ref in isolated cwd;
+Loom's committed FRAMEWORK_REF must remain unchanged. Real configured checkout
+must fail until the owner supplies a matching installation.
+
+### 3. Architecture & File Manifest
+
+| File | Responsibility |
+| --- | --- |
+| `src/store.ts` | Additive exact-signature v5 migration, immutable run/evidence tables, existing-store opening without creation, preserve gates/control invariants |
+| `src/runs.ts` | Atomic run registration/phase lifecycle, multiple evidence links and coherent read-only resume bundle |
+| `src/framework.ts` | Actual Git revision/version/clean-tree/lock validation and installed skill-directory hashing, fail closed without execution/network |
+| `src/cli.ts`, `src/index.ts` | Strict flags/required inputs, safe errors, human/JSON output, explicit synthetic controls and public exports |
+| `tests/cli.test.ts`, `tests/framework.test.ts`, `tests/runs.test.ts` | CLI subprocess contracts, framework drift and run/evidence/lifecycle regressions |
+| `tests/fixtures/framework.ts`, `tests/fixtures/schema-v4.sql` | Synthetic local Git/skill fixture and fixed independent historical v4 migration input |
+| `tests/evals/human-flow.ts`, `docs/cli.md` | Throwaway synthetic operator drill and public command/limitation documentation |
+| Existing schema/gate/kill/outbox tests | Advance current schema assertions; adapt changed CLI JSON flags without deleting safety checks |
+| `.github/workflows/ci.yml`, `package.json` | Ordered pinned offline checks and drill command; no dependency changes |
+| `SPEC.md`, `ROADMAP.md`, `decisions.md`, review report | Contract, evidence, decisions and separate human disposition |
+
+V5 adds immutable `runs` metadata and ordered `transition_evidence` references;
+no invented metadata or evidence links for historical rows. Init inserts metadata
+and opening transition atomically under the live bookkeeping gate; existing run
+or historical run identity cannot be adopted by re-init. New run APIs enforce
+one running phase per run/thread and terminal closure of the matching phase.
+Existing low-level ledger APIs remain trusted bookkeeping, not task completion.
+Status reports the most recent committed row, running phases, open/interrupted
+actions, unresolved outbox, leases, kills and explicit budget modes in one read
+snapshot. Missing DB returns an empty bundle without creating/migrating it;
+unknown run in an existing store fails actionably. CLI operations require current
+schema; host explicitly prepares/migrates with public store APIs.
+
+Framework check uses cwd FRAMEWORK_REF as trusted expected config, checks actual
+Git HEAD/VERSION and dirty-tree state, validates the selected lock, then hashes
+every lock entry from an explicit `<skills-root>/<id>` directory. Missing content,
+malformed locks and symlinked skill entries fail closed. No ambient global lookup
+or fetching/installing to make checks pass. Init stores the resulting revision/
+lock digest; it never accepts a caller's self-asserted `--commit` as proof.
+
+### 4. Test Plan & Coverage Matrix
+
+- Migration: exact v4→v5 and prior versions, data/guards retained, no synthesized
+  run identity/evidence, rollback on fault, unknown/tampered schema rejected.
+- Runs: atomic init and evidence rollback, existing/historical identity reject,
+  one open phase per run/thread, matching terminal close, repeat evidence/file
+  hash syntax, unknown run, live kill/owner/epoch/expiry gates, snapshot status.
+- Framework: synthetic local Git expected ref; correct hash, one-byte drift,
+  missing files/lock, duplicate/traversing IDs, symlink entries, changed tracked
+  files, revision/version mismatch and no automatic installation. Near-miss
+  results must be machine-readable without raw source/error leakage.
+- CLI: strict options/duplicate/missing values, status default human/--json,
+  init→running→committed→status, repeat evidence, re-init/double-open/unknown-run
+  failures, stderr/nonzero and no stacks; absent status does not create DB.
+- Critical CLI: explicit synthetic flag/human actor/evidence, scoped/global
+  kill status, no post-kill write, stale/blocked reset reject, no lease revival.
+- Process/regression: real CLI subprocesses and conflicting phase writers;
+  all approved T-01–T-06 contention/recovery/policy/outbox/control tests retained.
+- Drill: automated throwaway fixture traces init/record/status/approval pause/
+  interruption/kill/reset; no live provider or production target. Agent execution
+  is not a human-run attestation; human execution remains an explicit handoff.
+
+SQL only builds fixtures/asserts history; behavior uses public APIs/real processes.
+Record aggregate and per-module coverage versus baseline, never skip tests or
+exclude guards to manufacture non-regression.
+
+### 5. Security, Observability & Edge Cases
+
+Trusted host identity/context/clock/SQL remains a boundary, not authentication.
+CLI is not an untrusted-agent IPC endpoint; `human:` syntax proves no identity.
+Require explicit `--synthetic` for critical changes, no automated kill/reset,
+and reuse current state-bound reset rather than inventing upload/approval tokens.
+Do not await under DB writer locks. Read-only commands never create/migrate
+stores. Validate final flags, kinds, integer epochs, bounded text and evidence;
+file evidence requires a SHA256 locator, not raw file contents. Safe actionable
+errors exclude stack traces, source bytes and credentials. Missing/changed
+framework input is a failure, never fallback to installed latest or pin claims.
+No process/provider/conformance result implies verified task completion.
+
+### 6. Blast Radius & Rollback Plan
+
+CLI JSON default changes only with approved explicit `--json` migration in
+callers/tests. Public run APIs are additive; existing ledger/audit/kill APIs and
+history remain compatible at v5. Old binaries reject v5 rather than downgrading.
+Rollback uses a pre-upgrade copy/restore with reconciliation; never destructive
+down-migration of new run/evidence history. Tests use temporary files under
+`/tmp/opencode` and synthetic Git config, never actual sibling/credentials.
+Push remains blocked; no remote publication or CI execution is claimed.
+Actual framework installation is mismatched/unqualified; fixture conformance is
+not real runtime qualification. Human drill/review and broader G1 obligations
+remain separate; do not advance phase automatically.
+
+### 7. Definition of Done (DoD)
+
+Run and record exact scope/results in order:
+
+```bash
+bun run lint
+bun run check
+bun test --coverage
+bun test tests/cli.test.ts tests/framework.test.ts tests/runs.test.ts
+bun run drill
+bun audit
+```
+
+Then trusted task-file secret scans, document/whitespace/protected-pin checks,
+fixed-artifact `ishan-reviewer` advisory and persisted report. Restart affected
+gates after corrections; maintain baseline100% functions/97.04% aggregate lines
+or resolve a documented coverage gap before closure. Required missing checks
+block affected completion. Record the actual framework mismatch, SSH push
+blocker, unrun remote CI/human drill and next owner honestly. No commit/push or
+G1 closure is inferred from this work package; retain explicit owner boundaries.
+
+Execution evidence (2026-10-24–25):
+
+- Acceptance reds reproduced the installed-revision/default-claim mismatch,
+  one-byte skill drift, changed lock, duplicate ref keys, missing-status DB
+  creation, absent run APIs/v5 schema, absent synthetic kill CLI and missing
+  public drill command. Gates were built through the confirmed CLI/public API
+  seams after those failures, not by executing framework runbooks.
+- Additional native regressions reproduced stale reset planning after v5
+  evidence append, inconsistent prior phase history being followed by a write,
+  raw malformed VERSION content in failure diagnostics, local Git replacement
+  refs substituting another tree under the selected commit, and an empty file
+  evidence locator being accepted. These now reject at their shared owner.
+- Fresh ordered gates (2026-10-25): `bun run lint` exit0 (26 files),
+  `bun run check` exit0, `bun test --coverage` exit0 (142 tests/2079 assertions;
+  functions100%, lines98.11%; framework92.78%, runs96.27%, store99.68%,
+  policy98.00%, index100%). Baseline100% functions/97.04% aggregate lines is
+  exceeded; store coverage remains99.68%. Fixture coverage is included in Bun's
+  aggregate. CLI subprocess execution is not instrumented in that parent-library
+  coverage summary; CLI behavior has direct real-process assertions.
+- Declared focused command passes three consecutive runs:30 tests/141
+  assertions each. Real competing phase writers produce exactly one open phase;
+  existing contention/recovery/control/policy corpus remains in the full suite.
+- `bun run drill` exit0: real subprocess trajectory covers framework→init→phase
+  commit→awaiting-human→interruption→kill→denied write→plan/reset→stale-lease
+  rejection. Output explicitly says `automated-fixture-only` and
+  `verifiedTaskCompletion:false`, not human acceptance or task verification.
+- `bun audit` exit0:14 packages/no advisories, no auto-fix. Runtime probes:
+  Bun1.4.4, SQLite3.53.4, Git2.56.0. CI is configured for the same Bun and ordered
+  offline checks; remote execution has not occurred because push is blocked.
+- Subsequent legacy-output regression found a forged kill-status line embedded
+  in a historical phase name. Human labels now neutralize controls before line
+  assembly; JSON preserves escaped historical facts. Restarted ordered gates
+  exit0:143 tests/2082 assertions,100% functions/98.11% lines; focused31 tests/
+  144 assertions pass three runs; drill and audit pass. Source/test code is the
+  fixed candidate for review; no unsafe output or history rewriting waived.
+- Human execution/review of the drill, actual selected framework installation,
+  SSH publication/remote CI, independent human review and G1 disposition remain
+  explicit handoffs. No installation/re-pin, credentials, provider calls or real
+  effects were used to manufacture qualification. Secret/document/protected-pin
+  checks and fixed-artifact advisory are the remaining local closeout checks.
+- Pre-review security/document checks (2026-10-25):21 scoped task files pass
+  verified Gitleaks8.30.1 scans; archive digest/executable match the approved
+  pin. Temporary scanner storage had expired and was recovered at that same
+  digest, not upgraded. Document validator passes279 links/seven active sections/
+  unique ADRs/casing/whitespace; CLI guide whitespace and protected-pin checks
+  pass. Existing v1–v4 DDL and dependency versions remain byte/value-identical;
+  prior review reports and sibling worktree remain unchanged. Explicit actual
+  `check-framework` probe exits1 with selected-vs-installed commit mismatch,
+  empty stdout and safe JSON reason; no installed skills/provider access is
+  attempted after that mismatch. Advisory and final report scanning remain.
+- [T-07 advisory](research/reviews/2026-10-25-p1-t07.md), review
+  `T07-20261025-01-AI-01`, recommends READY FOR HUMAN REVIEW with no confirmed
+  current-scope findings. Reviewed base `9f3241aa2186b1ac975f60eb09f7b367cee1fc68`
+  plus immutable overlay `T07-20261025-01`, manifest SHA256
+  `f27b710ed73deef65c2d3263f72adbccd9c3873774f8b0f27c76364c153e5c8c`.
+  Pre-commit-authorization report (including parent custody/manifest)
+  SHA256 `22e412a2336213b5208c66737c42d0b445774fe14d837512e9b8ce9eef4804f7`.
+  Original advisory bytes are unchanged; durable embedded manifest matches the
+  frozen payload and current source/test/fixture/CI/guide hashes. Workspace
+  review copy removed after archive byte-match; no snapshot copies belong in
+  the task diff. Human disposition, commit, T-08/G1 and actual qualification
+  remain pending; neither T-06 approval nor AI advice transfers authority.
+- Authorized T-06 push was retried on2026-10-25 and again failed exit128 with
+  SSH public-key authentication denial. No successful publication, remote CI,
+  changed remote or credential inspection claimed. Owner still owns access
+  restoration, matching installed framework and attributable human drill.
+- Final local closeout (2026-10-25): post-review lint/strict check,143-test
+  coverage (2082 assertions;100% functions/98.11% lines), focused31/144,
+  automated drill and dependency audit pass again. All22 task files, including
+  the persisted advisory/custody manifest, pass verified Gitleaks scans; document
+  validator passes281 links/seven active sections/unique ADRs/casing/whitespace.
+  Report and embedded manifest hashes match; all reviewed non-governance files
+  remain byte-identical. Protected pin/dependency/prior-review checks and
+  `git diff --check` pass; no workspace review copies remain. This completes
+  local implementation evidence only: uncommitted, human disposition and
+  qualification handoffs pending, no T-08/G1/production advancement.
+- **Commit/continuation authority (2026-10-25):** owner stated “pushed, commit
+  T-07 and continue”. T-06 publication is owner-reported, not independently
+  verified: `git ls-remote origin refs/heads/feat/p1-policy` still fails SSH
+  authentication for this agent. No remote CI result is inferred. Owner
+  explicitly authorizes T-07 commit; this does not supply Ishan disposition,
+  human drill evidence or T-07 push authority. Fresh declared ordered gates pass
+  with143 tests/2082 assertions, focused31/144, automated drill and clean audit;
+  reviewed code/test/CI hashes remain unchanged. Continue G1 closeout evidence
+  and discovery, not automatically into T-08/P2 implementation or live effects.
+  Authorization-appended report SHA256:
+  `3a87e11556e47c4c818ba9eaa45c58a7dd2c0a29d7c9c8b27112481bfcb850f0`.
+
+## T-06 completed execution record (historical)
+
 - **Work package:** P1 / T-06 policy, grants and budgets, started 2026-10-24.
 - **Authority:** owner requested “commit and continue” after T-05 approval and
   confirmed the additive effect gate, root/grant boundary, deny/ask budget
@@ -531,6 +768,22 @@ Execution evidence (2026-10-24):
   appended approval records;279-link document/structure validator and protected
   files/whitespace checks pass. Pre-approval advisory bytes are unchanged;
   only the attributed approval appendix was added to the final report.
+- **Owner continuation (2026-10-24):** T-06 committed as `9f3241a`; owner
+  subsequently requested “push and continue”. Push of `feat/p1-policy` to
+  configured `origin` failed (exit128): `Permission denied (publickey)`;
+  the SSH askpass executable was also unavailable. No successful publication
+  is claimed. Remote/credentials were not changed or inspected. Next owner:
+  repository owner restores authorized SSH access before a push retry.
+  Local T-07 discovery began on clean `feat/p1-cli-conformance` from `9f3241a`;
+  public/security seams require confirmation before its active contract and
+  application/test changes. No provider/real effect or G1 closure authorized.
+- T-07 discovery: current init/re-init both exit0, missing-DB status creates
+  a database, and check-framework exits0 despite the configured framework
+  sibling being at4.0.0 rather than pinned2.1.0. All reproduction state was
+  throwaway. Pinned Git-object sources, not sibling working files, define the
+  expected skill-lock/hash contract; no sibling edits, install or re-pin.
+  Fresh baseline lint/strict check/112-test coverage and dependency audit pass
+  (1935 assertions;100% functions/97.04% lines;14 packages/no advisories).
 
 ## T-05 completed execution record (historical)
 

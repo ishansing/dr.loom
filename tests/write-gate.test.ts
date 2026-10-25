@@ -299,6 +299,25 @@ test("CLI record refuses missing context and accepts only an explicitly held mat
 				owner: "worker",
 				ttlMs: 60_000,
 			});
+			store.initRun(
+				db,
+				{
+					runId: "r1",
+					runbook: "fixture",
+					goal: "Synthetic gate fixture",
+					scale: "small",
+					frameworkCommit: "1".repeat(40),
+					frameworkVersion: "2.1.0",
+					frameworkLockSha256: "2".repeat(64),
+				},
+				{
+					runId: "r1",
+					threadId: "main",
+					workspace: "ws",
+					owner: "worker",
+					epoch: 1,
+				},
+			);
 		} finally {
 			db.close();
 		}
@@ -306,6 +325,9 @@ test("CLI record refuses missing context and accepts only an explicitly held mat
 			process.execPath,
 			"src/cli.ts",
 			"record",
+			"--json",
+			"--status",
+			"running",
 			"--db",
 			path,
 			"--run",
@@ -331,7 +353,15 @@ test("CLI record refuses missing context and accepts only an explicitly held mat
 			"--epoch",
 			"1",
 		];
-		const valid = Bun.spawnSync([...base, ...flags], {
+		const opened = Bun.spawnSync([...base, ...flags], {
+			env: {},
+			stdout: "pipe",
+			stderr: "pipe",
+		});
+		expect(opened.exitCode).toBe(0);
+		const closing = [...base];
+		closing[closing.indexOf("--status") + 1] = "committed";
+		const valid = Bun.spawnSync([...closing, ...flags], {
 			env: {},
 			stdout: "pipe",
 			stderr: "pipe",
@@ -350,7 +380,7 @@ test("CLI record refuses missing context and accepts only an explicitly held mat
 		const db2 = store.openDb(path);
 		try {
 			expect(db2.query("SELECT count(*) AS n FROM transitions").get()).toEqual({
-				n: 1,
+				n: 3,
 			});
 		} finally {
 			db2.close();

@@ -17,6 +17,7 @@ import {
 	releaseWorkspaceLease,
 } from "../src/index.ts";
 import { recordTransitionForMigration } from "../src/store.ts";
+import { fixtureEnv, frameworkFixture } from "./fixtures/framework.ts";
 
 // Independent snapshot of the merged scaffold's on-disk schema, not production DDL.
 const legacySql = `
@@ -58,7 +59,7 @@ function withStoreFile(run: (path: string) => void): void {
 	}
 }
 
-test("fresh initialization records schema v2, v3 and v4 exactly once", () => {
+test("fresh initialization records schema v2 through v5 exactly once", () => {
 	const db = openDb();
 	try {
 		initSchema(db);
@@ -69,12 +70,13 @@ test("fresh initialization records schema v2, v3 and v4 exactly once", () => {
 				)
 				.get(),
 		).toEqual({ name: "schema_migrations" });
-		expect(db.query("PRAGMA user_version").get()).toEqual({ user_version: 4 });
+		expect(db.query("PRAGMA user_version").get()).toEqual({ user_version: 5 });
 		initSchema(db);
 		expect(db.query("SELECT version FROM schema_migrations").all()).toEqual([
 			{ version: 2 },
 			{ version: 3 },
 			{ version: 4 },
+			{ version: 5 },
 		]);
 	} finally {
 		db.close();
@@ -132,7 +134,7 @@ test("legacy migration preserves claims and leaves identities and authority unkn
 		initSchema(db);
 		expect(
 			db.query("SELECT count(*) AS n FROM schema_migrations").get(),
-		).toEqual({ n: 3 });
+		).toEqual({ n: 4 });
 	} finally {
 		db.close();
 	}
@@ -561,31 +563,23 @@ test("legacy migration helper retains shapes and lease callers use explicit run 
 
 test("CLI init, gated record and status refuse an unknown schema", () => {
 	withStoreFile((path) => {
-		const fixture = openDb(path);
+		const framework = frameworkFixture();
 		try {
-			initSchema(fixture);
-			acquireWorkspaceLease(fixture, {
-				runId: "r",
-				workspace: "ws",
-				owner: "a",
-				ttlMs: 60_000,
-			});
-		} finally {
-			fixture.close();
-		}
-		for (const command of ["init", "record", "status"]) {
-			const result = Bun.spawnSync([
-				process.execPath,
-				"src/cli.ts",
-				command,
-				"--db",
-				path,
+			const fixture = openDb(path);
+			try {
+				initSchema(fixture);
+				acquireWorkspaceLease(fixture, {
+					runId: "r",
+					workspace: "ws",
+					owner: "a",
+					ttlMs: 60_000,
+				});
+			} finally {
+				fixture.close();
+			}
+			const context = [
 				"--run",
 				"r",
-				"--phase",
-				"slice",
-				"--resume",
-				"next",
 				"--thread",
 				"main",
 				"--workspace",
@@ -594,36 +588,99 @@ test("CLI init, gated record and status refuse an unknown schema", () => {
 				"a",
 				"--epoch",
 				"1",
-			]);
-			expect(result.exitCode).toBe(0);
-			const output: unknown = JSON.parse(result.stdout.toString());
-			expect(output).toEqual(
-				command === "init"
-					? { ok: true, db: path }
-					: expect.objectContaining({
+			];
+			const commands = [
+				[
+					"init",
+					...context,
+					"--runbook",
+					"fixture",
+					"--goal",
+					"Synthetic schema fixture",
+					"--skills-root",
+					framework.skillsRoot,
+				],
+				[
+					"record",
+					...context,
+					"--phase",
+					"slice",
+					"--resume",
+					"next",
+					"--status",
+					"running",
+				],
+				[
+					"record",
+					...context,
+					"--phase",
+					"slice",
+					"--resume",
+					"next",
+					"--status",
+					"committed",
+				],
+				["status", "--run", "r"],
+			];
+			function invoke(args: string[]) {
+				return Bun.spawnSync(
+					[
+						process.execPath,
+						import.meta.dir + "/../src/cli.ts",
+						...args,
+						"--db",
+						path,
+						"--json",
+					],
+					{
+						cwd: framework.dir,
+						env: fixtureEnv,
+						stdout: "pipe",
+						stderr: "pipe",
+					},
+				);
+			}
+			for (const args of commands) {
+				const result = invoke(args);
+				expect(result.exitCode).toBe(0);
+				const output = JSON.parse(result.stdout.toString());
+				if (args[0] === "status")
+					expect(output.threads[0].lastCommitted).toEqual(
+						expect.objectContaining({
 							runId: "r",
 							phase: "slice",
 							status: "committed",
 							resumePoint: "next",
 						}),
-			);
+					);
+				else if (args[0] === "record")
+					expect(output).toEqual(
+						expect.objectContaining({
+							runId: "r",
+							phase: "slice",
+							status: args.includes("running") ? "running" : "committed",
+							resumePoint: "next",
+						}),
+					);
+				else
+					expect(output).toEqual(
+						expect.objectContaining({ runId: "r", runbook: "fixture" }),
+					);
+			}
+			const db = openDb(path);
+			db.exec("PRAGMA user_version = 99");
+			db.close();
+			const before = readFileSync(path);
+			for (const args of [commands[0], commands[2], commands[3]]) {
+				if (!args) throw new Error("Missing schema fixture command");
+				const result = invoke(args);
+				expect(result.exitCode).not.toBe(0);
+				expect(result.stderr.toString()).toContain("Unsupported Loom schema");
+			}
+			expect(readFileSync(path)).toEqual(before);
+		} finally {
+			framework.close();
 		}
-		const db = openDb(path);
-		db.exec("PRAGMA user_version = 99");
-		db.close();
-		const before = readFileSync(path);
-		for (const command of ["init", "record", "status"]) {
-			const result = Bun.spawnSync([
-				process.execPath,
-				"src/cli.ts",
-				command,
-				"--db",
-				path,
-			]);
-			expect(result.exitCode).not.toBe(0);
-			expect(result.stderr.toString()).toContain("Unsupported Loom schema");
-		}
-		expect(readFileSync(path)).toEqual(before);
 	});
 });
 
@@ -649,7 +706,7 @@ test("a competing writer prevents migration without leaving partial schema chang
 			owner.exec("ROLLBACK");
 			initSchema(contender);
 			expect(contender.query("PRAGMA user_version").get()).toEqual({
-				user_version: 4,
+				user_version: 5,
 			});
 		} finally {
 			if (owner.inTransaction) owner.exec("ROLLBACK");

@@ -828,3 +828,44 @@ for corrected overlay T06-20261024-02. All three findings remain resolved;
 reviewed source/test/fixture hashes and fresh ordered gates pass. Approval is
 recorded through the owner, not an independent signature. T-06 commit explicitly
 authorized; G1 remains open. No T-07 continuation, push, providers or real effects.
+
+**T-07 discovery (2026-10-24):** owner subsequently requested “push and
+continue” after approved T-06 commit `9f3241a`. Push of `feat/p1-policy` failed
+with SSH public-key authentication denial; repository owner must restore access.
+Local `feat/p1-cli-conformance` starts from that clean commit. Baseline112-test
+gates pass; init metadata/re-init, read-only resume status and actual pin/skill
+hash verification gaps reproduced. Public/security scope confirmation is next;
+no source/test changes, framework re-pin, provider use, real effect or G1 closure.
+
+**T-07 scope confirmed (2026-10-24):** owner approved v5 run/evidence storage,
+lease-gated init/record and explicit JSON, synthetic-only critical CLI controls,
+and selected-pin/offline integrity with explicit skill roots. Implementation is
+in progress on `feat/p1-cli-conformance`; current framework mismatch and SSH
+publication blocker remain visible. Human drill/remote CI/G1 are not complete.
+
+**T-07 local candidate (2026-10-25):** v5 run/evidence migration, strict
+lease-gated recording, read-only human/JSON orientation, installed-content
+verification, synthetic kill/reset CLI and offline operator drill implemented.
+Ordered checks pass142 tests/2079 assertions,100% functions/98.11% lines;
+focused30-test corpus passes three times and automated drill/audit pass. Pinned
+CI configuration is prepared, not remotely executed. Fixed-artifact review is
+next; actual framework/human drill/SSH publication/G1 remain separate handoffs.
+
+Human-orientation framing regression subsequently reproduced a legacy newline
+spoofing kill status. Corrected candidate passes143 tests/2082 assertions,
+100% functions/98.11% lines; focused31-test corpus three times, drill and audit.
+No human approval, remote CI or actual framework qualification inferred.
+
+**T-07 advisory (2026-10-25):** fixed overlay T07-20261025-01 receives READY
+FOR HUMAN REVIEW with no confirmed current-scope findings. Implementation is
+uncommitted; Ishan disposition pending. T-06 push retry still fails SSH public-key
+authentication. Owner handoffs: SSH access/remote CI, selected framework/skill
+installation and personally executed/reviewed drill. G1 remains open; T-08 is
+not authorized. No provider, real effect or production qualification.
+
+**Owner commit/continuation instruction (2026-10-25):** owner reports T-06
+pushed and requests “commit T-07 and continue”. Publication is owner-attested;
+agent SSH remote verification still fails, CI unverified. T-07 commit authorized
+after fresh143-test gates, not Ishan approval or human drill attestation.
+Continue G1 evidence/closeout discovery before any T-08/P2 implementation;
+G1 remains open and no T-07 publication/provider/real effect is inferred.

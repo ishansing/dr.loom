@@ -1,10 +1,19 @@
-export type { FrameworkRevision } from "./framework.ts";
+export type { FrameworkInstallation, FrameworkRevision } from "./framework.ts";
 export {
 	checkFramework,
+	checkFrameworkInstallation,
 	EXPECTED_FRAMEWORK,
 	parseFrameworkRef,
 } from "./framework.ts";
 export * from "./policy.ts";
+export type {
+	RunInput,
+	RunRecord,
+	RunTransition,
+	RunTransitionInput,
+	ThreadResume,
+} from "./runs.ts";
+export { getRun, getRunStatus, initRun, recordRunTransition } from "./runs.ts";
 export type {
 	ActionAuditEntry,
 	ActionKey,
@@ -54,6 +63,7 @@ export {
 	listUnresolvedOutbox,
 	openAction,
 	openDb,
+	openExistingDb,
 	prepareKillReset,
 	reconcileOutbox,
 	recordFinish,

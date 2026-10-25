@@ -9,8 +9,10 @@ jobs:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: 1.4.4
       - run: bun install --frozen-lockfile
-      - run: bun test
-      - run: bunx tsc --noEmit
-      - run: bunx biome check .
+      - run: bun run lint
+      - run: bun run check
+      - run: bun test --coverage
+      - run: bun run drill
+      - run: bun audit

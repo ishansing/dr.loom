@@ -909,3 +909,96 @@ real effects.
 
 Approval-appended T-06 report SHA256:
 `5bdc73fa0da1dba40c2e5e77a9800b8f43f16d4de52daff31637a06612ff7e71`.
+
+**Continuation / publication blocker — 2026-10-24:** after approved T-06 commit
+`9f3241a`, owner requested “push and continue”. `git push --set-upstream origin
+feat/p1-policy` failed exit128 with SSH public-key authentication denial; missing
+askpass was also observed. No remote/credential change, credential inspection
+or successful publication claimed. Repository owner owns restoration of SSH
+access. Continue local T-07 discovery on `feat/p1-cli-conformance`; confirm run
+metadata/lifecycle, critical CLI control and framework integrity seams before
+implementation. Keep pinned2.1.0 despite sibling4.0.0; research is read-only,
+not authority to re-pin, install providers or close G1.
+
+## [ADR-019] - 2026-10-24 (T-07 run CLI and offline integrity)
+
+**Status:** Owner-confirmed scope; implementation and ordered offline gates
+and fixed-artifact advisory verified with no confirmed findings. Human
+disposition and qualification handoffs remain pending.
+
+**Context:** Approved T-06 is committed `9f3241a`. Owner requested push and
+continuation; push is blocked by SSH authentication. Existing CLI has no run
+metadata/lifecycle, re-init succeeds, missing status creates a DB and framework
+check can succeed without inspecting the actual mismatched installation.
+
+**Decision:** Owner approved additive schema v5 for immutable run metadata and
+transition evidence, atomic lease-gated init/record, phase open/close checks,
+human-readable default/explicit JSON and no automatic lease acquisition.
+Keep committed phases distinct from independent successful-task verification.
+Expose synthetic-only kill engage/status/plan-reset/reset through existing
+human-attributed audited controls and fresh snapshot reset, resolving the older
+four-command R-14 limit in favor of the explicitly confirmed operator drill.
+Inspect actual selected Git revision/version/lock and explicit installed skill
+roots with pinned hash semantics; no global lookup, installation, fetch, sibling
+edit or automatic re-pin to make readiness pass. CI uses qualified Bun1.4.4 and
+ordered offline gates. Old history receives no fabricated metadata/evidence.
+
+**Consequences:** Init/record require a host-prepared current DB and live lease;
+status is read-only and missing DB is informational. Existing CLI callers/tests
+must opt into JSON and registered-run lifecycle. Actual configured4.0.0 sibling
+must fail against selected2.1.0; synthetic fixture success is not actual runtime
+qualification. Critical CLI attribution is trusted-host syntax, not authenticated
+human identity. Remote CI/push, human-run drill, real effects/providers and G1
+closure remain separately blocked/unqualified. Rollback is copy/restore and
+reconciliation, never destructive removal of v5 run/evidence history.
+
+**Implementation investigation — 2026-10-24:** new v5 evidence could change
+without invalidating an existing reset plan; a failing public reset regression
+now binds run metadata and evidence into the snapshot hash. Registered phase
+writers validate prior history rather than trusting only the last row. Actual
+framework integrity uses Git object hashes without repository filters/scripts;
+a native Git replacement-ref fixture showed a different tree accepted beneath
+the expected commit, so read-only Git probes explicitly disable replacement
+objects. Malformed VERSION contents must not enter errors; reject their format
+before constructing mismatch diagnostics. All experiments are synthetic, not
+proof of authenticated identity, actual framework qualification or containment.
+
+**Offline gate evidence — 2026-10-25:**142 tests/2079 assertions pass with
+100% functions/98.11% aggregate lines versus100%/97.04% baseline; scoped store
+coverage99.68% retained. Focused30 tests/141 assertions pass three runs. Offline
+operator drill and14-package dependency audit pass; no provider calls or actual
+framework installation used. Native Git probes bind the tree to the captured
+commit ID and ignore replacement objects. Remote CI, human drill execution,
+actual selected installation and G1 remain unqualified; no human sign-off
+inferred from automated checks. Reviewed artifact preparation is next.
+
+**Orientation hardening — 2026-10-25:** a legacy phase containing a newline
+injected a forged `Kill: clear` line beneath an actual blocked header. Public
+CLI regression reproduced it; human status labels now neutralize control
+characters before line assembly. Structured JSON keeps escaped historical facts
+unchanged. This is output framing, not rewriting legacy evidence or allowing
+status text to grant authority.
+
+**Fixed-artifact advisory — 2026-10-25:** review T07-20261025-01-AI-01
+recommends READY FOR HUMAN REVIEW, no confirmed current-scope findings, against
+base `9f3241aa2186b1ac975f60eb09f7b367cee1fc68` plus T07-20261025-01 manifest
+`f27b710ed73deef65c2d3263f72adbccd9c3873774f8b0f27c76364c153e5c8c`.
+Report `research/reviews/2026-10-25-p1-t07.md` SHA256
+`22e412a2336213b5208c66737c42d0b445774fe14d837512e9b8ce9eef4804f7` preserves
+the unchanged advisory plus parent-attributed durable manifest. Code/test/CI
+hashes match reviewed files; workspace copy removed after archive byte-match.
+No human disposition or phase approval inferred. Authorized T-06 push retry
+still fails SSH authentication; owner restores access. Matching actual
+framework, remote CI, human drill and G1 remain unqualified, not waived.
+
+**Commit authority / continuation — 2026-10-25:** owner stated “pushed, commit
+T-07 and continue”. T-06 branch publication is owner-reported; agent-side
+`git ls-remote` still fails SSH authentication, so remote state/CI are not
+independently verified. T-07 commit explicitly authorized after fresh ordered
+gates and durable-manifest checks; no implementation change. Ishan's T-07
+disposition and human drill evidence remain pending, not inferred from commit
+authority. Continue with G1 closeout evidence/discovery; no automatic phase
+closure, T-08/P2 implementation, T-07 push, framework re-pin/provider/real effect.
+
+Authorization-appended T-07 report SHA256:
+`3a87e11556e47c4c818ba9eaa45c58a7dd2c0a29d7c9c8b27112481bfcb850f0`.

@@ -275,6 +275,165 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
 
 ## Active phase specification
 
+### 1. Phase Objective & Scope
+
+Owner requested “commit and continue”; verified inventory is committed as
+`264c0b2` on `feat/p2-isolated-runner`. Continue ADR-022's approved offline scope
+with the physical preflight cut before Docker launch. Implement read-only engine,
+image, input and capped-workspace checks; restore the existing approved mount
+where noninteractive operator permissions permit. No launcher/create/start,
+SDK/provider activity, dependency change, push or G2 closure in this cut.
+The previously approved exact-digest image pull may populate the rootless lab
+image store using an empty temporary Docker client config, never account login.
+
+### 2. Environment & Upstream State
+
+Baseline: Bun1.4.4, schema6,166 tests/2,248 assertions,100% functions/98.12%
+lines; store99.74%, runs96.30%. Docker client/server29.9.2/API1.56 at the explicit
+rootless Unix endpoint still reports rootless/seccomp/cgroupns/systemd/cgroup2/
+overlayfs. At discovery the existing operator-owned regular workspace image was
+exactly2 GiB, with no loop binding and expected mount absent. Installed
+util-linux2.42.4/udisksctl are available. Official Engine1.56 API and rootless
+resource-limit docs were rechecked; flags alone do not prove controller enforcement.
+
+### 3. Architecture & File Manifest
+
+`src/runner.ts` owns `preflightDomain` and its input/result types.
+`src/store.ts` shares its existing config/endpoint validators via module-level
+exports (not new package-facade APIs), avoiding divergent metadata checks.
+Use direct native Unix-socket HTTP GETs only, no Docker CLI/config/credential
+loading, ambient endpoint fallback or generic backend interface. Exact API1.56 `/version`, `/info`
+and digest-addressed image inspection are bounded to5 seconds/request and1 MiB
+response. Require selected engine version/Linux/amd64/rootless/seccomp/cgroupns/
+systemd/cgroup2/overlayfs, supported API range, exact image RepoDigest and Linux/
+amd64 platform, no declared image volumes. No pull/build/create/start calls.
+
+Host paths must be absolute canonical nonsymlink paths, with disjoint input and
+writable roots. Input directory contains only `worker.ts`, operator-owned regular
+bounded single-link file, hash matching DomainConfig, not group/world writable.
+Open worker input nonblocking/nofollow and hash at most64 KiB plus one overflow
+byte, rejecting FIFOs/devices without hanging. Snapshot caller metadata before
+asynchronous checks; later mutation cannot change results. Workspace is a dedicated directory strictly under the
+exact approved mount. Read Linux fdinfo's actual `mnt_id`, mountinfo, statfs and
+loop-device sysfs: select the visible mount (not a hidden overmounted record),
+exact ext4 mount root, writable/nosuid/nodev, matching device, exact2 GiB
+operator-owned regular backing image, no loop
+offset/size-limit and filesystem size no greater than that backing image. Reject
+ordinary directories, symlinks, wrong mounts/backing files and unbounded storage.
+Input must live outside the writable filesystem; workspace directory must share
+the exact visible mount ID, rejecting nested bind-mount aliases as well as devices.
+Preflight never creates/provisions/mutates paths and returns no execution permit;
+future launcher must recheck live authority and physical facts at its boundary.
+
+`tests/runner.test.ts` uses real temporary files and a local Unix HTTP fixture for
+negative metadata/transport checks, explicitly not containment proof.
+`tests/evals/runner-preflight.ts` is a separate required native lab corpus using
+explicit operator-supplied endpoint/mount/image paths, never auto-discovered Docker
+credentials. It performs no container operations and retains its small workspace
+evidence. Run it explicitly alongside the complete default corpus for applicable
+phase coverage; unavailable physical lab blocks this phase, not a passing skip.
+No production dependency or store schema change. SPEC/contract/decisions record
+actual lab commands/results. Actual UID mapping, workload access/resource/security enforcement
+and cleanup qualification remain subsequent launch gates; preflight must not claim
+that read-only engine metadata proves them. Preserve historical inventory evidence.
+
+### 4. Test Plan & Coverage Matrix
+
+Acceptance reds precede implementation. Cover missing/rootful/wrong engine,
+missing/wrong image, HTTP failure/malformed/oversized response, absent/wrong mount,
+symlink/noncanonical/overlapping paths, wrong worker hash/permissions/extra input.
+Use native Unix fixtures, not an injectable production transport. Positive
+metadata validation plus physical-mount checks require actual selected lab facts;
+unavailable lab is a recorded blocker, never a silently skipped passing test.
+Keep all166 existing safety tests; require aggregate/per-module non-regression.
+
+### 5. Security, Observability & Edge Cases
+
+Only safe fixed error codes cross the preflight boundary; no raw daemon body,
+path, worker bytes or exception forwarded. Reject excessive bodies before decode;
+use strict UTF-8/JSON decoding. Trusted local endpoint still requires operator
+identity and actual rootless metadata. Mount restoration may use only existing
+image with noninteractive udisks, no formatting/deletion/recursive ownership,
+privileged fallback/daemon change or authentication improvisation. No new run
+directory ownership changes until mapping is established. Point-in-time checks
+are not race-proof filesystem handles or a substitute for launcher revalidation.
+
+### 6. Blast Radius & Rollback Plan
+
+New read-only runner module/tests and phase documentation only; no changes to
+inventory, authority, CLI or dependencies. If mount restoration succeeds, retain
+it and document ownership/identity; no automatic unmount/loop deletion or broad
+cleanup. Preserve existing workspace data. Uncommitted code can be removed by a
+reviewed revert; committed inventory remains intact. External prerequisites block
+affected launcher work without weakening checks.
+
+### 7. Definition of Done (DoD)
+
+Run `bun run lint` → `bun run check` → `bun test --coverage` →
+`bun test --coverage tests ./tests/evals/runner-preflight.ts` with explicit
+`LOOM_LAB_ENDPOINT`, `LOOM_LAB_MOUNT`, `LOOM_LAB_IMAGE` paths →
+`bun test tests/runner.test.ts` three times →
+`bwrap --ro-bind / / --tmpfs /tmp --dev-bind /dev /dev --proc /proc bun test --coverage`
+→ `bun run drill` → `bun audit` → verified scoped Gitleaks/document/protected-file
+checks and `git diff --check`. Record baseline/deltas and all unavailable gates;
+no mocked containment claim. New implementation stays uncommitted unless separately
+authorized. Mount restoration command, if allowed: `udisksctl loop-setup --file
+<existing-approved-image> --no-user-interaction --no-partition-scan`, followed by
+`udisksctl mount --block-device <returned-owned-loop> --no-user-interaction`.
+No credentials, broader storage changes, image execution or qualification inferred.
+
+**Execution evidence — 2026-10-26:** inventory commit `264c0b2` left a clean
+tree before this cut. Initial acceptance red used an explicit not-implemented
+function after resolving the intentionally missing module; it failed on the
+required workspace-check behavior, not fixture/import breakage. Subsequent reds
+reproduced mutable caller metadata, worker hardlinks, hidden/visible overmount
+selection, input bind aliases and FIFO-open blocking before their fixes.
+
+- Approved `udisksctl loop-setup` succeeded. The expected ext4 filesystem was
+  already mounted when `udisksctl mount` ran; that command exited1/AlreadyMounted.
+  Exact mount/device/backing metadata then verified rw/nosuid/nodev,2 GiB image,
+  zero offset/size-limit and bounded filesystem. No reformat or old-data deletion.
+- Approved exact-digest Bun image pull succeeded using a disposable empty Docker
+  client config, explicit rootless endpoint and empty subprocess environment.
+  No credential helper/login, workload or container operation occurred.
+- `bun run lint`:30 files/no fixes; `bun run check`: pass. Portable
+  `bun test --coverage`:174 pass/0 fail,2,317 assertions,99.40% functions/96.28%
+  lines. **This portable-only aggregate is below baseline**, since it intentionally
+  cannot exercise physical lab reads; it is not the physical phase's coverage pass.
+  All pre-existing modules retain their recorded coverage.
+- Mandatory combined `bun test --coverage tests ./tests/evals/runner-preflight.ts`
+  with explicit `LOOM_LAB_ENDPOINT=unix:///run/user/$UID/docker.sock`,
+  `LOOM_LAB_MOUNT=/run/media/$USER/loom-workspace`,
+  `LOOM_LAB_IMAGE=$HOME/.local/share/loom-lab/workspace-2g.img`:175 pass/0 fail,
+  2,338 assertions;100% functions/98.31% lines versus100%/98.12% baseline.
+  New runner100% functions/98.89% lines. Lab verifies actual rootless image/mount,
+  wrong backing inode, caller snapshot, read-only/overmounted filesystem and
+  input/nested-workspace bind aliases. It does not execute a worker.
+- Focused `bun test tests/runner.test.ts` three times:8 pass/0 fail,69 assertions
+  each, including bounded stalled/malformed/oversized/invalid-UTF8 responses.
+- Initially empty `/tmp` portable command above passes with the same portable
+  counts/coverage. The additional combined lab command also passes with identical
+  175-test/2,338-assertion/100%/98.31% results under
+  `bwrap --ro-bind / / --bind "$LOOM_LAB_MOUNT" "$LOOM_LAB_MOUNT" --tmpfs /tmp
+  --dev-bind /dev /dev --proc /proc bun test --coverage tests ./tests/evals/runner-preflight.ts`.
+  Explicitly preserve only the approved lab mount writable in that namespace.
+- `bun run drill`: synthetic automated fixture pass, not human attestation;
+  `bun audit`:14 packages/no known vulnerabilities, no auto-fix.
+- Final protected-file/DDL/document checks pass: v1–v6 DDL unchanged, historical
+  SPEC execution record and T-07 review hash intact, prior ADR bytes preserved,
+  63 local links/anchors, seven active sections, unique ADRs/canonical casing and
+  `git diff --check`. Verified Gitleaks8.30.1 archive/executable identity matches
+  the recorded release; all7 complete task files pass scoped stdin scans.
+
+Only tiny new synthetic preflight directories/evidence remain on the restored
+mount. Negative permission fixtures were confined to a new empty directory,
+restored to0700, never used for a worker or a permissive launch fallback. Container
+UID65532 mapping/access, image security scan, actual resource/containment controls,
+launcher admission/kill/crash/cleanup and G2 remain unqualified. New preflight
+implementation is uncommitted; no push/PR/remote CI or independent review claimed.
+
+## P2 durable inventory execution record (historical)
+
 - **Work package:** P2-A / offline isolated-runner durable inventory.
 - **Current implementation cut:** schema6 inventory/admission/observations only,
   under the subsequent owner “continue”. No Docker launcher/lab operation in this

@@ -1213,3 +1213,52 @@ Docker create/start/cleanup remain the next approved slice, owned by the
 implementing developer; no SDK/provider activity, dependency changes, automatic
 completion or lease resurrection. Older binaries reject schema6: rollback needs
 verified backup/restore and reconciliation, not deleting inventory history.
+
+**Commit event — 2026-10-26:** owner requested “commit and continue”; verified
+inventory committed as `264c0b2`. No push, remote CI or phase approval inferred.
+
+## [ADR-024] - 2026-10-26 (P2 physical preflight)
+
+**Title:** Inspect the explicit native backend and visible capped mount before launch.
+
+**Status:** Accepted within the approved offline scope; code/lab evidence remains
+subject to final local gates. No launcher or containment qualification claimed.
+
+**Context & Problem Statement:** Durable metadata cannot establish physical
+filesystem identity, an available exact image or rootless resource prerequisites.
+The old approved workspace image was unmounted and the selected Bun image absent.
+
+**Options Evaluated:** Invoke Docker CLI using operator client configuration; or
+use bounded native HTTP GETs over the explicitly supplied local Unix socket.
+Choose native reads to avoid ambient contexts, credential helpers, CLI environment
+and diagnostic forwarding. A generic backend/transport abstraction adds no value
+for the single selected backend.
+
+**Decision & Rationale:** Require engine29.9.2/API1.56 and approved security/
+platform/resource metadata, exact digest image with no declared volumes, strict
+owned single-file input and worker hash, and the actual capped ext4 mount/backing
+inode. Resolve visible mounts through fdinfo `mnt_id`, not first mountinfo target:
+a native overmount red reproduced the hidden-record error. Native alias tests
+then reproduced input bind aliases; reject input on the writable filesystem and
+workspace nested mount IDs. Caller mutation and hardlink reds require an owned
+metadata snapshot and single-link worker file. A timed subprocess reproduced FIFO
+open blocking; nonblocking/nofollow open rejects it before daemon access.
+
+**Consequences & Tech Debt:** Existing approved image/data preserved. Udisks loop
+setup succeeded and the expected filesystem was already mounted; explicit mount returned
+AlreadyMounted, not a fabricated exit-zero result. Exact approved image pull used
+an empty temporary client config and no login. Only new tiny synthetic preflight
+directories/evidence are retained; no ownership changes or workers were executed.
+Native Unix metadata fixtures are not containment proof: a separate explicit
+physical lab corpus is mandatory for applicable phase coverage. If that lab is
+unavailable, the physical phase remains blocked, not skipped. Metadata checks are
+point-in-time and return no execution permit. Workload UID mapping, actual limits,
+launch/kill/crash/cleanup races and future launcher revalidation remain owned by
+the implementing developer; no SDK/provider/dependency promotion or G2 closure.
+
+**Local execution event:** portable174 tests pass but portable-only coverage is
+96.28%, below the98.12% baseline; this alone is not the physical-phase coverage
+pass. Mandatory full+actual-lab coverage passes175 tests/2,338 assertions at100%
+functions/98.31% lines, also with initially empty `/tmp`. Existing module coverage
+is unchanged. Lint/strict check, three focused repetitions, automated drill and
+14-package dependency audit pass. See SPEC for exact commands and remaining gates.

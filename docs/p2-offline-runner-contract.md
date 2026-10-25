@@ -1,6 +1,9 @@
 # P2-A — owner-approved offline isolated-runner scope
 
-Status: **scope approved; exact schema and implementation/qualification pending**.
+Status: **inventory committed; read-only physical preflight in progress;
+launcher/containment qualification pending**. Inventory commit: `264c0b2`.
+Owner subsequently requested “commit and continue”; the historical preparation
+baseline/approval chronology follows. PR #6 is now merged at `bd397e7`.
 Baseline `8e148ed`; branch `feat/p2-isolated-runner` is stacked on research
 [PR #6](https://github.com/ishansing/dr.loom/pull/6), not merged master.
 Owner requested “open pr to merge this research and continue with P2”. This
@@ -42,6 +45,15 @@ persisted. This profile is owner-approved scope, not evidence the image meets
 every control.
 
 ## Nonroot mount ownership is a real preflight, not a name check
+
+Continuation evidence: the existing image was mapped by noninteractive udisks;
+the expected filesystem was already mounted when the explicit mount returned AlreadyMounted.
+The exact ext4 mount is2 GiB-backed, rw/nosuid/nodev, with zero loop offset/limit.
+The approved immutable Bun image was pulled anonymously with an empty temporary
+Docker client config into the rootless daemon; no account login or workload ran.
+Read-only preflight checks actual visible mount IDs, backing inode and filesystem
+size, rejecting symlinks, nested bind aliases and input on the writable filesystem.
+This is not workload UID mapping, resource enforcement or cleanup qualification.
 
 Rootless daemon UID mappings differ from ordinary host identity. The old ext4
 image's owner does not establish that container UID65532 can write, or that the

@@ -2971,6 +2971,12 @@ function domainEndpoint(endpoint: string): void {
 	)
 		throw new Error("Invalid domain endpoint");
 }
+
+export {
+	domainConfig as validateDomainConfig,
+	domainEndpoint as validateDomainEndpoint,
+};
+
 function domainHash(
 	row: Omit<
 		DomainRow,

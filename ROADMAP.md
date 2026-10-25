@@ -203,7 +203,8 @@ choices are exercised. P5/H1 dates are forecasts, not commitments.
 ### P0 — Product contract and irreversible decisions
 
 **Execution status (2026-10-23): G0 ACCEPTED / CLOSED** by the owner's explicit
-“G0 accepted” decision. P1 implementation has not started. Earlier P0 preparation
+“G0 accepted” decision. P1 was subsequently started by a separate owner request
+(see P1 status below). Earlier P0 preparation
 started in the [support profile and acceptance matrix](research/phase-0/05-p0-support-profile.md).
 Existing Bun/TypeScript workflow, Linux/local evaluation and offline-only calls
 confirmed. The owner accepted coding-agent SDK `1.4.0` in
@@ -273,6 +274,110 @@ approves scope and failure assumptions. Pin changes, if any, are explicit commit
 
 ### P1 — Authoritative core and safe effect admission
 
+**Started 2026-10-23:** owner stated “merged. start P1”; PR #4 merge verified at
+`2be0e4f`. First slice is approved T-01 on `feat/p1-schema-migrations`.
+Discovery/baseline and exact contract precede test-first implementation. G1 is
+open; no live provider, production migration or later-slice completion implied.
+
+**T-01 review closeout (2026-10-23):** implementation `e9f4a3d` and report
+meta-review `056b374` have no confirmed review blockers; owner relayed Ishan's
+approval of both. The [consolidated record](research/reviews/2026-10-23-p1-t01-consolidated.md)
+preserves scope, source identities, proof and residual risks. This is not a Git
+merge, G1 closure or permission to start T-03.
+
+**T-03 started (2026-10-23):** owner subsequently requested “commit and continue”;
+consolidated T-01 disposition committed at `d8bb016`, followed by clean branch
+`feat/p1-audit-lifecycle`. Owner confirmed lifecycle function test seams and kept
+archival retirement/deletion disabled. Native audit request/verdict/outcome and
+truthful recovery queries only; G1 remains open, no later slice/live use enabled.
+
+**T-03 candidate (2026-10-23):** five lifecycle/query exports implemented on v2
+without changing schema or legacy callers. Ordered lint/typecheck, 30-test coverage
+and dependency audit pass; coverage is above the fresh baseline, scoped trusted
+secret scan clean. [Artifact-specific review](research/reviews/2026-10-23-p1-t03.md)
+has no confirmed findings. Owner subsequently relayed Ishan's approval and requested
+“commit” on 2026-10-23; implementation/report approval recorded, no independent
+signature claimed. G1 remains open; no push or subsequent slice authorized.
+
+**T-02 started (2026-10-23):** owner subsequently requested “continue” from
+approved T-03 commit `aa3287b`. Clean branch `feat/p1-write-gate`; owner confirmed
+required transition/CLI gate context, retained expired lease rows for monotonic
+fencing, and public test seams. Audit reconciliation remains bookkeeping, not
+execution authority. Kill actuation/policy/effects stay in later slices; G1 open.
+
+**T-02 candidate (2026-10-23):** native transition/CLI writes require live gate
+context; released leases retain monotonic fencing history. Ordered lint/typecheck,
+45-test coverage and dependency audit pass, coverage above baseline.
+[Fixed-artifact AI review](research/reviews/2026-10-23-p1-t02.md) has no confirmed
+findings and is ready for human review; Ishan disposition pending. No commit/push,
+next-slice or live-use authorization.
+
+**Owner continuation (2026-10-24):** owner subsequently requested “commit and
+continue”, authorizing T-02 commit and T-04 contract/discovery. Ishan's T-02
+disposition remains pending; no approval inferred, push/live use or G1 closure.
+
+**T-04 started (2026-10-24):** T-02 committed at `39cb915`; clean branch
+`feat/p1-outbox`. Owner confirmed synthetic-only schema v3/outbox scope,
+conservative uncertainty/replay semantics and public test seams. No production
+adapter/network/provider/CLI dispatch or full kill/policy enabled; G1 remains open.
+
+**T-04 candidate (2026-10-24):** v3 migration, atomic immutable intents, admitted
+attempts/observations and synthetic relay/reconciliation implemented. Ordered
+lint/typecheck, 59-test coverage and dependency audit pass; coverage above baseline.
+Fixed-artifact review and Ishan disposition pending; no commit/push or live use.
+
+Initial T-04 review found R-001 (cursor validated only after it could be overwritten).
+Public failing regression reproduced it; admission now validates first. Corrected
+60-test ordered gates pass; fixed-artifact re-review/Ishan disposition pending.
+
+[Corrected T-04 re-review](research/reviews/2026-10-24-p1-t04.md) marks R-001
+resolved, no open confirmed findings, READY FOR HUMAN REVIEW. Final scoped scans
+and document checks pass; T-04 remains uncommitted and human disposition pending.
+
+**Commit authorization (2026-10-24):** owner subsequently requested “commit”;
+T-04 implementation and both reports authorized for commit after fresh gates.
+Human dispositions remain pending; no push, next slice or G1 closure authorized.
+
+**T-04 approval (2026-10-24):** owner relayed “Approved by Ishan” after committed
+T-04 artifact `d0a02dd`. Corrected implementation/re-review approved through the
+owner; initial R-001 report preserved, resolved rather than waived. T-02 approval
+remains pending. No G1 closure, push, live use or subsequent slice authorized.
+
+**T-02 approval clarification (2026-10-24):** owner then stated “T-02 also approved
+by Ishan”. T-02 artifact `39cb915` and its advisory approved through the owner;
+earlier pending references are historical. Both T-02/T-04 approvals recorded,
+without G1 closure, commit/push, live use or next-slice authorization.
+
+**Owner continuation (2026-10-24):** owner subsequently requested “commit and
+continue”: commit approval records and begin next planned T-05 contract/discovery.
+G1 stays open; no push, production effect, provider use or later-slice completion.
+
+**T-05 started (2026-10-24):** approval records committed `08292d9`; clean branch
+`feat/p1-kill-switch`. Owner confirmed scoped v4 lease binding/kill history,
+guarded synthetic reset and public seams. No CLI critical controls, production
+identity/containment/reset qualification or full policy enabled; G1 stays open.
+
+**T-05 candidate (2026-10-24):** scoped v4 binding, audited kill/cancellation,
+snapshot-bound synthetic reset and consistent CLI status implemented. Ordered
+lint/typecheck,82-test coverage and dependency audit pass; coverage above baseline.
+Fixed-artifact advisory and Ishan disposition pending; no commit/push or live use.
+
+T-05 revocation edge cases (legacy NULL key and SQL ignored update) reproduced
+before correction; scope-wide cardinality-checked revocation now passes84-test
+ordered gates. Corrected fixed-candidate advisory/Ishan disposition pending.
+
+Initial T-05 advisory found ignored denial-link persistence; adjacent ignored
+legacy-latch adoption also reproduced. Checked writes and exact latch-reference
+postcondition now pass86-test ordered gates. [Corrected T-05 re-review](research/reviews/2026-10-24-p1-t05.md)
+marks both resolved with no open confirmed finding; original review retained.
+
+**T-05 approval and commit (2026-10-24):** owner relayed “approved by Ishan,
+commit and continue”. T-05 implementation/re-review committed `f955622`; approval
+recorded through the owner without independent signature. T-05 closed only; G1
+remains open. Same instruction authorizes T-06 contract/discovery and synthetic
+implementation under confirmed seams; no push, production/provider use or real
+effects.
+
 **Outcome:** the control plane can record, authorize, stop and recover a run
 without trusting an agent process. Existing SPEC milestone 1; no live model needed.
 
@@ -306,6 +411,35 @@ through the documented re-verification path.
 filesystem fixture environment. No claim of process containment or remote
 rollback is inferred from database tests. Synthetic effect adapters cannot
 accidentally acquire production authority.
+
+**G1 CLOSED — 2026-10-25:** owner conditionally authorized closure after checking
+SPEC first-milestone requirements. The recorded evidence satisfies synthetic/core
+G1: approved `555586b`, verified CI40178607723, personal operator demonstration
+at `ffed35e`, native-process/filesystem corpus, immutable audit and recovery/
+admission/drift proof. Evidence was committed first as `7f85871`; fresh full gates
+and empty-`/tmp`143-test coverage pass again. [G1 record](docs/g1-closeout.md)
+retains provenance and limitations; [merge draft](docs/p1-merge.md) targets
+`master` with the complete P1 stack. No merge/push/PR publication, P2 execution,
+actual framework qualification or production authority follows. Dated open/pending
+entries below remain historical rather than current gate status.
+
+**Post-commit discovery (2026-10-25):** T-07 committed
+`f888e6823c7ca67d8fb8a778d56c9b87b45d5a2b`; subsequent
+[G1 evidence matrix](docs/g1-closeout.md) records existing proof and outstanding
+exact-artifact CI/human demonstration/review/qualification handoffs. G1 remains
+open; no automatic P2 implementation or T-07 push. This follow-up documentation
+is not part of the frozen T-07 advisory artifact.
+
+**Pre-closure evidence (2026-10-25):** corrected artifact
+`555586b8d00e5d3350bd671054b5a97140ecfbdb` passes verified remote
+[CI40178607723](https://github.com/ishansing/dr.loom/actions/runs/40178607723).
+Owner attests personal drill execution at `ffed35e` and relays Ishan's approval
+explicitly covering `555586b`. [G1 evidence](docs/g1-closeout.md) preserves exact
+output, artifact identities and provenance limits. Actual framework installation
+qualification gates affected framework execution, not synthetic/core G1 closure;
+selected pin unchanged, mismatched installation remains unqualified. Owner
+requests this evidence committed **before** closure: G1 remains open, merge/P2
+not authorized by this record.
 
 ### P2 — One real isolated runner and verified candidate delivery
 
@@ -692,3 +826,75 @@ security/data guarantees; change optional scope, runtime choice or dates.
 
 **Not done by this document:** implementation, runtime/framework re-pinning,
 production provisioning, model adoption or formal security certification.
+
+**T-06 started (2026-10-24):** owner confirmed the additive `authorize` effect
+gate, root policy-only/delegated-grant boundary, deny/ask budget breach without
+automatic kill, no schema v5, risk subset and public test seams. Branch
+`feat/p1-policy` from `aa4872b`; red tests and implementation are next. No
+push, provider use, real effect or G1 closure.
+
+**T-06 candidate (2026-10-24):** additive effect authorization, scoped ACL/grants,
+deadline inheritance, risk scoring, capped draws/actual usage/retry bucket and
+explicit per-dispatch relay policy implemented on v4. Ordered lint/typecheck,
+108 tests/1895 assertions,100% functions/97.06% lines, focused78-test corpus
+three times and dependency audit pass. Snapshot-based budget reads and post-lock
+deadline sampling have real-process regressions. Uncommitted; fixed-artifact
+advisory/Ishan disposition pending. No push/live effects/providers/G1 closure.
+
+Initial T-06 advisory found a literal-star deny bypass, missing SQLite sidecar
+classification and call-budget/lease ordering. Four intended red regressions
+reproduced all three; corrected112-test ordered gates pass (1935 assertions,
+100% functions/97.04% lines), focused82-test corpus passes three times. Original
+advisory retained; corrected-artifact re-review and Ishan disposition pending.
+
+Corrected T-06 fixed-artifact advisory `T06-20261024-02-AI-01` marks all three
+findings resolved, no new/open confirmed finding; READY FOR HUMAN REVIEW.
+Implementation remains uncommitted; Ishan disposition pending, G1 open.
+No T-07 advancement, push, provider use or real effects inferred.
+
+**T-06 approval (2026-10-24):** owner relayed “Approved by Ishan, commit”
+for corrected overlay T06-20261024-02. All three findings remain resolved;
+reviewed source/test/fixture hashes and fresh ordered gates pass. Approval is
+recorded through the owner, not an independent signature. T-06 commit explicitly
+authorized; G1 remains open. No T-07 continuation, push, providers or real effects.
+
+**T-07 discovery (2026-10-24):** owner subsequently requested “push and
+continue” after approved T-06 commit `9f3241a`. Push of `feat/p1-policy` failed
+with SSH public-key authentication denial; repository owner must restore access.
+Local `feat/p1-cli-conformance` starts from that clean commit. Baseline112-test
+gates pass; init metadata/re-init, read-only resume status and actual pin/skill
+hash verification gaps reproduced. Public/security scope confirmation is next;
+no source/test changes, framework re-pin, provider use, real effect or G1 closure.
+
+**T-07 scope confirmed (2026-10-24):** owner approved v5 run/evidence storage,
+lease-gated init/record and explicit JSON, synthetic-only critical CLI controls,
+and selected-pin/offline integrity with explicit skill roots. Implementation is
+in progress on `feat/p1-cli-conformance`; current framework mismatch and SSH
+publication blocker remain visible. Human drill/remote CI/G1 are not complete.
+
+**T-07 local candidate (2026-10-25):** v5 run/evidence migration, strict
+lease-gated recording, read-only human/JSON orientation, installed-content
+verification, synthetic kill/reset CLI and offline operator drill implemented.
+Ordered checks pass142 tests/2079 assertions,100% functions/98.11% lines;
+focused30-test corpus passes three times and automated drill/audit pass. Pinned
+CI configuration is prepared, not remotely executed. Fixed-artifact review is
+next; actual framework/human drill/SSH publication/G1 remain separate handoffs.
+
+Human-orientation framing regression subsequently reproduced a legacy newline
+spoofing kill status. Corrected candidate passes143 tests/2082 assertions,
+100% functions/98.11% lines; focused31-test corpus three times, drill and audit.
+No human approval, remote CI or actual framework qualification inferred.
+
+**T-07 advisory (2026-10-25):** fixed overlay T07-20261025-01 receives READY
+FOR HUMAN REVIEW with no confirmed current-scope findings. Implementation is
+uncommitted; Ishan disposition pending. T-06 push retry still fails SSH public-key
+authentication. Owner handoffs: SSH access/remote CI, selected framework/skill
+installation and personally executed/reviewed drill. G1 remains open; T-08 is
+not authorized. No provider, real effect or production qualification.
+
+**Owner commit/continuation instruction (2026-10-25):** owner reports T-06
+pushed and requests “commit T-07 and continue”. Publication is owner-attested;
+agent SSH remote verification still fails, CI unverified. T-07 commit authorized
+after fresh143-test gates, not Ishan approval or human drill attestation.
+Continue G1 evidence/closeout discovery before any T-08/P2 implementation;
+G1 remains open and no T-07 publication/provider/real effect is inferred.

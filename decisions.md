@@ -563,3 +563,490 @@ gates. No live calls, login, allowance consumption, additional spend, dependency
 promotion, deployment, commit/push or P1 implementation is authorized by this
 acceptance alone. Approved reports remain unchanged; this is a later owner
 gate disposition, not an expansion of Ishan's artifact-specific approval.
+
+## [ADR-013] - 2026-10-23 (T-01 schema and legacy claims)
+
+**Title:** Recognize exact store schemas and preserve unknown legacy identities.
+
+**Status:** Accepted scoped design after owner approved store/SQL/CLI test seams
+and “Preserve unknowns as NULL”; implementation and fresh gates required.
+
+**Context & Problem Statement:** owner authorized P1 after PR #4 merged. The old
+R-11/R-13 research proposes non-null identities/main-thread defaults, but current
+G0 requires preserving legacy claims without fabricated authority. The scaffold
+has no schema registry, durability read-back or immutable audit enforcement.
+
+**Options Evaluated:** backfill guessed identities; move legacy records to new
+archive APIs; preserve old fields and add nullable unknown identities with scoped
+views excluding unattributed claims. Owner selected the latter.
+
+**Decision & Rationale:** extend `src/store.ts` only; recognize empty/known
+unversioned scaffold/intact v2, refuse all other layouts. Migration and registry
+commit under BEGIN IMMEDIATE, with WAL/FULL/foreign-key/recursive-trigger read-back
+on file-backed connections. Preserve helper signatures/JSON; legacy helpers write
+claims, not authority. Native lifecycle identity enforcement belongs to T-03.
+Use deterministic shipped-DDL schema references to detect drift rather than trust
+table names or a version marker. New authority structures start empty.
+
+**Consequences & Tech Debt:** nullable metadata is an explicit owner-approved
+legacy exception to older proposals, not permission to certify an unknown actor.
+Migration compatibility is intentionally limited to known declarations. Trigger
+guards protect supported writes including replacement collisions; raw same-process
+SQL/DDL authority is outside this protection, so worker isolation remains required.
+No real DB migration or model use authorized. Restore uses verified clones, not
+automatic downgrade. Tests use confirmed public seams and native SQLite faults.
+
+**Tooling/environment event:** already-installed Bun is 1.4.4; fresh 3-test
+baseline is 100% functions/89.73% lines, versus historical 90.99% on 1.4.3 with
+unchanged source. No runtime upgrade performed. Owner authorized temporary
+Gitleaks 8.30.1 download/checksum verification/local scan under `/tmp/opencode`;
+no project dependency or global installation. Its scan result is still required.
+
+**Review closeout — 2026-10-23:** implementation is committed at `e9f4a3d`;
+report meta-review at `056b374`. Fresh ordered gates passed, including verified
+Gitleaks source/report scans. Both reviews found no confirmed blockers. Owner
+stated “Approved by Ishan and merge the meta-review and the previous agent
+review”; record Ishan's approval via that relay and consolidate the two reports
+without rewriting either source. No direct signature or independent identity
+verification claimed; source report hashes and candidate identity are preserved
+in `research/reviews/2026-10-23-p1-t01-consolidated.md`. New rendering is a
+parent-authored synthesis, not an additional Ishan-signed report. G1, later-slice
+authorization, Git merge/push, production migration and live use stay separate.
+
+## [ADR-014] - 2026-10-23 (T-03 audit lifecycle)
+
+**Title:** Native insert-only audit lifecycle and conservative recovery queries.
+
+**Status:** Accepted; implemented and verified for T-03. Owner confirmed five
+public lifecycle/query seams, explicitly kept retirement disabled, then relayed
+Ishan's approval and authorized the T-03 commit on 2026-10-23. G1 remains open.
+
+**Context & Problem Statement:** after approving T-01 reviews, owner requested
+“commit and continue”. Existing legacy helper cannot represent native lifecycle.
+The T-01 view can suppress incomplete newest rows; treating absence as no pending
+work would hide uncertainty. Old archival retirement notes conflict with immutable
+history and missing authorization/backup controls; owner selected no deletion.
+
+**Options Evaluated:** trust projected latest rows alone; validate native history
+at the store before transition/read; create new tables/materialized state now.
+
+**Decision & Rationale:** extend the existing store/exports with openAction,
+recordVerdict, recordFinish, getAction and listOpenActions. Reuse v2 data/guards;
+no migration. Strict native identity/state/evidence validation, atomic read/insert
+under immediate transactions, no terminal reopening. Validate all native history
+within run before exposing scoped results; partial rows fail closed rather than
+fall back to prior success. Legacy all-NULL identity claims remain untouched.
+
+**Consequences & Tech Debt:** full-run validation has linear read cost; no cache
+or schema shortcut until measurement warrants a separately verified design.
+Raw host SQL remains trusted; actor syntax is not physical-human authentication,
+verdicts do not dispatch and outcome facts do not certify task completion. Actual
+gate/operator/outbox work remains later slices. Export/verify/separately approved
+retirement is documented only, with no trigger bypass/deletion path. Existing
+CLI/legacy APIs and approved reports stay intact; tests use confirmed public seams.
+
+## [ADR-015] - 2026-10-23 (T-02 gate and fencing)
+
+**Title:** Require live gate context for native ledger writes and retain lease epochs.
+
+**Status:** Owner-approved scoped design after “continue” from `aa3287b`; owner
+confirmed gated normal writes/CLI, retained lease rows and public test seams.
+
+**Context & Problem Statement:** T-03 provides audit facts, not effect authority.
+Normal recordTransition/CLI currently bypass leases. Deleting a released lease
+also deletes its epoch counter, permitting same-owner stale-token reuse after
+reacquisition. Missing lease validation permits malformed time/epoch state.
+
+**Options Evaluated:** add an opt-in gate while preserving normal bypasses;
+require gate context and explicitly isolate migration/bookkeeping exceptions;
+introduce a new authority service/schema. Owner selected the second, with retained
+expired lease rows rather than a schema migration for fencing counters.
+
+**Decision & Rationale:** required trusted run/thread/workspace/owner/epoch context
+for recordTransition and CLI record; gate checks global/run kill before live
+lease in the same immediate transaction. Rename ungated historical writer for
+fixture/migration use only and omit from package index/CLI. Acquire checks kill
+as bootstrap, release is cleanup; keep expired row so fresh acquisition increments
+previous epoch. Audit outcomes/reconciliation remain recordable under kill and
+never authorize dispatch. T-05/T-06 still own full kill and policy controls.
+
+**Consequences & Tech Debt:** deliberate normal-write interface change, every
+caller/fixture updated. No schema rewrite or old identity backfill. Host context,
+workspace identity/canonicalization, clock and direct DB access remain trusted;
+marking a migration helper is not isolation. No effect can use this partial gate
+as full production authorization. Native transaction/savepoint semantics and
+real-process fencing/recovery require fresh evidence, not old experiment claims.
+
+**Implementation event — 2026-10-23:** 45-test suite and ordered code gates pass;
+fixed-artifact T-02 AI advisory has no confirmed findings, Ishan disposition
+pending. No schema/audit lifecycle rewrite, effect authority or G1 closure claimed.
+
+**Authority event — 2026-10-24:** owner requested “commit and continue”, authorizing
+T-02 commit and the next planned T-04 slice. This is not an attestation of Ishan's
+T-02 approval; keep that human disposition pending. No push/live use/G1 closure.
+
+**Approval event — 2026-10-24:** owner subsequently stated “T-02 also approved by
+Ishan”. T-02 implementation/advisory in `39cb915` approved through the owner;
+earlier pending status superseded, original AI report retained. No independent
+signature claimed; no G1 closure, push, commit, real effects or next-slice authority.
+
+## [ADR-016] - 2026-10-24 (T-04 synthetic outbox)
+
+**Title:** Persist immutable effect intent and dispatch observations, not inferred success.
+
+**Status:** Owner-confirmed scoped design after “commit and continue” from T-02;
+synthetic migration/replay scope and public seams confirmed before tests/code.
+
+**Context & Problem Statement:** no outbox exists in v2. Business progress alone
+cannot establish whether an external effect happened. A crash between target
+commit and Loom marker may replay; kill cannot atomically cancel admitted work.
+
+**Options Evaluated:** optimistic applied cursor with blind replay; immutable
+intent plus admitted attempts/observations and explicit target reconciliation;
+introduce real remote adapters before production policy/containment exists.
+
+**Decision & Rationale:** additive atomic v3 migration with exact v2 recognition.
+Bind stable intent UUID to native action, target, exact JSON payload/hash and
+replay contract. Require shared business/enqueue transaction and per-item live
+gate. Commit attempt before fixture adapter call outside DB lock; admitted
+high-water cursor never suppresses unresolved older work. Keep late result facts
+even after kill/lease succession. Only proven fixture-target dedup permits
+idempotent replay; non-idempotent uncertainty needs explicit human-attributed
+evidence-backed reconciliation, never a throw-to-not-executed conversion.
+
+**Consequences & Tech Debt:** schema v3 means old binaries must refuse, not
+downgrade. Linear validated history scans initially; optimize only with measured
+need and verified projection. Host callbacks/SQL/clock and evidence attribution
+remain trusted, not authentication or isolation. No actual production effect or
+complete policy/kill claim. Fixed-artifact review and fresh migration/recovery/
+contention tests required; T-02 approval remains pending, not manufactured.
+
+**Implementation event — 2026-10-24:** v3 and 59-test suite pass ordered code
+gates, including independent target-side crash deduplication and competing
+non-idempotent relays. No exactly-once claim from Loom alone. Fixed-candidate
+advisory and Ishan disposition pending; no real effect or release authority.
+
+**Review event — 2026-10-24:** initial advisory R-001 identified cursor overwrite
+before validation with pending work. Reproduced by public regression, corrected
+by admission-transaction validation before events/cursor writes; corrected ordered
+60-test gates pass. Preserve initial report and require new-artifact re-review;
+no waiver, human approval or authority expansion inferred.
+
+**Re-review event — 2026-10-24:** corrected manifest
+`3f6bc846536f79e02064e155bfabadc0887d72d0ffa4915f2938a8024bee1d47`
+reviewed; R-001 resolved, no open confirmed findings, ready for human review.
+Initial report preserved; final scoped scans/document checks pass. T-04 remains
+uncommitted, T-02/T-04 human dispositions pending; no G1 closure/next-slice authority.
+
+**Authority event — 2026-10-24:** owner requested “commit” after corrected T-04
+handoff. Commit only this slice and its retained reports after fresh checks;
+T-02/T-04 human approval remains pending. No push, next slice or real effects.
+
+**Approval event — 2026-10-24:** owner relayed “Approved by Ishan” after T-04
+commit `d0a02dd`. Record corrected T-04 implementation/re-review approval through
+the owner, not independent identity verification; preserve initial R-001 report.
+T-02 remains pending. No G1 closure, live effects, push or next-slice authority.
+
+## [ADR-017] - 2026-10-24 (T-05 scoped kill and guarded reset)
+
+**Title:** Bind run leases and preserve immutable kill-denial/reset evidence.
+
+**Status:** Owner-confirmed design after “commit and continue” from approval
+closeout `08292d9`; scoped migration, synthetic reset and test seams confirmed.
+
+**Context & Problem Statement:** leases don't persist run identity, so scoped
+revocation would guess or over-revoke. Ordinary audit state rejects a second
+verdict; allowed-but-undispatched cancellation needs distinct durable proof.
+Admitted work must not become not-executed, and reset must not revive old authority.
+
+**Options Evaluated:** globally revoke for a run kill; trust transient run mapping/
+actor strings; persist scoped binding/control evidence with fresh-plan reset.
+
+**Decision & Rationale:** additive atomic v4 migration, nullable unknown legacy
+identities, bound native acquisition/gate, immutable critical kill triples and
+audit-denial links. One transaction revokes, latches, denies/cancels only never-
+admitted work. Healthy epochs bump; invalid/exhausted epochs expire and remain
+ungrantable rather than overflow into authority. Keep in-flight observations.
+Reset recomputes exact scoped plan, requires trusted host human attribution and
+fresh fixture verification/cleanup evidence, blocks unresolved admitted work,
+clears only its latch and never re-grants/resurrects.
+
+**Consequences & Tech Debt:** schema v4/unknown-run fencing changes native-write
+eligibility intentionally. Host context/clock/SQL/evidence remain trusted, not
+authentication/containment proof. CLI critical controls, real cleanup/identity and
+production reset qualification remain later work. Corrupt storage can fail the
+atomic operation; never claim a successful partial kill. Existing guards/data,
+fixed-artifact review and original safety regressions remain required.
+
+**Implementation investigation — 2026-10-24:** public status stress fixture found
+210 false clear readings while one legacy kill scope was continuously active;
+separate global/run reads observed different snapshots. A single short read
+transaction corrected it; minimized atomic scope-switch fixture passes without
+raising test timeouts. Native control/reset process races are tested separately.
+After crash, concurrent connection setup also returned SQLITE_BUSY_RECOVERY before
+reset: stage connections sequentially, then release reset attempts together. Busy
+startup remains a caller retry condition, not a successful control operation.
+
+**Implementation event — 2026-10-24:**82-test ordered code gates pass, focused
+22-test corpus passes three consecutive runs. Orphan outbox observations now
+invalidate automatic kill non-execution proof; cancellation reuses that shared
+history validator. Scope/reset/late-fact/rollback/process proofs remain synthetic;
+fixed-artifact advisory and Ishan disposition pending, no production authority.
+
+**Revocation edge-case event — 2026-10-24:** legacy SQLite TEXT PRIMARY KEY can
+contain NULL. A public failing fixture showed per-key equality updates skipped
+such a row. Revocation now uses one parameterized scope-wide UPDATE, preserves
+unknown keys, safely bumps only valid bounded integer epochs and expires all
+selected rows. A second failing SQL-ignore fixture added a cardinality check so
+incomplete revocation aborts the whole control transaction, never partial success.
+
+**Review event — 2026-10-24:** initial T-05 R-001 and adjacent latch-adoption
+question reproduced as public false-success failures under ignored SQL writes.
+Require one persisted denial link, one latch write and exact completed-event
+reference; rollback all state on mismatch. Corrected86-test gates pass; preserve
+initial advisory and require new-artifact re-review, not a waiver or human sign-off.
+
+**Re-review event — 2026-10-24:** fixed-artifact review T05-20261024-02 reports
+R-001 and the adjacent latch question resolved, no open confirmed finding, for
+overlay manifest `f98ab70bd281c8121579e716c054561e2f1065482989b6bd3bbec1457ab61519`.
+Report SHA-256 `69921687f9c33340b389b0a56178e281592bb7df81f4618c5f8ad04c6263690d`
+after the appended approval record. Reviewed source/test/fixture hashes matched
+the current files. This was an AI advisory; the separate approval event below
+records the human disposition.
+
+**Approval event — 2026-10-24:** owner stated “approved by Ishan, commit and
+continue” after the T-05 candidate handoff. T-05 implementation/re-review
+committed as `f955622bf1c277bd914b1e738a28a5475164cb9d` is approved through the
+owner; R-001 and the adjacent latch question remain resolved, original advisory
+retained. Attribution is owner-relayed, not a direct signature or independent
+identity verification. T-05 only: no G1 closure, push, production/provider use or
+real effects. The same instruction authorizes T-06 contract/discovery and
+synthetic implementation under separately confirmed seams.
+
+## [ADR-018] - 2026-10-24 (T-06 effect gate, grants and budgets)
+
+**Status:** Owner-confirmed synthetic contract; implementation and ordered code
+gates and corrected fixed-artifact advisory verified; approved by Ishan as
+relayed by the owner. T-06 commit explicitly authorized; no next-slice authority.
+
+**Context:** T-02 gates ledger writes with kill→lease; T-04 relay calls that
+gate per item but has no deadline, grant, policy, risk or budget admission.
+R-16/R-18/R-20 require one decision point, deny-wins scopes, narrowing grants,
+deadline inheritance and atomic budget draws. T-05 kill is human-only, and the
+existing v4 schema already carries `budgets`, `usage` and `grants`.
+
+**Decision:** Add `authorize(db, request, policy)` as the effect-admission gate
+in the order kill → deadline → grant → policy/risk/budget check → lease → budget
+draw → audit. Keep `writeGate` as the approved bookkeeping gate. Root/supervisor
+requests are policy-only; delegated requests require a live grant that covers
+every target and never widens policy. Deny wins globally/run/thread; no reusable
+allow token; `relayBatch` requires an explicit policy and authorizes every
+dispatch again. Budget caps fail closed by deny/ask plus audited
+`budget-breach` with kind/counter evidence; automatic kill is deferred because it would reopen T-05's
+human-only control. Use the existing v4 tables and trusted caller policy config;
+no schema v5 and no policy table. Risk uses recorded/declared observables for
+tier, workspace escape, secrets/prod/egress, fan-out, novelty, prior deny and
+irreversibility; velocity/doom-loop/failed-confirm are deferred until runtime
+records them. Paths are normalized workspace-relative; `..`/absolute escape and
+secret-adjacent targets deny before policy; compound shell commands cannot
+receive an allow through a wildcard.
+
+**Consequences:** T-06 is synthetic policy/budget machinery, not process
+containment or a live adapter. `relayBatch` callers/tests must supply policy.
+Grants are insert-only through the API; direct host SQL remains trusted in this
+boundary. Unresolved asks remain auditable pending actions and may block reset
+until resolved. Symlink physical resolution, live-thread release, automatic
+budget kill, provider metering and production restore remain later work.
+
+**Implementation investigation — 2026-10-24:** deterministic regressions found
+that retrying an audited ask removed novelty and allowed the next request;
+novelty now requires a prior allowed decision. A real competing writer showed
+an expired deadline being admitted from a pre-lock clock sample; sample the
+default host clock only after acquiring the writer lock. A second process
+reproduced false counter-corruption errors between independent budget/status
+reads; use one short deferred snapshot, including nested savepoints. Actual cost
+overage remains recorded and blocks later admission without changing kill.
+Relay must not run the bookkeeping lease check ahead of the full effect gate;
+a deadline+stale-lease regression preserves the confirmed gate order. These
+are implementation corrections, not production containment claims.
+
+**Initial review — 2026-10-24:** overlay T06-20261024-01 (manifest
+`1037b0d9a9c1bd9259a5bf4cd77d6dc22dfab88d8fd131386a08d94105d97e19`) has
+three advisory findings: wildcard literal-star precedence bypasses deny;
+SQLite sidecars miss secret classification; call-budget rejection follows
+lease rather than the specified precheck order. Reproduce and fix at the shared
+matcher/classifier/gate, then issue a new immutable candidate. Do not waive the
+contract or infer human approval. External-directory access was resolved with
+a byte-matched read-only workspace copy, not a mutable-file substitution.
+
+**Review correction — 2026-10-24:** R-001/R-002/R-003 reproduced with four
+public failing regressions. Matcher precedence now handles pattern stars before
+literal equality; DB denial includes SQLite sidecars. Extract one shared budget
+draw-state calculation for pre-lease cap validation and post-lease atomic draw;
+no usage is consumed on lease denial. Corrected112-test gates pass; retain the
+initial advisory and require new-artifact re-review. Human disposition remains
+pending. Temporary review copies are removed after archive byte-match before
+repository-wide checks; never exclude them by changing project config.
+
+**Re-review — 2026-10-24:** corrected overlay T06-20261024-02, manifest
+`546f9f058458c648bd40190279a2eb98a8ba3c56a48e71e0c358e924ff8916df`, receives
+READY FOR HUMAN REVIEW with R-001–R-003 resolved and no new/open confirmed
+findings. Report `research/reviews/2026-10-24-p1-t06.md` pre-approval SHA256
+`40ad3bbcafd10677e257234b37103327df796606e6bd643d10e202e12367aad1`.
+Reviewed source/test/fixture hashes match current files; archive retained,
+owned review copy removed after byte-match. This is AI advice; Ishan's human
+disposition, commit/push and later-slice/provider/effect authority remain pending.
+
+**Approval event — 2026-10-24:** owner stated “Approved by Ishan, commit”
+after the corrected T-06 handoff. Approval applies to overlay
+T06-20261024-02 and manifest
+`546f9f058458c648bd40190279a2eb98a8ba3c56a48e71e0c358e924ff8916df`;
+R-001–R-003 resolved, original advisory retained. Attribution is owner-relayed,
+not a direct signature or independently verified identity. Fresh ordered gates
+and reviewed source/test/fixture hash checks pass. Owner authorizes commit of
+T-06 only; no T-07 continuation, push, G1 closure, production/provider use or
+real effects.
+
+Approval-appended T-06 report SHA256:
+`5bdc73fa0da1dba40c2e5e77a9800b8f43f16d4de52daff31637a06612ff7e71`.
+
+**Continuation / publication blocker — 2026-10-24:** after approved T-06 commit
+`9f3241a`, owner requested “push and continue”. `git push --set-upstream origin
+feat/p1-policy` failed exit128 with SSH public-key authentication denial; missing
+askpass was also observed. No remote/credential change, credential inspection
+or successful publication claimed. Repository owner owns restoration of SSH
+access. Continue local T-07 discovery on `feat/p1-cli-conformance`; confirm run
+metadata/lifecycle, critical CLI control and framework integrity seams before
+implementation. Keep pinned2.1.0 despite sibling4.0.0; research is read-only,
+not authority to re-pin, install providers or close G1.
+
+## [ADR-019] - 2026-10-24 (T-07 run CLI and offline integrity)
+
+**Status:** Owner-confirmed scope; implementation and ordered offline gates
+and fixed-artifact advisory verified with no confirmed findings. Human
+disposition and qualification handoffs remain pending.
+
+**Context:** Approved T-06 is committed `9f3241a`. Owner requested push and
+continuation; push is blocked by SSH authentication. Existing CLI has no run
+metadata/lifecycle, re-init succeeds, missing status creates a DB and framework
+check can succeed without inspecting the actual mismatched installation.
+
+**Decision:** Owner approved additive schema v5 for immutable run metadata and
+transition evidence, atomic lease-gated init/record, phase open/close checks,
+human-readable default/explicit JSON and no automatic lease acquisition.
+Keep committed phases distinct from independent successful-task verification.
+Expose synthetic-only kill engage/status/plan-reset/reset through existing
+human-attributed audited controls and fresh snapshot reset, resolving the older
+four-command R-14 limit in favor of the explicitly confirmed operator drill.
+Inspect actual selected Git revision/version/lock and explicit installed skill
+roots with pinned hash semantics; no global lookup, installation, fetch, sibling
+edit or automatic re-pin to make readiness pass. CI uses qualified Bun1.4.4 and
+ordered offline gates. Old history receives no fabricated metadata/evidence.
+
+**Consequences:** Init/record require a host-prepared current DB and live lease;
+status is read-only and missing DB is informational. Existing CLI callers/tests
+must opt into JSON and registered-run lifecycle. Actual configured4.0.0 sibling
+must fail against selected2.1.0; synthetic fixture success is not actual runtime
+qualification. Critical CLI attribution is trusted-host syntax, not authenticated
+human identity. Remote CI/push, human-run drill, real effects/providers and G1
+closure remain separately blocked/unqualified. Rollback is copy/restore and
+reconciliation, never destructive removal of v5 run/evidence history.
+
+**Implementation investigation — 2026-10-24:** new v5 evidence could change
+without invalidating an existing reset plan; a failing public reset regression
+now binds run metadata and evidence into the snapshot hash. Registered phase
+writers validate prior history rather than trusting only the last row. Actual
+framework integrity uses Git object hashes without repository filters/scripts;
+a native Git replacement-ref fixture showed a different tree accepted beneath
+the expected commit, so read-only Git probes explicitly disable replacement
+objects. Malformed VERSION contents must not enter errors; reject their format
+before constructing mismatch diagnostics. All experiments are synthetic, not
+proof of authenticated identity, actual framework qualification or containment.
+
+**Offline gate evidence — 2026-10-25:**142 tests/2079 assertions pass with
+100% functions/98.11% aggregate lines versus100%/97.04% baseline; scoped store
+coverage99.68% retained. Focused30 tests/141 assertions pass three runs. Offline
+operator drill and14-package dependency audit pass; no provider calls or actual
+framework installation used. Native Git probes bind the tree to the captured
+commit ID and ignore replacement objects. Remote CI, human drill execution,
+actual selected installation and G1 remain unqualified; no human sign-off
+inferred from automated checks. Reviewed artifact preparation is next.
+
+**Orientation hardening — 2026-10-25:** a legacy phase containing a newline
+injected a forged `Kill: clear` line beneath an actual blocked header. Public
+CLI regression reproduced it; human status labels now neutralize control
+characters before line assembly. Structured JSON keeps escaped historical facts
+unchanged. This is output framing, not rewriting legacy evidence or allowing
+status text to grant authority.
+
+**Fixed-artifact advisory — 2026-10-25:** review T07-20261025-01-AI-01
+recommends READY FOR HUMAN REVIEW, no confirmed current-scope findings, against
+base `9f3241aa2186b1ac975f60eb09f7b367cee1fc68` plus T07-20261025-01 manifest
+`f27b710ed73deef65c2d3263f72adbccd9c3873774f8b0f27c76364c153e5c8c`.
+Report `research/reviews/2026-10-25-p1-t07.md` SHA256
+`22e412a2336213b5208c66737c42d0b445774fe14d837512e9b8ce9eef4804f7` preserves
+the unchanged advisory plus parent-attributed durable manifest. Code/test/CI
+hashes match reviewed files; workspace copy removed after archive byte-match.
+No human disposition or phase approval inferred. Authorized T-06 push retry
+still fails SSH authentication; owner restores access. Matching actual
+framework, remote CI, human drill and G1 remain unqualified, not waived.
+
+**Commit authority / continuation — 2026-10-25:** owner stated “pushed, commit
+T-07 and continue”. T-06 branch publication is owner-reported; agent-side
+`git ls-remote` still fails SSH authentication, so remote state/CI are not
+independently verified. T-07 commit explicitly authorized after fresh ordered
+gates and durable-manifest checks; no implementation change. Ishan's T-07
+disposition and human drill evidence remain pending, not inferred from commit
+authority. Continue with G1 closeout evidence/discovery; no automatic phase
+closure, T-08/P2 implementation, T-07 push, framework re-pin/provider/real effect.
+
+Authorization-appended T-07 report SHA256:
+`3a87e11556e47c4c818ba9eaa45c58a7dd2c0a29d7c9c8b27112481bfcb850f0`.
+
+**Fresh-runner fixture correction — 2026-10-25:** GitHub run40173273410 at
+`ffed35e299726c9868b3fecfbe725f67edd4dc29` exposes nine ENOENT failures because
+some fixture allocations assume `/tmp/opencode` already exists. A child mount
+namespace with an empty `/tmp` reproduces12 failures, including three run tests
+masked by suite order. Follow the existing recursive-mkdir-before-mkdtemp
+pattern at all seven missing allocation sites; do not add CI-only setup that
+hides standalone test/drill failures or remove the host directory to reproduce.
+Independent file runs, standalone drill and full143-test coverage pass in fresh
+tmpfs namespaces. Prior frozen advisory/owner-relayed approval remains tied to
+its original artifact; this test-only correction still needs publication/CI.
+
+**Evidence and approval before G1 closure — 2026-10-25:** owner relays
+“Approved 555586b by Ishan” and authorizes recording/committing evidence before
+G1 closure. Corrected artifact `555586b8d00e5d3350bd671054b5a97140ecfbdb`
+independently verified green in GitHub run40178607723: lint, strict check,
+143 tests/2,082 assertions (100% functions/98.11% lines), standalone drill and
+14-package audit pass. Owner attests personal drill execution and supplies
+successful output at `ffed35e299726c9868b3fecfbe725f67edd4dc29`; preserve its
+synthetic/automated-fixture label and older artifact identity. No individual
+signature, new AI review or human rerun on corrected artifact is inferred.
+
+Gate interpretation resolves the earlier over-broad actual-installation handoff:
+ROADMAP's G1 exit is synthetic/core CI and process/filesystem fixtures; its
+framework risk register blocks affected framework execution, and T-07's plan
+tests drift using fixture skills. Actual installed-framework qualification is
+therefore not a synthetic G1 blocker, but remains mandatory before affected
+framework execution. Retain selected2.1.0; last-inspected4.0.0 remains mismatched/
+unqualified. No requirement is waived, installation/re-pin authorized or actual
+qualification claimed. G1 remains open pending explicit owner closure after
+the evidence commit; merge, push and P2 remain separate actions.
+
+**G1 closure and merge preparation — 2026-10-25:** owner requested “Close G1 if
+it satisfies the spec and prep for merge”. Reviewed SPEC first-milestone criteria
+and ROADMAP G1 against recorded evidence; conditions met within synthetic/core
+scope, so G1 is CLOSED. Evidence was committed first as `7f85871`; Ishan's
+approval of `555586b` is owner-relayed and human drill remains bound to
+`ffed35e`. No fabricated same-SHA human rerun or new AI advisory. Fresh ordered
+gates and full coverage in an empty-`/tmp` namespace pass143 tests/2,082 assertions,
+100% functions/98.11% lines; audit14 packages/no advisories.
+
+Prepare local merge draft for the complete P1 stack into API-verified default
+`master` at `2be0e4fe7a593887ce690062e68a8dfaeaf170a7` (behind0); local ancestry
+and merge-tree check pass without conflict. Cached origin/master is stale and
+not used as the merge target. No upstream branch mutation, PR publication or
+merge authorized. Framework2.1.0 pin unchanged, actual mismatched installation
+remains blocked; P2/untrusted execution/providers/production need separate work
+authorization and qualification. Closing synthetic G1 does not close those gates.

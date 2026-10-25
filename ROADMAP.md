@@ -174,6 +174,7 @@ All windows are baseline sequencing for one developer; the gate determines exit.
 | P0 — scope and decisions | W1–W2 | Supported profile, runtime choice, threat/failure model, acceptance corpus | Research/synthetic fixtures only | G0: build-ready baseline |
 | P1 — authoritative core | W3–W8 | Durable records, gated effects, policy, operator control and recovery | Synthetic effects; no untrusted worker | G1: core conformance |
 | P2 — isolated execution | W9–W14 | One supervised runtime, real isolation, candidate changes and evidence | Internal `0.1` alpha; no production authority | G2: isolated-runner conformance |
+| Reminder — standalone provenance/history engine | After the verified P2 isolated-runner seam; dates/effort unallocated | Revisit a separate-repository DeltaDB-inspired build, then optional Loom shadow integration | No replacement of Loom authority; no automatic build/integration approval | Separate scope/retention/license/recovery decision before starting |
 | P3 — I2P workflow | W15–W20 | Idea-to-verified-candidate workflow, dependencies, bounded workers and context | Internal `0.2` workflow alpha | G3: repeatable supported workflow |
 | P4 — controlled delivery | W21–W24 | One staging/prod deployment target, confirmation and restore | `0.3` feature-complete beta candidate; staging first | G4: deployment/recovery qualification |
 | P5 — operator product/hardening | W25–W28 | Read-only dashboard, packaging, documentation and operational controls | Private beta; production only after explicit G4 authorization | G5: pilot-ready operations |
@@ -184,6 +185,12 @@ All windows are baseline sequencing for one developer; the gate determines exit.
 P0/P1 planning detail is high confidence **in sequence**, not duration.
 P2–P4 estimates are medium/low confidence until runtime, sandbox and target
 choices are exercised. P5/H1 dates are forecasts, not commitments.
+
+The standalone-history row is an owner-requested **sequencing reminder**, not
+work funded inside W9–W14 or a new dependency of G2/P3. Its researched effort
+range is not added silently to the existing windows. If the same developer
+undertakes it, explicitly reforecast the affected Loom schedule when its scope
+is approved; do not imply parallel capacity or unchanged delivery dates.
 
 ### Gate rules applying to every phase
 
@@ -442,6 +449,31 @@ requests this evidence committed **before** closure: G1 remains open, merge/P2
 not authorized by this record.
 
 ### P2 — One real isolated runner and verified candidate delivery
+
+**Research pause (2026-10-25):** owner requests extensive DeltaDB research before
+continuing: independently built analogous software in a separate repository,
+not direct product adoption, and compatibility/pros/cons/recommendation for Loom.
+Active SPEC scope is research only on `chore/deltadb-research`; SQLite authority,
+P2 isolation/provider restrictions and prior gates remain unchanged. No new
+repository, DB migration, dependency or runtime/service launch is authorized.
+Reports are under `research/deltadb/`; start with the
+[Loom assessment and recommendation](research/deltadb/03-loom-assessment.md).
+Research recommends a bounded separate revision/provenance engine over proven
+storage, not replacement of Loom's authority SQLite or an unbounded DB/VCS clone.
+Owner subsequently requests committing the research and placing the separate
+standalone build after the isolated-runner seam as a reminder. This accepts the
+sequencing reminder, not a storage/authority change or implementation contract.
+
+**Post-seam reminder — separate standalone build:** once T-09/T-15's actual
+supervisor/identity-bound IPC and rootless execution/cleanup seam passes its
+declared tests, revisit the [independent history-engine proposal](research/deltadb/03-loom-assessment.md)
+before the P3 scope review. Do not substitute research probes or a spawn smoke
+test for that seam. Start in a separate repository only after approving its
+bounded product scope, capture/retention/export/license/recovery contract and
+schedule. Keep it optional to Loom; shadow/read-only evidence integration comes
+after the independent core is qualified. No custom DB-kernel build, SQLite
+replacement, provider use, repository creation or new integration is authorized
+by the reminder. This task does not resume P2 implementation.
 
 **Kickoff discovery (2026-10-25):** owner reported P1 merged and requested
 continuation; PR #5 merge verified at `ffbfd47`. New

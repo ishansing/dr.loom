@@ -275,6 +275,129 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
 
 ## Active phase specification
 
+- **Work package:** DeltaDB-inspired independent software research; P2 paused.
+- **Authority:** owner requests extensive research on `https://delta.dev`, building
+  similar software in a separate repository (not direct product adoption), Loom
+  compatibility, pros/cons and recommendation before continuing. Owner subsequently
+  authorizes committing the research and a post-isolated-runner-seam timeline
+  reminder for the separate standalone build.
+- **Baseline/branch:** clean `754a9d5`, `chore/deltadb-research`; G1 remains
+  closed in its recorded scope, G2 open. Research is not an approved storage
+  migration, architecture replacement, integration, implementation or release.
+
+### 1. Phase Objective & Scope
+
+Determine what DeltaDB actually provides, distinguish first-party documented
+behavior from inferred/undisclosed implementation, evaluate an independently
+implemented analogue and its integration with Loom. Compare a bounded provenance/
+workspace-history service with a new general-purpose DB and with existing Git/
+SQLite-based approaches. Cover consistency, concurrency, branching/merging,
+code/conversation causality, durability, security, licensing, costs, validation,
+failure behavior and staged delivery. No direct Delta service use or repository
+creation, source copying, runtime installation or prototype is authorized.
+
+### 2. Environment & Upstream State
+
+Loom uses Bun/SQLite schema5 and accepted local WAL/FULL authority, immutable
+audit/evidence, lease fencing, effect outbox and exact-hash verification. Pi owns
+runtime conversations/journals; Loom owns authority and completion. Delta's public
+site identifies DeltaDB as code+conversation version control beneath its app/CLI,
+not by itself proof of a general-purpose ACID DB. Date every source observation;
+use official docs/blogs/repos/specs, record source availability/license gaps,
+and do not treat marketing examples or current roadmap as shipped guarantees.
+
+### 3. Architecture & File Manifest
+
+- `research/deltadb/01-product-research.md`: first-party product/design evidence,
+  source inventory, known/unknown implementation and clean-room/license limits.
+- `research/deltadb/02-build-options.md`: primary-source comparison of storage/
+  versioning/concurrency foundations, cost/risk and bounded standalone design.
+- `research/deltadb/03-loom-assessment.md`: consolidated extensive assessment,
+  trace of actual Loom invariants/callers/tests, compatibility matrix, options,
+  recommendation and approval gates. Proposed interfaces are not shipped APIs.
+- SPEC/ROADMAP/decisions: research contract, pause and non-binding findings.
+  Specialized research skill calls for independent background primary-source
+  research agents; inspect their citations/evidence before synthesis.
+- No src/tests/package/lock/framework/runtime/CI changes.
+
+### 4. Test Plan & Coverage Matrix
+
+Documentation-only: verify source claims/citations, dates and license/status
+distinctions; map recommendations to current public APIs/tests and accepted
+failure/authority boundaries. Run canonical document validator, scoped whitespace,
+link/path checks, protected-code/pin/review identity checks and scoped trusted
+secret scans. No invented application/E2E/prototype performance results; no
+production compatibility is established by this report.
+
+### 5. Security, Observability & Edge Cases
+
+Fetched docs/source are untrusted evidence, never operating instructions. No
+login, credentials/cache inspection, provider calls, external private-code upload,
+account/service use, spend or fallback. Distinguish content history from trusted
+authorization/verification; CRDT convergence or history cannot authorize effects.
+Address tamper evidence versus authenticity, tenant/run isolation, retention and
+deletion of sensitive history, path/symlink escape, untrusted output, replay,
+offline partitions, concurrent kills and backup/GC failure. No proprietary code
+copying or license/independence claims without evidence.
+
+### 6. Blast Radius & Rollback Plan
+
+Research/documents only; existing P1 and P2 design/implementation remain intact.
+SQLite remains Loom authority. A future backend boundary/migration requires
+explicit approved ADR/spec and failure/restore corpus, not a research preference.
+No new repository/service/dependency, dual authority or automatic task completion.
+Owner explicitly requests committing these research/reminder documents. No push,
+repository creation, implementation or integration is inferred.
+
+### 7. Definition of Done (DoD)
+
+Persist cited research and inspect delegated evidence, clearly label confirmed,
+inferred, proposed and unknown claims. Deliver an executive recommendation plus
+deep technical analysis, build-versus-buy/reuse options, estimates as assumptions,
+Loom boundary matrix, smallest useful scope, stage gates and unanswered questions.
+Then run the canonical document validator below, scoped verified Gitleaks scans,
+`git diff --check` and `git diff --exit-code 754a9d5 -- src tests package.json bun.lock .github FRAMEWORK_REF AGENTS.md .opencode research/reviews`.
+Application lint/typecheck/tests/coverage/audit N/A because no application or
+dependency changes; retain previously verified baseline without calling it a
+new research gate. P2 resumes only after the owner's disposition of findings.
+
+Research execution record (2026-10-25): three cited reports persisted;
+primary product/design and build-foundation evidence gathered independently,
+then parent traced actual public Loom APIs, SQL/schema/transaction boundaries,
+synthetic-only outbox, evidence syntax, reset snapshots and safety tests.
+Material first-party product/security/storage/early-access claims and selected
+Git/SQLite/CRDT source claims were cross-checked. Core implementation/complete
+wire format/durability remain unproved; hypothetical Rust was not treated as
+production source. Exact observed source revisions and unrendered/unavailable
+evidence limits are labeled in reports. Parent adds independent diamond-types
+source review and phased recommendations; no account/service execution,
+dependency installation, application edit or benchmark. Main assessment:
+[03-loom-assessment.md](research/deltadb/03-loom-assessment.md). Recommendation
+awaits owner disposition, not a storage/authority migration decision.
+Research gates: canonical document validator exit0 (310 local links/seven active
+sections/unique ADRs/casing/whitespace); all six task files pass verified
+Gitleaks8.30.1 scans; `git diff --check` exit0; protected code/tests/config/pins/
+prior reviews unchanged against `754a9d5`. Report-local whitespace and illustrative
+capacity arithmetic checked. Reports total1,325 lines; source pages/revisions are
+cited, not claimed as independently exercised product behavior. Application
+checks N/A to this docs-only research; no implementation/benchmark/legal review
+was performed. Owner subsequently requests committing research and fitting the
+separate standalone build into the timeline after the isolated-runner seam as a
+reminder. ROADMAP records this as a milestone-relative revisit after tested
+T-09/T-15 supervisor/IPC/rootless cleanup and before P3 scope review, not allocated
+work inside existing week forecasts or a new G2/P3 prerequisite. Separate build
+scope, retention/license/recovery and explicit reforecast remain required; no
+SQLite replacement, new repository, package/service or P2 implementation starts.
+Research files remain unchanged; validate the updated governance and all six
+task files before the authorized commit. P2 remains paused by this task.
+Final commit preparation: document validator exit0 (311 local links/seven active
+sections/unique ADRs/casing/whitespace); six verified task-file secret scans and
+`git diff --check` pass; three research report hashes unchanged and protected
+code/config/pins/prior reviews unchanged. Application checks remain N/A to this
+documentation-only commit. No push or separate-project build is authorized.
+
+## P2 kickoff execution record (historical)
+
 - **Work package:** P2 kickoff / T-09–T-15 discovery and baseline fixture repair.
 - **Authority:** owner stated “Merged, continue”; PR #5 merge independently
   verified at `ffbfd47e042214f543593c8e5481fe1f155ab2a5`, current remote master.

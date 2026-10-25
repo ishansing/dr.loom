@@ -1085,3 +1085,53 @@ lint/strict check,143 tests/2,082 assertions with unchanged100% functions/98.11%
 lines, empty-`/tmp` full suite, automated drill and14-package audit pass. No
 application, package, lock, workflow or prior-review change. Official tag API and
 registry archive revalidate selected SDK1.4.0, without installation/execution.
+
+## [ADR-021] - 2026-10-25 (DeltaDB-inspired research boundary)
+
+**Status:** Research completed; architecture/build/integration decision pending.
+
+**Context:** Before continuing P2, owner requests extensive research on DeltaDB
+(`https://delta.dev`) and an independently implemented analogue in a separate
+repository, including Loom compatibility, pros/cons and a recommendation. This
+is not direct product adoption or permission to replace the accepted authority DB.
+
+**Decision boundary:** pause P2 implementation for cited primary-source research.
+Distinguish DeltaDB's documented version-control/provenance product from generic
+database-engine guarantees and from proposed independent design. Evaluate content/
+conversation history as a separate evidence subsystem as well as more ambitious
+storage replacement; preserve ADR-008 local WAL/FULL durability, one owner per
+fact, external trusted verification and live effect admission. Neither history,
+CRDT convergence nor a content hash establishes authorization or task success.
+
+**Consequences:** research files only; no direct Delta account/service use,
+proprietary source copying, new repository, dependency installation, schema change,
+provider access or paid effects. First-party/public-source evidence and unknowns
+must be explicit. Any future independent build/integration or authority/storage
+change needs its own approved spec/ADR, failure corpus and recovery plan. Findings
+are recommendations, not automatically accepted architecture or P2 advancement.
+
+**Research findings:** three reports under `research/deltadb/` distinguish
+documented CRDT/causal/fragment-tree design and hosted storage from undisclosed
+core formats/durability, source-observed AGPL plugin contracts, and our independent
+proposal. Parent cross-checked material product/security/storage/legal claims and
+representative storage/CRDT foundations. Public early-access terms restrict
+product-use research; no account/product session was used and no legal/clean-room
+clearance is claimed. Recommend a bounded independent revision/provenance engine
+using mature persistence, optional Loom shadow evidence integration first, and
+no generic authority DB replacement or new replicated leases/kill/completion.
+CRDT convergence, source rewind and content hashes do not replace semantic
+verification, effect reconciliation or trusted identity. Estimates remain
+assumption-based, not measured. Owner disposition/build approval remains pending.
+
+**Commit and sequencing reminder — 2026-10-25:** owner requests “commit this
+research and fit this (seperate sandalone build) into the timeline after the
+isolated-runner seam (as a reminder)”. Record a separate-repository history/
+provenance build revisit after verified T-09/T-15 supervisor/identity-bound IPC/
+rootless cleanup, before P3 scope review. This is an accepted reminder, not
+allocation of the researched effort inside existing P2 week forecasts, a G2/P3
+prerequisite or an implementation/storage-replacement approval. An actual build
+needs scoped product/retention/license/recovery approval and an explicit schedule
+reforecast if it uses the same developer. Initial Loom integration stays optional
+shadow evidence after independent qualification; existing SQLite authority stays.
+Commit these research/governance files only; no push, new repository, runtime
+effects, live provider use or resumed P2 implementation authorized by this task.

@@ -281,7 +281,7 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
   human default/explicit JSON, synthetic kill controls and pinned offline scope.
 - **Baseline/branch:** clean `9f3241a`, `feat/p1-cli-conformance`.
 - **Status:** implementation, ordered offline gates and fixed-artifact advisory
-  verified with no confirmed findings; owner authorized T-07 commit, human
+  verified with no confirmed findings; T-07 committed `f888e68`, human
   disposition pending. T-06 push is owner-reported; agent SSH verification and
   actual framework/remote CI/human drill qualification remain unresolved. G1 open.
 
@@ -423,6 +423,21 @@ blocker, unrun remote CI/human drill and next owner honestly. No commit/push or
 G1 closure is inferred from this work package; retain explicit owner boundaries.
 
 Execution evidence (2026-10-24–25):
+
+- Post-commit continuation: authorized T-07 commit is
+  `f888e6823c7ca67d8fb8a778d56c9b87b45d5a2b` (22 verified files); working tree
+  clean immediately afterward. Subsequent [G1 evidence matrix](docs/g1-closeout.md)
+  maps existing synthetic/native-process proof to exact-artifact CI, human drill,
+  Ishan disposition and actual-installation handoffs. This is documentation-only
+  discovery within T-07, not a new implementation phase or G1 approval. Closeout
+  documentation commit was separately authorized by the owner; no G1 approval
+  or push authority is inferred.
+- Follow-up documentation validation: canonical document validator exit0
+  (283 links/seven active sections/unique ADRs/casing/whitespace), three changed
+  documents pass verified Gitleaks8.30.1 scans, `git diff --check` exit0.
+  Persisted review hash and non-governance manifest identities remain unchanged.
+  Application/typecheck/coverage/drill/audit were not rerun for this docs-only
+  follow-up; fresh pre-commit results above still describe unchanged code.
 
 - Acceptance reds reproduced the installed-revision/default-claim mismatch,
   one-byte skill drift, changed lock, duplicate ref keys, missing-status DB

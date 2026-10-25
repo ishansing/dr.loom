@@ -412,6 +412,13 @@ filesystem fixture environment. No claim of process containment or remote
 rollback is inferred from database tests. Synthetic effect adapters cannot
 accidentally acquire production authority.
 
+**Post-commit discovery (2026-10-25):** T-07 committed
+`f888e6823c7ca67d8fb8a778d56c9b87b45d5a2b`; subsequent
+[G1 evidence matrix](docs/g1-closeout.md) records existing proof and outstanding
+exact-artifact CI/human demonstration/review/qualification handoffs. G1 remains
+open; no automatic P2 implementation or T-07 push. This follow-up documentation
+is not part of the frozen T-07 advisory artifact.
+
 ### P2 — One real isolated runner and verified candidate delivery
 
 **Outcome:** the first useful alpha executes a bounded task while protecting

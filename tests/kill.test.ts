@@ -46,7 +46,7 @@ test("v3 migration preserves old facts and adds unknown run/latch bindings witho
 			),
 		);
 		store.initSchema(db);
-		expect(db.query("PRAGMA user_version").get()).toEqual({ user_version: 5 });
+		expect(db.query("PRAGMA user_version").get()).toEqual({ user_version: 6 });
 		expect(db.query("SELECT * FROM leases").get()).toEqual({
 			workspace: "ws",
 			owner: "old-owner",
@@ -64,7 +64,7 @@ test("v3 migration preserves old facts and adds unknown run/latch bindings witho
 		store.initSchema(db);
 		expect(
 			db.query("SELECT version FROM schema_migrations ORDER BY version").all(),
-		).toEqual([{ version: 2 }, { version: 3 }, { version: 4 }, { version: 5 }]);
+		).toEqual([2, 3, 4, 5, 6].map((version) => ({ version })));
 		store.engageKill(db, {
 			scope: "run:old",
 			actor: "human:operator",

@@ -19,11 +19,11 @@ test("intact v2 migrates atomically to current schema without rewriting existing
 		);
 		const before = db.query("SELECT * FROM audit").all();
 		store.initSchema(db);
-		expect(db.query("PRAGMA user_version").get()).toEqual({ user_version: 5 });
+		expect(db.query("PRAGMA user_version").get()).toEqual({ user_version: 6 });
 		expect(db.query("SELECT * FROM audit").all()).toEqual(before);
 		expect(
 			db.query("SELECT version FROM schema_migrations ORDER BY version").all(),
-		).toEqual([{ version: 2 }, { version: 3 }, { version: 4 }, { version: 5 }]);
+		).toEqual([2, 3, 4, 5, 6].map((version) => ({ version })));
 		store.initSchema(db);
 		expect(() => db.exec("DELETE FROM audit")).toThrow("append-only");
 	} finally {
@@ -913,7 +913,7 @@ test("v2 writer contention leaves migration intact and a clean retry reaches cur
 			}).immediate();
 			store.initSchema(contender);
 			expect(contender.query("PRAGMA user_version").get()).toEqual({
-				user_version: 5,
+				user_version: 6,
 			});
 		} finally {
 			contender.close();

@@ -278,7 +278,7 @@ function main(): void {
 					`Thread ${label(thread.threadId ?? "unknown (legacy)")}: committed ${label(thread.lastCommitted?.phase ?? "none")}; current ${label(thread.latest.phase)}/${label(thread.latest.status)}; resume ${label(thread.latest.resumePoint)}`,
 				);
 			lines.push(
-				`Awaiting human: ${result.openActions.filter((action) => ["pending", "escalated"].includes(action.decision)).length}; interrupted actions: ${result.interruptedActions.length}; unresolved outbox: ${result.outbox.length}`,
+				`Awaiting human: ${result.openActions.filter((action) => ["pending", "escalated"].includes(action.decision)).length}; interrupted actions: ${result.interruptedActions.length}; unresolved outbox: ${result.outbox.length}; unresolved domains: ${result.domains.filter((domain) => domain.unresolved).length}`,
 			);
 			for (const lease of result.leases)
 				lines.push(

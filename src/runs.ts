@@ -5,6 +5,7 @@ import {
 	getBudget,
 	getKillStatus,
 	type Lease,
+	listDomains,
 	listOpenActions,
 	listUnresolvedOutbox,
 	recordTransition,
@@ -124,9 +125,9 @@ export function initRun(
 				getRun(db, input.runId) ||
 				db
 					.query(
-						"SELECT 1 FROM transitions WHERE run_id=? UNION ALL SELECT 1 FROM audit WHERE run_id=? UNION ALL SELECT 1 FROM outbox WHERE run_id=? LIMIT 1",
+						"SELECT 1 FROM transitions WHERE run_id=? UNION ALL SELECT 1 FROM audit WHERE run_id=? UNION ALL SELECT 1 FROM outbox WHERE run_id=? UNION ALL SELECT 1 FROM domains WHERE run_id=? LIMIT 1",
 					)
-					.get(input.runId, input.runId, input.runId)
+					.get(input.runId, input.runId, input.runId, input.runId)
 			)
 				throw new Error("Run already exists; start a new run ID");
 			const inserted = db
@@ -336,6 +337,7 @@ export function getRunStatus(db: Database, runId: string) {
 				return action;
 			});
 		const outbox = listUnresolvedOutbox(db, { runId });
+		const domains = listDomains(db, { runId });
 		if (
 			!run &&
 			!threads.length &&
@@ -372,6 +374,7 @@ export function getRunStatus(db: Database, runId: string) {
 			openActions,
 			interruptedActions,
 			outbox,
+			domains,
 			leases,
 			budgets,
 			...(!threads.length ? { reason: "no transitions" } : {}),

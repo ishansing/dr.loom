@@ -1177,3 +1177,39 @@ Keep the existing image/data intact; no reformat/deletion, broad recursive chown
 daemon/rootful changes, UID0/world-writable/unbounded fallback, SDK/provider/live
 use or extra spend. No Ishan approval, PR merge/push or G2 closure inferred.
 This task commits records only; lab operations remain unexecuted by this commit.
+
+## [ADR-023] - 2026-10-26 (P2 durable domain inventory)
+
+**Title:** Keep admission and lifecycle uncertainty in the existing store owner.
+
+**Status:** Accepted within ADR-022's owner-approved offline scope; implementation
+is uncommitted and not a G2/containment qualification or human review.
+
+**Context & Problem Statement:** Restart/kill must preserve admitted-launch
+uncertainty without treating admission as execution or cleanup as task success.
+Distinct logical workspace names must not bypass writable-root reuse fencing.
+
+**Options Evaluated:** Extend the existing store transaction with immutable
+domain/event tables; or build an independent launch journal and reconcile two
+authorities. The latter adds crash/atomicity problems without an approved need.
+An in-memory launch map cannot satisfy the required crash-recovery boundary.
+
+**Decision & Rationale:** Schema6 binds the frozen offline profile, canonical
+roots, worker hash, run/thread/owner/epoch, endpoint and deadline. Domain UUID is
+the native action ID; `policy_action_id` binds preceding successful policy audit.
+Admission atomically draws existing budget and persists requested/allowed audit
+plus inventory, returning no replayable permit. Trusted late observations remain
+recordable after kill/expiry; kill cannot invent not-executed for admitted domains.
+Reset hashes full domain facts and blocks unresolved cleanup. Input/writable roots
+are disjoint; unresolved logical workspaces or overlapping canonical writable
+roots block admission. Trailing separators reject rather than bypass overlap.
+
+**Consequences & Tech Debt:** Read snapshots validate complete histories, run
+references and config/policy evidence. Native process races/crash recovery and
+ignored/extra-write trigger injection test atomicity; corruption tests first
+reproduced missing run/evidence checks. Full-history reads are intentionally
+unoptimized; performance is not measured. Physical aliases/mounts and actual
+Docker create/start/cleanup remain the next approved slice, owned by the
+implementing developer; no SDK/provider activity, dependency changes, automatic
+completion or lease resurrection. Older binaries reject schema6: rollback needs
+verified backup/restore and reconciliation, not deleting inventory history.

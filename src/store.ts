@@ -1,5 +1,6 @@
 import { Database } from "bun:sqlite";
 import { createHash, randomUUID } from "node:crypto";
+import { isAbsolute, normalize } from "node:path";
 import type {
 	ActionClass,
 	PolicyConfig,
@@ -431,6 +432,58 @@ const runsSql = `
   END;
 `;
 
+const domainsSql = `
+  CREATE TABLE domains (
+    domain_id TEXT PRIMARY KEY NOT NULL CHECK (length(domain_id) = 36),
+    run_id TEXT NOT NULL REFERENCES runs(run_id),
+    thread_id TEXT NOT NULL,
+    workspace TEXT NOT NULL,
+    owner TEXT NOT NULL,
+    epoch INTEGER NOT NULL CHECK (typeof(epoch) = 'integer' AND epoch BETWEEN 1 AND 9007199254740991),
+    profile_version INTEGER NOT NULL CHECK (profile_version = 1),
+    policy_action_id TEXT NOT NULL,
+    endpoint TEXT NOT NULL,
+    config TEXT NOT NULL CHECK (length(CAST(config AS BLOB)) BETWEEN 1 AND 16384),
+    config_hash TEXT NOT NULL CHECK (length(config_hash) = 64),
+    deadline_ms INTEGER NOT NULL CHECK (typeof(deadline_ms) = 'integer' AND deadline_ms BETWEEN 0 AND 8640000000000000),
+    created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+  );
+  CREATE TABLE domain_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    domain_id TEXT NOT NULL REFERENCES domains(domain_id),
+    kind TEXT NOT NULL CHECK (kind IN ('admitted','created','started','stop-requested','quiescent','unknown','not-created')),
+    container_id TEXT,
+    evidence_ref TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+    CHECK ((kind = 'created' AND container_id IS NOT NULL AND length(container_id) = 64) OR (kind != 'created' AND container_id IS NULL)),
+    UNIQUE (domain_id, kind, evidence_ref)
+  );
+  CREATE INDEX idx_domains_workspace ON domains(workspace, domain_id);
+  CREATE INDEX idx_domain_events ON domain_events(domain_id, id);
+  CREATE UNIQUE INDEX idx_domain_binding ON domain_events(domain_id) WHERE kind = 'created';
+  CREATE UNIQUE INDEX idx_domain_container ON domain_events(container_id) WHERE kind = 'created';
+  ${["domains", "domain_events"]
+		.map(
+			(table) => `
+    CREATE TRIGGER ${table}_no_update BEFORE UPDATE ON ${table} BEGIN
+      SELECT RAISE(ABORT, 'domain history is append-only');
+    END;
+    CREATE TRIGGER ${table}_no_delete BEFORE DELETE ON ${table} BEGIN
+      SELECT RAISE(ABORT, 'domain history is append-only');
+    END;
+  `,
+		)
+		.join("")}
+  CREATE TRIGGER domains_no_replace BEFORE INSERT ON domains
+  WHEN EXISTS (SELECT 1 FROM domains WHERE domain_id = NEW.domain_id) BEGIN
+    SELECT RAISE(ABORT, 'domain history is append-only');
+  END;
+  CREATE TRIGGER domain_events_no_replace BEFORE INSERT ON domain_events
+  WHEN NEW.id != -1 AND EXISTS (SELECT 1 FROM domain_events WHERE id = NEW.id) BEGIN
+    SELECT RAISE(ABORT, 'domain history is append-only');
+  END;
+`;
+
 function schemaSignature(db: Database): string {
 	return JSON.stringify(
 		db
@@ -462,7 +515,9 @@ const supportedSchemas = (() => {
 		db.exec(killSql);
 		const v4 = schemaSignature(db);
 		db.exec(runsSql);
-		return { empty, legacy, v2, v3, v4, current: schemaSignature(db) };
+		const v5 = schemaSignature(db);
+		db.exec(domainsSql);
+		return { empty, legacy, v2, v3, v4, v5, current: schemaSignature(db) };
 	} finally {
 		db.close();
 	}
@@ -470,7 +525,7 @@ const supportedSchemas = (() => {
 
 function schemaKind(
 	db: Database,
-): "empty" | "legacy" | "v2" | "v3" | "v4" | "current" {
+): "empty" | "legacy" | "v2" | "v3" | "v4" | "v5" | "current" {
 	const version = db
 		.query<{ user_version: number }, []>("PRAGMA user_version")
 		.get()?.user_version;
@@ -481,7 +536,8 @@ function schemaKind(
 		(version === 2 && signature === supportedSchemas.v2) ||
 		(version === 3 && signature === supportedSchemas.v3) ||
 		(version === 4 && signature === supportedSchemas.v4) ||
-		(version === 5 && signature === supportedSchemas.current)
+		(version === 5 && signature === supportedSchemas.v5) ||
+		(version === 6 && signature === supportedSchemas.current)
 	) {
 		const rows = db
 			.query<{ version: number; applied_at: string }, []>(
@@ -503,7 +559,9 @@ function schemaKind(
 					? "v3"
 					: version === 4
 						? "v4"
-						: "current";
+						: version === 5
+							? "v5"
+							: "current";
 	}
 	throw new Error("Unsupported Loom schema; database left unchanged");
 }
@@ -548,21 +606,27 @@ export function initSchema(db: Database): void {
 			db.exec(`INSERT INTO schema_migrations (version, applied_at)
         VALUES (2, strftime('%Y-%m-%dT%H:%M:%fZ','now'));`);
 		}
-		if (kind !== "v3" && kind !== "v4") {
+		if (["empty", "legacy", "v2"].includes(kind)) {
 			db.exec(outboxSql);
 			db.exec(`INSERT INTO schema_migrations (version, applied_at)
         VALUES (3, strftime('%Y-%m-%dT%H:%M:%fZ','now'));`);
 		}
-		if (kind !== "v4") {
+		if (kind !== "v4" && kind !== "v5") {
 			db.exec(killSql);
 			db.exec(`INSERT INTO schema_migrations (version, applied_at)
         VALUES (4, strftime('%Y-%m-%dT%H:%M:%fZ','now'));`);
 		}
-		db.exec(runsSql);
+		if (kind !== "v5") {
+			db.exec(runsSql);
+			db.exec(
+				`INSERT INTO schema_migrations (version, applied_at) VALUES (5, strftime('%Y-%m-%dT%H:%M:%fZ','now'));`,
+			);
+		}
+		db.exec(domainsSql);
 		db.exec(`
       INSERT INTO schema_migrations (version, applied_at)
-      VALUES (5, strftime('%Y-%m-%dT%H:%M:%fZ','now'));
-      PRAGMA user_version = 5;
+      VALUES (6, strftime('%Y-%m-%dT%H:%M:%fZ','now'));
+      PRAGMA user_version = 6;
     `);
 	}).immediate();
 }
@@ -2485,6 +2549,7 @@ export function engageKill(
 			const actions = scopedKillActions(db, runId);
 			for (const row of scopedKillOutbox(db, runId))
 				requireOutbox(db, row.intentId);
+			listDomains(db, runId === null ? {} : { runId });
 			const leases = db
 				.query<{ epoch: number }, [string | null, string | null]>(
 					"SELECT epoch FROM leases WHERE ? IS NULL OR run_id = ?",
@@ -2512,7 +2577,7 @@ export function engageKill(
 			for (const action of actions) {
 				if (
 					action.outcome === "pending" &&
-					!hasOutboxEvent(db, action.runId, action.actionId)
+					!hasEffectAdmission(db, action.runId, action.actionId)
 				) {
 					insertActionRow(
 						db,
@@ -2542,7 +2607,7 @@ export function engageKill(
 }
 
 // Even an orphan observation refutes automatic non-execution; never filter to dispatch rows alone.
-function hasOutboxEvent(
+function hasEffectAdmission(
 	db: Database,
 	runId: string,
 	actionId: string,
@@ -2551,10 +2616,11 @@ function hasOutboxEvent(
 		db
 			.query<
 				{ id: number },
-				[string, string]
+				[string, string, string, string]
 			>(`SELECT e.id FROM outbox_events e JOIN outbox o ON o.intent_id = e.intent_id
-    WHERE o.run_id = ? AND o.action_id = ? LIMIT 1`)
-			.get(runId, actionId) !== null
+    WHERE o.run_id = ? AND o.action_id = ?
+    UNION ALL SELECT 1 FROM domains WHERE run_id=? AND domain_id=? LIMIT 1`)
+			.get(runId, actionId, runId, actionId) !== null
 	);
 }
 
@@ -2571,7 +2637,7 @@ function validateKillDenial(
 		action.evidenceRef !== `trace:kill-event-${event.id}` ||
 		action.decision !== "denied" ||
 		action.outcome !== "not-executed" ||
-		hasOutboxEvent(db, action.runId, action.actionId)
+		hasEffectAdmission(db, action.runId, action.actionId)
 	)
 		throw new Error("Invalid kill denial proof");
 }
@@ -2615,10 +2681,12 @@ export interface KillResetPlan {
 	leases: Lease[];
 	legacyAuditCount: number;
 	legacyTransitionCount: number;
+	domains: DomainRecord[];
 }
 
 function buildKillResetPlan(db: Database, scope: string): KillResetPlan {
 	const runId = killRun(scope);
+	const domains = listDomains(db, runId === null ? {} : { runId });
 	const latch = readKillLatch(db, scope);
 	if (!latch) throw new Error("Kill is not engaged");
 	if (latch.eventId === null)
@@ -2688,6 +2756,7 @@ function buildKillResetPlan(db: Database, scope: string): KillResetPlan {
 				transitions,
 				events,
 				cursors,
+				domains,
 				runs: db
 					.query<Record<string, unknown>, [string | null, string | null]>(
 						"SELECT * FROM runs WHERE ? IS NULL OR run_id=? ORDER BY run_id",
@@ -2702,6 +2771,7 @@ function buildKillResetPlan(db: Database, scope: string): KillResetPlan {
 		)
 		.digest("hex");
 	const blocked =
+		domains.some((domain) => domain.unresolved) ||
 		actions.some((action) => action.outcome === "pending") ||
 		outbox.some((row) =>
 			row.attempts.some(
@@ -2726,6 +2796,7 @@ function buildKillResetPlan(db: Database, scope: string): KillResetPlan {
 		).length,
 		legacyTransitionCount: transitions.filter((row) => row.thread_id === null)
 			.length,
+		domains,
 	};
 }
 
@@ -2781,6 +2852,501 @@ export function resetKill(
 			if (removed.changes !== 1)
 				throw new Error("Kill latch changed during reset");
 			return { scope: args.scope, eventId: event.id };
+		})
+		.immediate();
+}
+
+export const OFFLINE_DOMAIN_PROFILE = Object.freeze({
+	version: 1,
+	image:
+		"oven/bun@sha256:13b43f8bb2c63f5d89c56205c4279b85620363296a00ada33ff7ad568f3688e7",
+	uid: 65532,
+	gid: 65532,
+	cpus: 2,
+	memoryMiB: 4096,
+	pids: 256,
+	tmpMiB: 64,
+	shmMiB: 64,
+	maxWallMs: 1200000,
+	readyTimeoutMs: 10000,
+	stopGraceMs: 2000,
+	inspectTimeoutMs: 5000,
+	maxFrameBytes: 4096,
+	maxOutputBytes: 65536,
+	network: "none",
+	readOnly: true,
+	capabilities: "none",
+	noNewPrivileges: true,
+	logging: "none",
+	restart: "no",
+} as const);
+
+export interface DomainConfig {
+	inputRoot: string;
+	workspaceRoot: string;
+	workerSha256: string;
+}
+export interface DomainLaunchInput {
+	domainId: string;
+	endpoint: string;
+	config: DomainConfig;
+	deadlineMs: number;
+	authority: EffectAuthority;
+}
+type DomainKind =
+	| "admitted"
+	| "created"
+	| "started"
+	| "stop-requested"
+	| "quiescent"
+	| "unknown"
+	| "not-created";
+export type DomainObservation =
+	| { kind: "created"; containerId: string; evidenceRef: string }
+	| { kind: Exclude<DomainKind, "admitted" | "created">; evidenceRef: string };
+export interface DomainEvent {
+	id: number;
+	domainId: string;
+	kind: DomainKind;
+	containerId: string | null;
+	evidenceRef: string;
+	createdAt: string;
+}
+interface DomainRow {
+	domainId: string;
+	runId: string;
+	threadId: string;
+	workspace: string;
+	owner: string;
+	epoch: number;
+	profileVersion: number;
+	policyActionId: string;
+	endpoint: string;
+	config: string;
+	configHash: string;
+	deadlineMs: number;
+	createdAt: string;
+}
+export interface DomainRecord extends Omit<DomainRow, "config"> {
+	config: DomainConfig;
+	profile: typeof OFFLINE_DOMAIN_PROFILE;
+	events: DomainEvent[];
+	containerId: string | null;
+	unresolved: boolean;
+}
+const domainColumns = `domain_id AS domainId,run_id AS runId,thread_id AS threadId,workspace,owner,epoch,
+ profile_version AS profileVersion,policy_action_id AS policyActionId,endpoint,config,config_hash AS configHash,deadline_ms AS deadlineMs,created_at AS createdAt`;
+
+function domainRootsOverlap(a: string, b: string): boolean {
+	return a === b || a.startsWith(`${b}/`) || b.startsWith(`${a}/`);
+}
+function domainConfig(config: DomainConfig): DomainConfig {
+	checkFields(config, ["inputRoot", "workspaceRoot", "workerSha256"]);
+	for (const path of [config.inputRoot, config.workspaceRoot]) {
+		checkedText(path, "domain path", 4096);
+		if (!isAbsolute(path) || normalize(path) !== path || path.endsWith("/"))
+			throw new Error("Invalid domain path");
+	}
+	if (domainRootsOverlap(config.inputRoot, config.workspaceRoot))
+		throw new Error("Domain input and writable roots overlap");
+	if (
+		typeof config.workerSha256 !== "string" ||
+		!/^[a-f0-9]{64}$/.test(config.workerSha256)
+	)
+		throw new Error("Invalid worker hash");
+	return {
+		inputRoot: config.inputRoot,
+		workspaceRoot: config.workspaceRoot,
+		workerSha256: config.workerSha256,
+	};
+}
+function domainEndpoint(endpoint: string): void {
+	checkedText(endpoint, "domain endpoint", 4096);
+	const path = endpoint.slice(7);
+	if (
+		!endpoint.startsWith("unix://") ||
+		!isAbsolute(path) ||
+		normalize(path) !== path ||
+		path === "/"
+	)
+		throw new Error("Invalid domain endpoint");
+}
+function domainHash(
+	row: Omit<
+		DomainRow,
+		"createdAt" | "configHash" | "policyActionId" | "profileVersion"
+	>,
+): string {
+	return createHash("sha256")
+		.update(
+			JSON.stringify([
+				OFFLINE_DOMAIN_PROFILE,
+				row.domainId,
+				row.runId,
+				row.threadId,
+				row.workspace,
+				row.owner,
+				row.epoch,
+				row.endpoint,
+				row.config,
+				row.deadlineMs,
+			]),
+		)
+		.digest("hex");
+}
+function checkDomainStep(
+	events: readonly DomainEvent[],
+	event: Pick<DomainEvent, "kind" | "containerId" | "evidenceRef">,
+): void {
+	checkedEvidence(event.evidenceRef);
+	if (!events.length) {
+		if (event.kind !== "admitted" || event.containerId !== null)
+			throw new Error("Invalid domain admission history");
+		return;
+	}
+	if (
+		![
+			"created",
+			"started",
+			"stop-requested",
+			"quiescent",
+			"unknown",
+			"not-created",
+		].includes(event.kind)
+	)
+		throw new Error("Invalid domain observation");
+	const bound = events.find((e) => e.kind === "created");
+	if (event.kind === "created") {
+		if (
+			bound ||
+			typeof event.containerId !== "string" ||
+			!/^[a-f0-9]{64}$/.test(event.containerId)
+		)
+			throw new Error("Invalid domain container binding");
+	} else if (event.containerId !== null)
+		throw new Error("Invalid domain container binding");
+	if (
+		(["started", "quiescent"].includes(event.kind) && !bound) ||
+		(event.kind === "not-created" && bound)
+	)
+		throw new Error("Invalid domain observation order");
+	if (
+		["quiescent", "not-created"].includes(events.at(-1)!.kind) &&
+		!["created", "started", "unknown"].includes(event.kind)
+	)
+		throw new Error("Domain already quiescent");
+}
+function insertDomainEvent(
+	db: Database,
+	domainId: string,
+	kind: DomainKind,
+	containerId: string | null,
+	evidenceRef: string,
+): void {
+	const result = db
+		.query(
+			"INSERT INTO domain_events(domain_id,kind,container_id,evidence_ref) VALUES (?,?,?,?)",
+		)
+		.run(domainId, kind, containerId, evidenceRef);
+	if (result.changes !== 1)
+		throw new Error("Failed to persist domain observation");
+}
+function readDomain(db: Database, domainId: string): DomainRecord | null {
+	checkKey({ runId: "domain", threadId: "domain", actionId: domainId });
+	const row = db
+		.query<DomainRow, [string]>(
+			`SELECT ${domainColumns} FROM domains WHERE domain_id=?`,
+		)
+		.get(domainId);
+	if (!row) return null;
+	checkWriteContext({
+		runId: row.runId,
+		threadId: row.threadId,
+		workspace: row.workspace,
+		owner: row.owner,
+		epoch: row.epoch,
+		nowMs: 0,
+	});
+	if (!db.query("SELECT 1 FROM runs WHERE run_id=?").get(row.runId))
+		throw new Error("Missing domain registered run");
+	domainEndpoint(row.endpoint);
+	checkedTime(row.deadlineMs);
+	let config: DomainConfig;
+	try {
+		config = domainConfig(JSON.parse(row.config));
+	} catch {
+		throw new Error("Invalid domain configuration history");
+	}
+	if (
+		row.profileVersion !== 1 ||
+		JSON.stringify(config) !== row.config ||
+		domainHash(row) !== row.configHash ||
+		!Number.isFinite(Date.parse(row.createdAt))
+	)
+		throw new Error("Invalid domain history");
+	const key = { runId: row.runId, threadId: row.threadId };
+	const action = getAction(db, { ...key, actionId: row.domainId });
+	const policy = getAction(db, { ...key, actionId: row.policyActionId });
+	const policyDigest = createHash("sha256")
+		.update(JSON.stringify(["runner.launch", "opaque", [row.configHash]]))
+		.digest("hex");
+	if (
+		!action ||
+		action.action !== `runner.launch:${row.configHash}` ||
+		action.decision !== "allowed" ||
+		action.tier !== "high-risk" ||
+		!policy ||
+		policy.action !== `policy:${policyDigest}` ||
+		policy.decision !== "allowed" ||
+		policy.outcome !== "completed"
+	)
+		throw new Error("Invalid domain admission audit");
+	const admission = db
+		.query<ActionAuditEntry, [string, string]>(
+			`SELECT ${actionColumns} FROM audit WHERE run_id=? AND action_id=? ORDER BY id LIMIT 2`,
+		)
+		.all(row.runId, row.domainId);
+	if (
+		admission.length !== 2 ||
+		admission[0]!.actor !== "system:supervisor" ||
+		admission[0]!.evidenceRef !== `trace:domain-config:${row.configHash}` ||
+		admission[1]!.actor !== "system:policy" ||
+		admission[1]!.decision !== "allowed" ||
+		admission[1]!.evidenceRef !== `trace:policy-audit:${row.policyActionId}` ||
+		policy.id >= admission[0]!.id
+	)
+		throw new Error("Invalid domain admission audit");
+	const events = db
+		.query<DomainEvent, [string]>(
+			"SELECT id,domain_id AS domainId,kind,container_id AS containerId,evidence_ref AS evidenceRef,created_at AS createdAt FROM domain_events WHERE domain_id=? ORDER BY id",
+		)
+		.all(domainId);
+	const seen: DomainEvent[] = [];
+	for (const event of events) {
+		if (
+			!Number.isSafeInteger(event.id) ||
+			event.id <= 0 ||
+			!Number.isFinite(Date.parse(event.createdAt))
+		)
+			throw new Error("Invalid domain event history");
+		checkDomainStep(seen, event);
+		seen.push(event);
+	}
+	if (!events.length) throw new Error("Missing domain admission history");
+	if (events[0]!.evidenceRef !== `trace:domain-config:${row.configHash}`)
+		throw new Error("Invalid domain admission evidence");
+	return {
+		...row,
+		config,
+		profile: OFFLINE_DOMAIN_PROFILE,
+		events,
+		containerId: events.find((e) => e.kind === "created")?.containerId ?? null,
+		unresolved: !["quiescent", "not-created"].includes(events.at(-1)!.kind),
+	};
+}
+
+/** Trusted host metadata, not proof of Docker preflight or a reusable execution grant. */
+export function admitDomain(
+	db: Database,
+	context: WriteContext,
+	input: DomainLaunchInput,
+	policy: PolicyConfig,
+): { decision: EffectDecision; domain: DomainRecord | null } {
+	checkFields(input, [
+		"domainId",
+		"endpoint",
+		"config",
+		"deadlineMs",
+		"authority",
+	]);
+	checkWriteContext(context);
+	checkKey({
+		runId: context.runId,
+		threadId: context.threadId,
+		actionId: input.domainId,
+	});
+	domainEndpoint(input.endpoint);
+	const config = JSON.stringify(domainConfig(input.config));
+	checkedTime(input.deadlineMs);
+	return db
+		.transaction(() => {
+			const liveContext = { ...context, nowMs: checkWriteContext(context) };
+			if (!db.query("SELECT 1 FROM runs WHERE run_id=?").get(context.runId))
+				throw new Error("No such registered run; init first");
+			if (
+				getDomain(db, input.domainId) ||
+				getAction(db, {
+					runId: context.runId,
+					threadId: context.threadId,
+					actionId: input.domainId,
+				})
+			)
+				throw new Error("Domain already exists");
+			if (
+				listDomains(db).some(
+					(d) =>
+						d.unresolved &&
+						(d.workspace === context.workspace ||
+							domainRootsOverlap(
+								d.config.workspaceRoot,
+								input.config.workspaceRoot,
+							)),
+				)
+			)
+				throw new Error("Workspace has unresolved domain cleanup");
+			const row = {
+				domainId: input.domainId,
+				runId: context.runId,
+				threadId: context.threadId,
+				workspace: context.workspace,
+				owner: context.owner,
+				epoch: context.epoch,
+				endpoint: input.endpoint,
+				config,
+				deadlineMs: input.deadlineMs,
+			};
+			const hash = domainHash(row);
+			const decision = authorize(
+				db,
+				{
+					context: liveContext,
+					tool: "runner.launch",
+					targets: [hash],
+					targetType: "opaque",
+					deadlineMs: input.deadlineMs,
+					parentDeadlineMs: Math.min(
+						8640000000000000,
+						liveContext.nowMs + OFFLINE_DOMAIN_PROFILE.maxWallMs,
+					),
+					authority: input.authority,
+					tier: "high-risk",
+					actionClass: "mutation",
+					production: false,
+					dataEgress: false,
+				},
+				policy,
+			);
+			if (decision.decision !== "allow") return { decision, domain: null };
+			openAction(db, {
+				runId: row.runId,
+				threadId: row.threadId,
+				actionId: row.domainId,
+				action: `runner.launch:${hash}`,
+				actor: "system:supervisor",
+				tier: "high-risk",
+				evidenceRef: `trace:domain-config:${hash}`,
+			});
+			recordVerdict(db, {
+				runId: row.runId,
+				threadId: row.threadId,
+				actionId: row.domainId,
+				actor: "system:policy",
+				decision: "allowed",
+				evidenceRef: `trace:policy-audit:${decision.auditActionId}`,
+			});
+			const inserted = db
+				.query(
+					"INSERT INTO domains(domain_id,run_id,thread_id,workspace,owner,epoch,profile_version,policy_action_id,endpoint,config,config_hash,deadline_ms) VALUES (?,?,?,?,?,?,1,?,?,?,?,?)",
+				)
+				.run(
+					row.domainId,
+					row.runId,
+					row.threadId,
+					row.workspace,
+					row.owner,
+					row.epoch,
+					decision.auditActionId,
+					row.endpoint,
+					row.config,
+					hash,
+					row.deadlineMs,
+				);
+			if (inserted.changes !== 1)
+				throw new Error("Failed to persist domain admission");
+			insertDomainEvent(
+				db,
+				row.domainId,
+				"admitted",
+				null,
+				`trace:domain-config:${hash}`,
+			);
+			const domain = readDomain(db, row.domainId);
+			if (!domain) throw new Error("Failed to persist domain admission");
+			return { decision, domain };
+		})
+		.immediate();
+}
+
+export function getDomain(db: Database, domainId: string): DomainRecord | null {
+	return db.transaction(() => readDomain(db, domainId))();
+}
+export function listDomains(
+	db: Database,
+	scope: { runId?: string; workspace?: string } = {},
+): DomainRecord[] {
+	checkFields(scope, ["runId", "workspace"]);
+	if (scope.runId !== undefined) checkScope(scope.runId);
+	if (scope.workspace !== undefined)
+		checkedText(scope.workspace, "workspace", 4096);
+	return db.transaction(() =>
+		db
+			.query<
+				{ domainId: string },
+				[string | null, string | null, string | null, string | null]
+			>(
+				"SELECT domain_id AS domainId FROM domains WHERE (? IS NULL OR run_id=?) AND (? IS NULL OR workspace=?) ORDER BY domain_id",
+			)
+			.all(
+				scope.runId ?? null,
+				scope.runId ?? null,
+				scope.workspace ?? null,
+				scope.workspace ?? null,
+			)
+			.map((row) => {
+				const domain = readDomain(db, row.domainId);
+				if (!domain) throw new Error("Missing domain history");
+				return domain;
+			}),
+	)();
+}
+
+/** Observations from a trusted supervisor remain recordable after kill/lease loss. */
+export function recordDomainObservation(
+	db: Database,
+	domainId: string,
+	input: DomainObservation,
+): DomainRecord {
+	checkFields(
+		input,
+		input?.kind === "created"
+			? ["kind", "containerId", "evidenceRef"]
+			: ["kind", "evidenceRef"],
+	);
+	const containerId = input.kind === "created" ? input.containerId : null;
+	return db
+		.transaction(() => {
+			const current = readDomain(db, domainId);
+			if (!current) throw new Error("No such domain");
+			const previous = current.events.find(
+				(e) => e.kind === input.kind && e.evidenceRef === input.evidenceRef,
+			);
+			if (previous) {
+				if (previous.containerId !== containerId)
+					throw new Error("Domain observation identity changed");
+				return current;
+			}
+			checkDomainStep(current.events, { ...input, containerId });
+			insertDomainEvent(
+				db,
+				domainId,
+				input.kind,
+				containerId,
+				input.evidenceRef,
+			);
+			const recorded = readDomain(db, domainId);
+			if (!recorded || recorded.events.length !== current.events.length + 1)
+				throw new Error("Failed to persist domain observation");
+			return recorded;
 		})
 		.immediate();
 }

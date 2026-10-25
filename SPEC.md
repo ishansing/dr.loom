@@ -275,15 +275,19 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
 
 ## Active phase specification
 
-- **Work package:** P2-A / offline isolated-runner contract preparation.
+- **Work package:** P2-A / offline isolated-runner durable inventory.
+- **Current implementation cut:** schema6 inventory/admission/observations only,
+  under the subsequent owner “continue”. No Docker launcher/lab operation in this
+  cut; approved lab permission is retained for the next verified slice.
 - **Authority:** owner requested opening the research PR and continuing P2.
-  [PR #6](https://github.com/ishansing/dr.loom/pull/6) is open against master;
+  [PR #6](https://github.com/ishansing/dr.loom/pull/6) was opened against master;
   push CI40216694468 and PR CI40216985307 pass at `8e148ed`.
   Owner subsequently stated “commit and Approved”, authorizing this contract
   commit, the additive schema6 domain-inventory direction and scoped offline
   lab image/mount/nonroot-directory work described below.
-- **Baseline/branch:** clean `8e148ed`, `feat/p2-isolated-runner`, stacked on
-  pending PR #6. No merge inferred. G1 closed; G2 open. Standalone history-engine
+- **Baseline/branch:** implementation starts at `72fb6d3` on
+  `feat/p2-isolated-runner`; PR #6 subsequently verified merged at `bd397e7`.
+  No local reset/rebase/merge. G1 closed; G2 open. Standalone history-engine
   reminder remains after the verified isolated-runner seam, not current work.
 
 ### 1. Phase Objective & Scope
@@ -291,9 +295,9 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
 Resume P2 by specifying a single rootless-Docker supervisor/runner seam with
 trusted synthetic work only. Prepare image, mount, identity, IPC, resource,
 output, lifecycle/recovery and admission contracts before implementation. This
-commit remains documents/read-only evidence only. The owner now approves the
-bounded implementation/lab direction; no such effects are executed by this
-commit. Exact schema/types/migration and failing acceptance tests precede code;
+preparation commit was documents/read-only evidence only. The current cut
+implements durable inventory, atomic admission and trusted observations without
+Docker/lab effects. Exact schema/types/migration and failing tests precede code;
 SDK/provider/framework execution and dependency promotion remain excluded.
 
 ### 2. Environment & Upstream State
@@ -309,6 +313,61 @@ or resource/containment qualification. SDK1.4.0 remains selected but uninstalled
 
 ### 3. Architecture & File Manifest
 
+**Exact schema6 cut (2026-10-25, before code):** `domains` stores immutable
+`domain_id` UUID PK (also the native audit action ID), registered `run_id` FK,
+`thread_id`, workspace/owner/epoch binding, local Unix Docker endpoint, canonical
+launch config JSON/hash, absolute deadline and created timestamp. `domain_events`
+stores autoincrement ID, domain FK, kind, optional64-hex container ID, evidence
+and timestamp. Kinds: admitted/created/started/stop-requested/quiescent/unknown/
+not-created. Exactly one created binding per domain and one domain per container
+ID in this ledger, append-only UPDATE/DELETE/REPLACE guards on both tables.
+Apply only after recognized v5; record migration6 atomically, preserve v1–v5 DDL/
+data, reject drift/future versions and keep old binaries rejecting v6.
+
+Public host APIs in `src/store.ts`/`src/index.ts`: `admitDomain(db, context,
+input, policy)` returns existing effect decision plus nullable domain; duplicates
+reject rather than returning a reusable permit. Input has domainId, endpoint,
+config, deadlineMs and root/grant authority. Config has only absolute canonical
+inputRoot/workspaceRoot (no trailing separators) and workerSha256; frozen profile1 binds approved image,
+UID/GID65532, resources/isolation/output/time bounds. Hash canonical profile,
+config, identity, endpoint and deadline together. This validates metadata shape,
+not actual mount identity or containment. Native Docker operations remain absent.
+
+Admission inside BEGIN IMMEDIATE calls existing live `authorize` for high-risk
+`runner.launch` against the exact config hash; deny/ask audits persist with no
+domain. Allow atomically records native requested/allowed action and admitted
+domain/event; every write/read-back failure rolls back usage/audit/inventory.
+Registered run required; any non-quiescent domain on the same workspace blocks
+another admission, including a successor epoch. Admission is an observed boundary
+fact; a failing regression also requires non-overlapping canonical writable roots
+even under distinct logical leases, and disjoint input/writable roots. These are
+metadata-level checks, not a substitute for physical mount/symlink preflight.
+It is never permission to replay/start after kill or a promise Docker started.
+
+`getDomain`/`listDomains` validate full metadata/event/action history in one read
+snapshot. Reads also reject orphaned registered-run references and require the native
+request/verdict evidence and initial admitted event to bind the exact config and
+successful preceding policy action; terminal action evidence may differ.
+Trusted `recordDomainObservation` permits late facts after kill/expiry;
+it never executes, approves, renews or claims task success. created binds one
+container ID; started/quiescent require that binding; not-created requires none.
+Repeated identical observations are idempotent; changed binding rejects. Unknown/
+late started/late created can refute a prior terminal observation and block reuse
+again; terminal observations are not silent history rewrites or proof from an
+unavailable daemon. Evidence is required but supplied by the trusted host, not
+independently verified by the inventory API.
+
+Extend kill's admitted-effect exclusion to domains (no false not-executed for an
+admitted launch); include full domain facts in reset hash and block reset while
+any domain remains unresolved. Include domains in read-only run status and its
+unresolved-count human summary. No automatic audit finish on quiescence/task
+completion; actual action finish remains an explicit trusted observation.
+
+Files: store/index/runs/CLI; `tests/domains.test.ts`, independent historical
+`tests/fixtures/schema-v5.sql`, affected schema assertions and CLI guide. Public
+API/native-process regressions precede application edits; SQL only for fixtures,
+history/DDL assertions and deliberate rollback/corruption fault injection.
+
 - `docs/p2-offline-runner-contract.md`: proposed bounded offline launch profile,
   private versioned transport, fail-closed handling and durable ownership/recovery.
 - SPEC/ROADMAP/ADR-022: resume authority, owner-approved scope and remaining gates.
@@ -321,8 +380,11 @@ or resource/containment qualification. SDK1.4.0 remains selected but uninstalled
 
 ### 4. Test Plan & Coverage Matrix
 
-Current change is docs only: canonical document validator, scoped whitespace/
-secret scan and unchanged code/tests/package/lock/pins/reviews. Future first reds
+Inventory tests cover v5 migration preservation/rollback, immutable guards,
+atomic audit/budget/admission, deny/ask/stale/kill/grant/budget paths, full-history
+corruption, late observations, reuse fencing, reset staleness, native competing
+admissions and abrupt process exit. Trigger fault injection checks ignored/extra
+writes roll back. Coverage must not regress. Future launcher first reds
 must cover rootful/missing daemon, absent/wrong mount, wrong image/user/limits,
 malformed/oversized IPC, stale/killed admission, foreign container collision,
 daemon/pipe loss, late creation after kill, supervisor crash and non-quiescent
@@ -341,14 +403,61 @@ Late facts remain observations, not new grants or verified task completion.
 
 ### 6. Blast Radius & Rollback Plan
 
-Documentation/read-only facts only; rollback is reverting these new records.
-No containers/services/volumes were created or stopped and no storage format
-changed. Proposed durable launch inventory and capped-mount provisioning are
-material choices now approved by the owner, not implemented/qualified. Research
-reports and PR #6 stay unchanged; subsequent P2 changes are separate/uncommitted.
+Additive schema6 changes the store format, exported host API and status/reset
+JSON shape. Older binaries reject it; use a verified pre-upgrade backup/restore
+and reconcile inventory, never delete newer facts or downgrade a live store.
+Tests migrate throwaway stores only. No containers/services/volumes were created
+or stopped. Mount provisioning remains unexecuted/unqualified. Research reports,
+historical v1–v5 DDL and existing safety tests stay intact; no dependency changes.
 
 ### 7. Definition of Done (DoD)
 
+For this implementation cut: fresh baseline lint26/strict check/143 tests2,082
+assertions/100% functions98.11% lines, drill/audit14 packages all pass. After reds,
+run lint → strict check → full coverage → focused domains/schema/runs/kill tests
+three times → automated drill → audit → verified task-file secret/doc/protected
+DDL checks. Native competing admissions, abrupt exit/reopen, v5 data preservation,
+rollback, late observations, reset-staleness, no lease resurrection and unknown/
+tampered history are mandatory. Compare aggregate/per-module coverage; no skip,
+new exclusion or invented Docker/E2E claim. Record gaps, not manufactured passes.
+PR #6 is now independently verified MERGED at `bd397e7`; existing branch retains
+its contract commit, with no resetting/rebasing/discarding work.
+
+**Inventory execution evidence — 2026-10-26:** initial migration/API reds and the
+distinct-lease overlapping-root red preceded their implementations. Final review
+reproduced orphaned run references, unrelated admission evidence and accepted
+trailing-separator roots before fixes. Two defensive observation guards are now
+covered by corrupt-later-event and extra-write/rollback trigger tests.
+
+Ordered local commands/results (all exit0):
+
+1. `bun run lint`:27 files, no fixes; `bun run check`: strict typecheck passes.
+2. `bun test --coverage`:166 pass/0 fail,2,248 assertions;100% functions,
+   98.12% lines versus98.11% baseline. Store99.74% versus99.68%; runs96.30%
+   versus96.27%; all other modules unchanged. No new uncovered store lines.
+3. `bun test tests/domains.test.ts tests/schema-v2.test.ts tests/runs.test.ts tests/kill.test.ts`
+   three times:77 pass/0 fail,502 assertions each.
+4. `bwrap --ro-bind / / --tmpfs /tmp --dev-bind /dev /dev --proc /proc bun test --coverage`:
+   same166 tests/assertions/coverage with initially empty `/tmp`.
+5. `bun run drill`: synthetic automated fixture passes; no new human attestation.
+6. `bun audit`:14 packages, no known vulnerabilities; no dependency auto-fix.
+7. Python document/protected-file checks:63 local links/anchors across SPEC,
+   ROADMAP, decisions, AGENTS, CLI guide and offline contract; seven active
+   sections, unique ADRs and canonical casing pass. v1–v5 DDL is byte-identical
+   to `72fb6d3`; dependency/lock/pin/framework/policy/research/governance protection
+   checks pass. `git diff --check` passes.
+8. Gitleaks8.30.1 archive SHA256 matches the previously verified release hash;
+   executable bytes match the archive. `gitleaks stdin --no-banner --redact
+   --exit-code 1` scans each complete changed/untracked task file:14 files clean.
+
+Only throwaway test stores migrate. Docker launcher, physical mount/alias/user
+qualification and containment E2E remain unimplemented/unqualified. No image pull,
+mount, container, SDK installation or live-provider operation occurred. No remote
+CI/fixed-artifact review for this uncommitted patch; no commit/push/PR/merge or G2
+closure claimed. Next approved work is the physical preflight/launcher slice,
+with its exact acceptance contract and reds before implementation.
+
+**Historical contract-preparation DoD/evidence (not current code gates):**
 Persist exact proposed launch contract and pending permissions; validate canonical
 documents, scoped verified Gitleaks scans, `git diff --check`, and
 `git diff --exit-code 8e148ed -- src tests package.json bun.lock .github FRAMEWORK_REF AGENTS.md .opencode research`.

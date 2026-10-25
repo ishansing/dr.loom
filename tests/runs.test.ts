@@ -14,7 +14,7 @@ test("current schema includes immutable run metadata and evidence links without 
 	const db = s.openDb();
 	try {
 		s.initSchema(db);
-		expect(db.query("PRAGMA user_version").get()).toEqual({ user_version: 5 });
+		expect(db.query("PRAGMA user_version").get()).toEqual({ user_version: 6 });
 		expect(db.query("SELECT count(*) AS n FROM runs").get()).toEqual({ n: 0 });
 		expect(
 			db.query("SELECT count(*) AS n FROM transition_evidence").get(),
@@ -24,7 +24,7 @@ test("current schema includes immutable run metadata and evidence links without 
 	}
 });
 
-test("fixed v4 migrates to v5 without inventing run identities or rewriting prior audit", () => {
+test("fixed v4 migrates through v5 to current without inventing run identities or rewriting prior audit", () => {
 	const db = new Database(":memory:");
 	try {
 		for (const name of ["schema-v2.sql", "schema-v3.sql", "schema-v4.sql"])
@@ -39,13 +39,13 @@ test("fixed v4 migrates to v5 without inventing run identities or rewriting prio
 		});
 		const before = db.query("SELECT * FROM audit").all();
 		s.initSchema(db);
-		expect(db.query("PRAGMA user_version").get()).toEqual({ user_version: 5 });
+		expect(db.query("PRAGMA user_version").get()).toEqual({ user_version: 6 });
 		expect(db.query("SELECT * FROM audit").all()).toEqual(before);
 		expect(db.query("SELECT * FROM runs").all()).toEqual([]);
 		expect(db.query("SELECT * FROM transition_evidence").all()).toEqual([]);
 		expect(
 			db.query("SELECT version FROM schema_migrations ORDER BY version").all(),
-		).toEqual([{ version: 2 }, { version: 3 }, { version: 4 }, { version: 5 }]);
+		).toEqual([2, 3, 4, 5, 6].map((version) => ({ version })));
 	} finally {
 		db.close();
 	}

@@ -59,7 +59,7 @@ function withStoreFile(run: (path: string) => void): void {
 	}
 }
 
-test("fresh initialization records schema v2 through v5 exactly once", () => {
+test("fresh initialization records schema v2 through v6 exactly once", () => {
 	const db = openDb();
 	try {
 		initSchema(db);
@@ -70,13 +70,14 @@ test("fresh initialization records schema v2 through v5 exactly once", () => {
 				)
 				.get(),
 		).toEqual({ name: "schema_migrations" });
-		expect(db.query("PRAGMA user_version").get()).toEqual({ user_version: 5 });
+		expect(db.query("PRAGMA user_version").get()).toEqual({ user_version: 6 });
 		initSchema(db);
 		expect(db.query("SELECT version FROM schema_migrations").all()).toEqual([
 			{ version: 2 },
 			{ version: 3 },
 			{ version: 4 },
 			{ version: 5 },
+			{ version: 6 },
 		]);
 	} finally {
 		db.close();
@@ -134,7 +135,7 @@ test("legacy migration preserves claims and leaves identities and authority unkn
 		initSchema(db);
 		expect(
 			db.query("SELECT count(*) AS n FROM schema_migrations").get(),
-		).toEqual({ n: 4 });
+		).toEqual({ n: 5 });
 	} finally {
 		db.close();
 	}
@@ -706,7 +707,7 @@ test("a competing writer prevents migration without leaving partial schema chang
 			owner.exec("ROLLBACK");
 			initSchema(contender);
 			expect(contender.query("PRAGMA user_version").get()).toEqual({
-				user_version: 5,
+				user_version: 6,
 			});
 		} finally {
 			if (owner.inTransaction) owner.exec("ROLLBACK");

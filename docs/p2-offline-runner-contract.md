@@ -119,6 +119,13 @@ Proposed lifecycle:
 
 ## Acceptance corpus before supported launch
 
+The first implementation cut provides schema6 inventory only: atomic policy/
+budget/native-audit admission, immutable config and container binding, late trusted
+observations, metadata-level logical-workspace/writable-root reuse fences, and
+domain-aware status/kill/reset snapshots. Read-back validates registered-run and
+admission evidence. It neither launches Docker nor verifies physical roots,
+containment, cleanup or task completion. See SPEC's active phase for evidence.
+
 - Pure/native-process: strict framing/limits, no raw error leakage, final config
   binding, stale/killed admission, immutable inventory, duplicate IDs, rollback,
   identity spoofing and late observations. No Docker mock counts as containment.

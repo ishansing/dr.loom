@@ -12,9 +12,13 @@ returned epoch, never an invented value. CLI init/record require the matching
 run/thread/workspace/owner/epoch. There is no automatic lease acquisition or CLI
 lease-management command. Renew explicitly through the host API if necessary.
 
-Schema v5 adds immutable run metadata and ordered evidence links. Historical
+Schema v5 adds immutable run metadata and ordered evidence links; schema v6 adds
+immutable domain admission/observation inventory. Status includes unresolved
+domain counts. Inventory is not a Docker launcher, reusable execution permit,
+containment proof or verified task completion. Historical
 transitions remain unchanged with unknown metadata; they cannot be adopted by
-re-initializing their run ID. Older binaries reject v5. Rollback is a verified
+re-initializing their run ID. Older binaries reject newer schema versions,
+including v6 for pre-inventory binaries. Rollback is a verified
 pre-upgrade copy/restore plus reconciliation, not deleting newer history.
 
 ## Commands
@@ -49,7 +53,7 @@ the real verification boundary; this CLI never invents verification evidence.
 
 Status uses a read-only connection and one snapshot. It reports last committed
 work and current/running phase per thread, open approvals/actions, interrupted
-actions, unresolved outbox, lease ownership/expiry, kills and explicit budget
+actions, unresolved outbox/domain inventory, lease ownership/expiry, kills and explicit budget
 modes. Missing DB is informational (`no runs`, exit0) and is never created.
 Unknown run in an existing store is actionable failure; historical-only data is
 labeled legacy/unregistered rather than assigned guessed metadata.

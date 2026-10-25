@@ -8,6 +8,7 @@ export const fixtureEnv = {
 };
 
 export function frameworkFixture() {
+	mkdirSync("/tmp/opencode", { recursive: true });
 	const dir = mkdtempSync("/tmp/opencode/loom-framework-");
 	const frameworkRoot = join(dir, "framework");
 	const skillsRoot = join(dir, "skills");

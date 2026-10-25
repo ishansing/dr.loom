@@ -31,6 +31,15 @@ T-01–T-06 approval was relayed by the owner; it does not transfer to T-07.
 
 ## Exact-artifact handoff
 
+**CI investigation/correction (2026-10-25):** remote
+[run40173273410](https://github.com/ishansing/dr.loom/actions/runs/40173273410)
+at `ffed35e299726c9868b3fecfbe725f67edd4dc29` failed134 pass/9 fail: missing
+`/tmp/opencode` before fixture allocation. Lint/typecheck passed; drill/audit
+were skipped. Seven test setup sites now create the parent explicitly; local
+empty-`/tmp` independent file runs, standalone drill and143-test coverage pass.
+Owner authorized correction commit; not yet published. Successful replacement CI remains
+required. Application code/workflow/dependencies are unchanged.
+
 1. Owner publishes `feat/p1-cli-conformance` when ready; this task did not push it.
    Owner reports T-06 published, but agent SSH authentication still prevents
    independent remote verification. No further credential inspection is needed.

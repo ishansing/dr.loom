@@ -1,6 +1,12 @@
 import { Database } from "bun:sqlite";
 import { expect, test } from "bun:test";
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import {
+	existsSync,
+	mkdirSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+} from "node:fs";
 import { join } from "node:path";
 import * as s from "../src/index.ts";
 
@@ -284,6 +290,7 @@ test("run/evidence histories reject update, delete and replace operations", () =
 });
 
 test("existing-store opening never creates missing files and readonly connections reject writes", () => {
+	mkdirSync("/tmp/opencode", { recursive: true });
 	const dir = mkdtempSync("/tmp/opencode/loom-existing-store-");
 	const path = join(dir, "store.sqlite");
 	try {
@@ -310,6 +317,7 @@ test("existing-store opening never creates missing files and readonly connection
 });
 
 test("real competing phase writers cannot both open a registered thread", async () => {
+	mkdirSync("/tmp/opencode", { recursive: true });
 	const dir = mkdtempSync("/tmp/opencode/loom-run-phase-race-");
 	const path = join(dir, "store.sqlite");
 	const db = s.openDb(path);
@@ -493,6 +501,7 @@ test("metadata validation, unknown runs and historical identities fail without a
 });
 
 test("v4 existing stores require explicit migration rather than readonly status upgrading them", () => {
+	mkdirSync("/tmp/opencode", { recursive: true });
 	const dir = mkdtempSync("/tmp/opencode/loom-v4-readonly-");
 	const path = join(dir, "store.sqlite");
 	try {

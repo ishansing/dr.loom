@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import * as s from "../src/index.ts";
 
@@ -688,6 +688,7 @@ test("retry draws at the first valid timestamp still consume bucket capacity", (
 });
 
 test("two actual processes cannot overdraw a one-slot budget", async () => {
+	mkdirSync("/tmp/opencode", { recursive: true });
 	const dir = mkdtempSync("/tmp/opencode/loom-policy-race-");
 	const path = join(dir, "ledger.sqlite");
 	const db = s.openDb(path);
@@ -730,6 +731,7 @@ test("two actual processes cannot overdraw a one-slot budget", async () => {
 });
 
 test("admission samples the clock after acquiring the writer lock, not before waiting", async () => {
+	mkdirSync("/tmp/opencode", { recursive: true });
 	const dir = mkdtempSync("/tmp/opencode/loom-policy-deadline-");
 	const path = join(dir, "ledger.sqlite");
 	const db = s.openDb(path);
@@ -777,6 +779,7 @@ test("admission samples the clock after acquiring the writer lock, not before wa
 });
 
 test("budget status uses one snapshot while another process draws", async () => {
+	mkdirSync("/tmp/opencode", { recursive: true });
 	const dir = mkdtempSync("/tmp/opencode/loom-policy-status-");
 	const path = join(dir, "ledger.sqlite");
 	const db = s.openDb(path);

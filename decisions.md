@@ -1002,3 +1002,14 @@ closure, T-08/P2 implementation, T-07 push, framework re-pin/provider/real effec
 
 Authorization-appended T-07 report SHA256:
 `3a87e11556e47c4c818ba9eaa45c58a7dd2c0a29d7c9c8b27112481bfcb850f0`.
+
+**Fresh-runner fixture correction — 2026-10-25:** GitHub run40173273410 at
+`ffed35e299726c9868b3fecfbe725f67edd4dc29` exposes nine ENOENT failures because
+some fixture allocations assume `/tmp/opencode` already exists. A child mount
+namespace with an empty `/tmp` reproduces12 failures, including three run tests
+masked by suite order. Follow the existing recursive-mkdir-before-mkdtemp
+pattern at all seven missing allocation sites; do not add CI-only setup that
+hides standalone test/drill failures or remove the host directory to reproduce.
+Independent file runs, standalone drill and full143-test coverage pass in fresh
+tmpfs namespaces. Prior frozen advisory/owner-relayed approval remains tied to
+its original artifact; this test-only correction still needs publication/CI.

@@ -285,6 +285,55 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
   disposition pending. T-06 push is owner-reported; agent SSH verification and
   actual framework/remote CI/human drill qualification remain unresolved. G1 open.
 
+**CI correction work package (2026-10-25, owner requested “Fix it”):**
+
+1. **Objective/scope:** remove fresh-runner/test-order dependence on an existing
+   `/tmp/opencode`; test infrastructure only, no production behavior or workflow
+   changes. Prior approval applies to the prior artifact, not this correction.
+2. **Environment/upstream:** failed remote run40173273410 at
+   `ffed35e299726c9868b3fecfbe725f67edd4dc29`, Bun1.4.4. Lint/typecheck pass;
+   coverage reports134 pass/9 fail from ENOENT; drill/audit skipped. Local
+   Bubblewrap with an empty tmpfs `/tmp` reproduces12 failures in44 focused tests
+   (including three run tests otherwise masked by earlier fixture setup).
+   No runtime/dependency change or upstream API issue is implicated.
+3. **Architecture/files:** `tests/fixtures/framework.ts` creates its parent
+   before allocating a unique directory, covering framework/CLI/drill callers.
+   `tests/policy-corpus.test.ts` and `tests/runs.test.ts` do the same at their
+   three independent allocation sites each, following existing test patterns.
+4. **Regression matrix:** existing public/native-process assertions run in an
+   empty `/tmp` namespace, each affected test file independently and standalone
+   drill, plus full coverage corpus. No assertions or coverage exclusions removed.
+5. **Security/edges:** no removal/rename of host `/tmp/opencode`; Bubblewrap
+   overlays only the child mount namespace. Recursive mkdir remains idempotent,
+   unique child cleanup unchanged; no credentials/provider/real effect access.
+6. **Blast radius/rollback:** fixture setup only; revert these additions to
+   restore the earlier behavior, without changing store/schema/pins or evidence.
+   Owner's reported human drill and Ishan approval remain attributable to the
+   previous artifact; neither approves this patch or closes G1.
+7. **DoD:** ordered commands below, followed by three independent invocations of
+   `bwrap --ro-bind / / --tmpfs /tmp --dev-bind /dev /dev --proc /proc bun test FILE`
+   for `tests/framework.test.ts`, `tests/policy-corpus.test.ts`, `tests/runs.test.ts`;
+   same prefix with `bun run drill` and `bun test --coverage`; then verified
+   task-file secret scans, canonical document validator and `git diff --check`.
+   Remote rerun requires publishing a corrected artifact; no push/merge inferred.
+
+**CI correction evidence:** pre-fix empty-`/tmp` focused command above exits1
+(32 pass/12 ENOENT failures). After seven parent-directory setup additions,
+ordered lint (26 files), strict check, full coverage (143 pass/2,082 assertions,
+100% functions/98.11% lines), focused31/144, automated drill and audit (14 packages,
+no advisories) exit0. Initial lint caught import formatting; corrected before
+restarting the full ordered gates. Independent empty-`/tmp` runs exit0:
+framework6/17 assertions, policy23/1,184, runs15/67, standalone drill and full
+coverage143/2,082 with unchanged coverage. Bubblewrap overlays a fresh tmpfs
+per invocation; no host temporary directory was removed. No runtime/schema/
+workflow/dependency changes. Owner authorized correction commit; unpublished. Failed remote
+run remains failed, no corrected remote CI or new review approval claimed.
+Final correction checks: six task files pass verified Gitleaks8.30.1 scans;
+canonical document validator exit0 (283 links/seven sections/unique ADR IDs/
+casing/whitespace); `git diff --check` exit0. Protected application/workflow/
+dependency/pin/prior-review diff is empty. No new fixed-artifact advisory has
+been requested or obtained for this correction; earlier approval is not reused.
+
 ### 1. Phase Objective & Scope
 
 Make CLI orientation and recording complete without becoming a runbook executor.

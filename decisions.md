@@ -1135,3 +1135,45 @@ reforecast if it uses the same developer. Initial Loom integration stays optiona
 shadow evidence after independent qualification; existing SQLite authority stays.
 Commit these research/governance files only; no push, new repository, runtime
 effects, live provider use or resumed P2 implementation authorized by this task.
+
+## [ADR-022] - 2026-10-25 (Offline isolated-runner contract proposal)
+
+**Status:** Owner-approved scope/direction after “commit and Approved”; exact
+schema, implementation and lab qualification remain pending.
+
+**Context:** owner requested research PR and P2 continuation. PR #6 opened against
+master at `8e148ed`, including the previously verified fixture startup repair;
+push and PR CI pass. New `feat/p2-isolated-runner` branches from that pending PR
+head without merging. Existing rootless Docker29.9.2 is available;2 GiB workspace
+image exists but is unmounted. Registry-only inspection resolves Bun1.4.4-slim
+Linux/amd64 digest; image has empty default user, so worker identity/mount mapping
+must be explicit rather than assumed from rootless daemon identity.
+
+**Options:** prototype an in-memory launcher and defer crash ownership; invent a
+separate authority journal; or extend the existing store owner with an approved
+durable domain inventory plus narrow rootless supervisor. Recommend the third
+before a supported launch; schema6 is a proposal, not silently implemented SQL.
+Current synthetic outbox is not permission for real Docker effects.
+
+**Proposed contract:** one offline synthetic domain, exact image/config identity,
+nonzero worker UID, capped ext4 workspace and bounded temp/resources, no network/
+host authority mounts, strict bounded private IPC and no raw output exposure,
+late-start/daemon-loss reconciliation and proven quiescence before reuse. See
+`docs/p2-offline-runner-contract.md` for exact proposed defaults and acceptance.
+
+**Consequences:** owner approves material storage direction and precise lab
+image/mount provisioning scope before implementation/effects; preserve existing
+data and do not fall back to UID0/rootful/world-writable or unbounded storage.
+No SDK/model/framework execution, separate history-engine build, commit/push,
+new PR for P2, merge or G2 qualification inferred from preparation.
+
+**Owner approval event:** owner stated “commit and Approved” in response to the
+two requested decisions. Approves additive schema6 domain-inventory direction
+and scoped offline immutable-image pull, restoration of the existing capped
+workspace mount and narrow nonroot run-directory provisioning. Also authorizes
+this contract/governance commit. Exact SQL/types/migration and acceptance reds
+precede implementation; approved scope is not executed SQL or containment proof.
+Keep the existing image/data intact; no reformat/deletion, broad recursive chown,
+daemon/rootful changes, UID0/world-writable/unbounded fallback, SDK/provider/live
+use or extra spend. No Ishan approval, PR merge/push or G2 closure inferred.
+This task commits records only; lab operations remain unexecuted by this commit.

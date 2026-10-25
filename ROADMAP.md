@@ -450,6 +450,18 @@ not authorized by this record.
 
 ### P2 — One real isolated runner and verified candidate delivery
 
+**Resumed preparation (2026-10-25):** owner requested opening the research PR and
+continuing P2. [PR #6](https://github.com/ishansing/dr.loom/pull/6) is open, both
+push/PR CI pass at `8e148ed`; not merged. Work is on `feat/p2-isolated-runner`,
+stacked on that head. [Offline runner contract](docs/p2-offline-runner-contract.md)
+specifies proposed pinned image/resource/nonroot/mount/IPC/output/recovery bounds.
+Existing capped image remains unmounted; no image layers pulled or containers
+started. Owner subsequently stated “commit and Approved”: additive schema6
+domain-inventory direction and scoped pinned-image/existing-mount/nonroot run
+directory work are approved. Exact schema and test-first implementation precede
+qualification; no such effects are performed by this contract commit. G2 remains open;
+standalone history project stays the post-seam reminder, not current scope.
+
 **Research pause (2026-10-25):** owner requests extensive DeltaDB research before
 continuing: independently built analogous software in a separate repository,
 not direct product adoption, and compatibility/pros/cons/recommendation for Loom.

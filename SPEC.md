@@ -275,6 +275,111 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
 
 ## Active phase specification
 
+- **Work package:** P2-A / offline isolated-runner contract preparation.
+- **Authority:** owner requested opening the research PR and continuing P2.
+  [PR #6](https://github.com/ishansing/dr.loom/pull/6) is open against master;
+  push CI40216694468 and PR CI40216985307 pass at `8e148ed`.
+  Owner subsequently stated “commit and Approved”, authorizing this contract
+  commit, the additive schema6 domain-inventory direction and scoped offline
+  lab image/mount/nonroot-directory work described below.
+- **Baseline/branch:** clean `8e148ed`, `feat/p2-isolated-runner`, stacked on
+  pending PR #6. No merge inferred. G1 closed; G2 open. Standalone history-engine
+  reminder remains after the verified isolated-runner seam, not current work.
+
+### 1. Phase Objective & Scope
+
+Resume P2 by specifying a single rootless-Docker supervisor/runner seam with
+trusted synthetic work only. Prepare image, mount, identity, IPC, resource,
+output, lifecycle/recovery and admission contracts before implementation. This
+commit remains documents/read-only evidence only. The owner now approves the
+bounded implementation/lab direction; no such effects are executed by this
+commit. Exact schema/types/migration and failing acceptance tests precede code;
+SDK/provider/framework execution and dependency promotion remain excluded.
+
+### 2. Environment & Upstream State
+
+Bun1.4.4, Docker client/server29.9.2; explicit rootless context reports rootless,
+seccomp, cgroupns, overlayfs and systemd/cgroup2. The known existing workspace
+image is regular/non-symlink, operator-owned, exactly2,147,483,648 bytes; its
+expected mount is absent. Registry metadata for proposed `oven/bun:1.4.4-slim`
+was fetched anonymously, digest-verified, without downloading layers/installing
+or executing the image. Exact candidate digest/default-user findings are in
+[offline contract](docs/p2-offline-runner-contract.md). This is not image security
+or resource/containment qualification. SDK1.4.0 remains selected but uninstalled.
+
+### 3. Architecture & File Manifest
+
+- `docs/p2-offline-runner-contract.md`: proposed bounded offline launch profile,
+  private versioned transport, fail-closed handling and durable ownership/recovery.
+- SPEC/ROADMAP/ADR-022: resume authority, owner-approved scope and remaining gates.
+- Next implementation proposal (not files created here): responsible
+  `src/runner.ts`, one native-process regression corpus `tests/runner.test.ts`,
+  explicit rootless lab drill `tests/evals/runner-domain.ts`, and additive store
+  migration only after an approved exact launch-inventory schema contract.
+- No generic backend interface, real provider broker, public run CLI, SQLite
+  replacement, standalone-history repository or dependency install in this slice.
+
+### 4. Test Plan & Coverage Matrix
+
+Current change is docs only: canonical document validator, scoped whitespace/
+secret scan and unchanged code/tests/package/lock/pins/reviews. Future first reds
+must cover rootful/missing daemon, absent/wrong mount, wrong image/user/limits,
+malformed/oversized IPC, stale/killed admission, foreign container collision,
+daemon/pipe loss, late creation after kill, supervisor crash and non-quiescent
+descendants. Keep the existing143-test safety corpus; actual rootless integration
+is an explicit required lab gate, never silently skipped or claimed by mocks.
+
+### 5. Security, Observability & Edge Cases
+
+Use only explicit trusted rootless endpoint and digest; image default user is
+empty and must be overridden to nonzero container UID. Rootless daemon alone
+does not establish nonroot workload identity or writable-volume mapping. Preserve
+the existing image/data; no reformat, recursive ownership change, rootful fallback,
+host socket/home/DB/credentials mount or inherited environment. Bounded private
+stdout protocol; no raw stderr/partial/unvalidated output persisted/exposed.
+Late facts remain observations, not new grants or verified task completion.
+
+### 6. Blast Radius & Rollback Plan
+
+Documentation/read-only facts only; rollback is reverting these new records.
+No containers/services/volumes were created or stopped and no storage format
+changed. Proposed durable launch inventory and capped-mount provisioning are
+material choices now approved by the owner, not implemented/qualified. Research
+reports and PR #6 stay unchanged; subsequent P2 changes are separate/uncommitted.
+
+### 7. Definition of Done (DoD)
+
+Persist exact proposed launch contract and pending permissions; validate canonical
+documents, scoped verified Gitleaks scans, `git diff --check`, and
+`git diff --exit-code 8e148ed -- src tests package.json bun.lock .github FRAMEWORK_REF AGENTS.md .opencode research`.
+Application lint/typecheck/tests/coverage/audit N/A to this docs-only delta;
+record passed remote baseline without calling it a new implementation result.
+Owner confirms offline lab image/mount scope and durable domain inventory
+direction; refine exact schema/acceptance contract test-first. Commit explicitly
+authorized; no push/merge or P2/G2 qualification inferred.
+
+Preparation evidence: PR #6 remains OPEN/MERGEABLE at `8e148ed`; both check runs
+succeed. No auto-merge enabled. Four task documents pass verified Gitleaks8.30.1
+scans; canonical validator passes313 local links and extended check including
+the new contract passes315, seven active sections/unique ADRs/casing/whitespace.
+`git diff --check` and unchanged code/tests/config/pins/research checks exit0.
+An initial manual anchor check corrected the new contract's G0 reference before
+the extended validator passed. Application tests not rerun for this docs-only
+preparation. Registry metadata/source observations are not runtime qualification;
+image pull/mount/schema scope approval was subsequently supplied below.
+
+**Owner approval and commit authority:** “commit and Approved” covers the two
+requested decisions: additive schema6 durable domain records, and the exact
+digest-pinned offline lab image plus restoring the existing capped workspace
+mount and narrowly scoped nonroot run-directory provisioning. Preserve existing
+image/data; no formatting/deletion, broad ownership changes, daemon/rootful
+changes, UID0/world-writable fallback, SDK install, live inference or extra spend.
+This is owner scope approval, not Ishan review, implemented SQL, containment proof
+or G2 closure. This task commits the contract only; subsequent implementation and
+lab execution retain test-first, preflight, safety and qualification gates.
+
+## DeltaDB research execution record (historical)
+
 - **Work package:** DeltaDB-inspired independent software research; P2 paused.
 - **Authority:** owner requests extensive research on `https://delta.dev`, building
   similar software in a separate repository (not direct product adoption), Loom

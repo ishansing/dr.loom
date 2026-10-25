@@ -1050,3 +1050,88 @@ not used as the merge target. No upstream branch mutation, PR publication or
 merge authorized. Framework2.1.0 pin unchanged, actual mismatched installation
 remains blocked; P2/untrusted execution/providers/production need separate work
 authorization and qualification. Closing synthetic G1 does not close those gates.
+
+## [ADR-020] - 2026-10-25 (P2 kickoff and contention fixture boundary)
+
+**Status:** Discovery under owner continuation authority; first runner implementation
+contract/setup/promotion approval pending. Baseline fixture correction in progress.
+
+**Context:** PR #5 merged at `ffbfd47`; owner stated “Merged, continue”. P0
+selected SDK1.4.0/rootless Docker, not unrestricted execution or a package pin.
+Read-only discovery confirms rootless Docker29.9.2 and an absent capped workspace
+mount. Exact SDK archive integrity matches prior evidence; no runtime installed.
+Fresh merged coverage exposed an existing relay test failing before child ready.
+Isolated test fails3/30; minimized bootstrap captures SQLite busy/recovery in
+`openDb`/`schemaKind` before busy-timeout configuration in2/60 process pairs.
+
+**Options:** change public DB-open wait/retry behavior; retry/skip the flaky test;
+or initialize child connections to readiness sequentially and then race dispatch.
+
+**Decision:** use the third, already established by the phase-writer fixture.
+It preserves two live competing relay processes and one-attempt/one-effect proof
+while isolating the intended race from unrelated WAL startup contention. No
+automatic retries, sleeps, weakened assertions or public store changes.
+
+**Consequences:** verify100 isolated repetitions plus full gates/empty-`/tmp`
+coverage, record the initial red and do not manufacture a clean baseline by
+rerunning alone. Keep P2 runtime implementation gated by its exact contract;
+propose one offline T-09/T-15 container slice before SDK promotion. Existing
+security/material choices remain accepted, not reinvented; rootless image,
+mount/log/transport/cleanup integration still needs approval/evidence. No provider,
+credential inspection, additional spend, framework re-pin or host setup inferred.
+
+**Verification:** corrected fixture passes100 independent targeted runs; fresh
+lint/strict check,143 tests/2,082 assertions with unchanged100% functions/98.11%
+lines, empty-`/tmp` full suite, automated drill and14-package audit pass. No
+application, package, lock, workflow or prior-review change. Official tag API and
+registry archive revalidate selected SDK1.4.0, without installation/execution.
+
+## [ADR-021] - 2026-10-25 (DeltaDB-inspired research boundary)
+
+**Status:** Research completed; architecture/build/integration decision pending.
+
+**Context:** Before continuing P2, owner requests extensive research on DeltaDB
+(`https://delta.dev`) and an independently implemented analogue in a separate
+repository, including Loom compatibility, pros/cons and a recommendation. This
+is not direct product adoption or permission to replace the accepted authority DB.
+
+**Decision boundary:** pause P2 implementation for cited primary-source research.
+Distinguish DeltaDB's documented version-control/provenance product from generic
+database-engine guarantees and from proposed independent design. Evaluate content/
+conversation history as a separate evidence subsystem as well as more ambitious
+storage replacement; preserve ADR-008 local WAL/FULL durability, one owner per
+fact, external trusted verification and live effect admission. Neither history,
+CRDT convergence nor a content hash establishes authorization or task success.
+
+**Consequences:** research files only; no direct Delta account/service use,
+proprietary source copying, new repository, dependency installation, schema change,
+provider access or paid effects. First-party/public-source evidence and unknowns
+must be explicit. Any future independent build/integration or authority/storage
+change needs its own approved spec/ADR, failure corpus and recovery plan. Findings
+are recommendations, not automatically accepted architecture or P2 advancement.
+
+**Research findings:** three reports under `research/deltadb/` distinguish
+documented CRDT/causal/fragment-tree design and hosted storage from undisclosed
+core formats/durability, source-observed AGPL plugin contracts, and our independent
+proposal. Parent cross-checked material product/security/storage/legal claims and
+representative storage/CRDT foundations. Public early-access terms restrict
+product-use research; no account/product session was used and no legal/clean-room
+clearance is claimed. Recommend a bounded independent revision/provenance engine
+using mature persistence, optional Loom shadow evidence integration first, and
+no generic authority DB replacement or new replicated leases/kill/completion.
+CRDT convergence, source rewind and content hashes do not replace semantic
+verification, effect reconciliation or trusted identity. Estimates remain
+assumption-based, not measured. Owner disposition/build approval remains pending.
+
+**Commit and sequencing reminder — 2026-10-25:** owner requests “commit this
+research and fit this (seperate sandalone build) into the timeline after the
+isolated-runner seam (as a reminder)”. Record a separate-repository history/
+provenance build revisit after verified T-09/T-15 supervisor/identity-bound IPC/
+rootless cleanup, before P3 scope review. This is an accepted reminder, not
+allocation of the researched effort inside existing P2 week forecasts, a G2/P3
+prerequisite or an implementation/storage-replacement approval. An actual build
+needs scoped product/retention/license/recovery approval and an explicit schedule
+reforecast if it uses the same developer. Initial Loom integration stays optional
+shadow evidence after independent qualification; existing SQLite authority stays.
+Commit these research/governance files only; no push, new repository, runtime
+effects, live provider use or resumed P2 implementation authorized by this task.

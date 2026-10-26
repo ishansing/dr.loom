@@ -840,6 +840,86 @@ test("a worker ignoring cooperative stop reaches bounded owned stop without a su
 	}
 }, 30000);
 
+test("a detached descendant stops writing after forced domain stop without clearing cleanup uncertainty", async () => {
+	const f = prepare(
+		readFileSync(
+			join(import.meta.dir, "../fixtures/runner-descendant-worker.ts"),
+			"utf8",
+		),
+	);
+	const heartbeat = join(f.input.config.workspaceRoot, "heartbeat.txt");
+	try {
+		const observe = async () => {
+			let initial: number | null = null;
+			for (let attempt = 0; attempt < 100; attempt++) {
+				try {
+					const size = statSync(heartbeat).size;
+					if (initial === null && size > 0) initial = size;
+					else if (initial !== null && size > initial) return true;
+				} catch (error) {
+					if (
+						!(error instanceof Error) ||
+						!("code" in error) ||
+						error.code !== "ENOENT"
+					)
+						throw error;
+				}
+				await Bun.sleep(50);
+			}
+			return false;
+		};
+		const [result, advanced] = await Promise.all([
+			runSyntheticDomain(f.db, f.ctx, f.input, f.workspace, policy),
+			observe(),
+		]);
+		expect(advanced).toBe(true);
+		expect(result.failure).toBe("cleanup");
+		expect(result.stopped).toBe(true);
+		expect(result.candidate).toBeNull();
+		const content = readFileSync(
+			join(f.input.config.workspaceRoot, "candidate.txt"),
+		);
+		const actor = JSON.parse(content.toString());
+		expect(actor.pid).toBeGreaterThan(1);
+		expect(actor.pgrp).toBe(actor.pid);
+		expect(actor.session).toBe(actor.pid);
+		expect(actor.parentPid).toBe(1);
+		expect(actor.parentSession).not.toBe(actor.session);
+		const stoppedSize = statSync(heartbeat).size;
+		expect(readFileSync(heartbeat, "utf8")).toContain("T.");
+		expect(stoppedSize).toBeGreaterThan(1);
+		expect(stoppedSize).toBeLessThanOrEqual(1500);
+		for (let sample = 0; sample < 5; sample++) {
+			await Bun.sleep(100);
+			expect(statSync(heartbeat).size).toBe(stoppedSize);
+		}
+		expect(result.domain?.unresolved).toBe(true);
+		expect(
+			s.getAction(f.db, {
+				runId: f.ctx.runId,
+				threadId: f.ctx.threadId,
+				actionId: f.input.domainId,
+			})?.outcome,
+		).toBe("pending");
+		writeFileSync(
+			join(f.root, "descendant-result.json"),
+			JSON.stringify({
+				mode: "known-synthetic-descendant",
+				heartbeatAdvanced: advanced,
+				stoppedSize,
+				unchangedSamples: 5,
+				sampleIntervalMs: 100,
+				candidateSha256: createHash("sha256").update(content).digest("hex"),
+				stopped: result.stopped,
+				quiescenceQualified: false,
+			}) + "\n",
+			{ mode: 0o600 },
+		);
+	} finally {
+		f.db.close();
+	}
+}, 30000);
+
 test("an output flood is withheld and cannot exceed the private parser budget", async () => {
 	const f = prepare(
 		"process.stdout.write(Buffer.alloc(65537,65));process.stdin.resume();setInterval(()=>{},1000);",

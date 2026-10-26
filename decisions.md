@@ -1498,3 +1498,32 @@ audit. Existing module coverage unchanged. No debug code remains. Snapshot229
 labeled containers,154 exited/75 created/0 running, all preserved. Exact commands,
 retained-root keys, diagnosed limitation and bounded child effects in SPEC; no
 general runtime exhaustion resilience, independent cleanup/reuse or G2 closure.
+
+**Detached-descendant continuation after `b80b675`:** owner requested “commit and
+continue”; PID-cap slice committed. Add one sealed65532-only same-file parent/
+child fixture and actual-domain test, no production/profile/store change. Installed
+Bun declarations document detached spawn as setsid; real `/proc/self/stat` facts
+must show the child as its own session/process-group leader. Parent binds metadata
+to its owned child handle, sends one SIGTERM; child records `T` then dot ticks,
+proving receipt and continued work. Both actors ignore SIGTERM and register30-
+second timers; parent synchronous IPC still needs host supervision, not a timer-
+based crash-safety claim. Child heartbeat is capped at1,500 bytes. Parent ignores cooperative
+stop, forcing the existing owned Docker stop path. Linux namespace-init teardown
+semantics: https://man7.org/linux/man-pages/man7/pid_namespaces.7.html.
+Acceptance red first observed no advancing heartbeat with an inert fixture; green
+observes activity, detached identity and `T.` then five100ms unchanged host samples
+after stopped=true, with pending/unresolved inventory. This establishes only the
+known fixture's shutdown trajectory; it cannot clear quiescence/reuse fences,
+qualify arbitrary escaped actors or replace crash/daemon-loss reconciliation.
+Final ordered split gates remain pending; no provider/SDK or new commit inferred.
+
+**Detached-descendant final execution evidence:** final ordered split gates exit0:
+native217 tests/3,300 assertions,100% functions/98.60% lines; three additional
+physical1/21 descendant runs; portable199, focused14/131 three times, empty-/tmp
+portable/preflight200 tests, drill and14-package audit. Production-module coverage
+unchanged; aggregate98.60 versus98.61 is from two new observer-harness error/timeout
+lines, not lost runtime coverage (timeout covered in acceptance red). No guards
+removed/exclusions added to mask that difference. Snapshot264 labeled containers,
+179 exited/85 created/0 running; all retained. Known actor's heartbeat ceased over
+the bounded window after forced stop; no quiescence/reuse/task-completion or crash-
+recovery qualification inferred. Exact evidence/limitations/root keys in SPEC.

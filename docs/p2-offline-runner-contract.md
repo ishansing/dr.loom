@@ -35,6 +35,22 @@ child's exit promise is captured before saturation; deferred first access after
 saturation reproduced failure. Exact Bun internal cause is unconfirmed; no
 runtime upgrade or extra task headroom is used to hide it. Broader CPU/memory/
 persistent-disk and independent cleanup/recovery qualification remain open.
+
+Detached-descendant continuation uses one bounded trusted child in a separate
+session/process group, verified with numeric `/proc` identity. A delivered SIGTERM
+is marked in its heartbeat followed by continued writes; parent ignores the IPC
+stop so the supervisor must force-stop the domain. The host must observe live
+heartbeat growth and then five unchanged100ms samples after daemon stop. This is
+known-actor shutdown evidence only, not general descendant quiescence or automatic
+reuse authority. Child has a30-second timer and1,500-byte heartbeat cap; parent
+timer cannot bound its blocking IPC without host supervision. Supervisor-crash
+recovery remains unqualified. All persistent synthetic evidence/containers stay
+retained.
+
+This regression passes in the217-test native corpus and three further physical
+repetitions. Native coverage100% functions/98.60% lines; production-module
+coverage unchanged, aggregate down0.01 point from new test-harness error/timeout
+branches. Unknown inventory/pending action and successor reuse fences stay intact.
 Owner subsequently requested “commit and continue”; the historical preparation
 baseline/approval chronology follows. PR #6 is now merged at `bd397e7`.
 Historical preparation baseline `8e148ed`; branch `feat/p2-isolated-runner` was stacked on research

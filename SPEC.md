@@ -299,6 +299,13 @@ child processes only; prior tmpfs slice's no-process-pressure scope is historica
 No host process spawning by the probe, fork bomb, resource-limit increase,
 persistent-disk fill, host OOM, SDK/provider or cleanup-state transition.
 
+**Descendant-stop continuation after `b80b675`:** owner requested “commit and
+continue”. Add one actual-domain regression for a trusted detached, SIGTERM-
+ignoring descendant and bounded host-observed heartbeat shutdown. Test fixtures
+only; no cleanup/reconciliation API, quiescence recording, reuse/reset permission,
+SDK/provider, resource-profile or production change. This tests one known actor,
+not absence of all escaped processes or full G2 qualification.
+
 ### 2. Environment & Upstream State
 
 Baseline portable193 tests/2,880 assertions,99.47% functions/96.69% lines; full
@@ -316,6 +323,11 @@ Linux tmpfs capacity/ENOSPC behavior; no dependency/API promotion.
 PID continuation baseline: native216 tests/3,277 assertions,100%/98.61%; portable
 199/2,943,96.40%/91.76%. Recheck selected image's fixed `/bin/sleep` via real owned
 execution and Linux cgroup-v2 `pids.events`/EAGAIN behavior before claiming proof.
+Descendant baseline: native216 tests/3,279 assertions,100%/98.61%; portable199/
+2,943,96.40%/91.76%. Installed Bun subprocess type documents `detached:true` as
+setsid/new session/process-group leader. Verify real session IDs in the fixed
+image; Linux pid_namespaces(7) describes namespace-init termination killing its
+remaining processes. No binary, dependency or kernel/daemon changes.
 
 ### 3. Architecture & File Manifest
 
@@ -412,6 +424,28 @@ Capture each child's exit promise immediately after spawn, before saturation;
 deferred exit observation reproduced failure before reaping at the PID ceiling.
 Do not mask that failure with arbitrary sleeps, extra task headroom or a relaxed
 profile. Exact Bun internal cause remains a hypothesis, not an upstream finding.
+Add `tests/fixtures/runner-descendant-worker.ts`, a sealed self-contained trusted
+fixture executed only as65532 real/effective UID/GID. Parent uses existing fixed
+IPC grammar; after host start, spawns exactly one same-file child with detached
+session, fixed args/env and ignored stdio. Both register SIGTERM handlers and
+30-second timers. The child's live event loop bounds heartbeat lifetime; the
+parent timer does not bound a blocked synchronous IPC read (host supervision
+still owns that bound, and supervisor-crash recovery remains unqualified).
+Child appends at most1,500 single-byte heartbeat ticks and
+records numeric PID/parent/group/session facts. Parent verifies child readiness,
+binds the reported PID to its own child handle, sends that handle one SIGTERM;
+child appends a `T` marker and continues dot ticks, proving handler delivery and
+continued work. Child installs that handler before publishing readiness. Parent
+emits only a fixed candidate proposal, then ignores cooperative stop while alive.
+No worker-supplied PID is used for host signals/authority. Startup failure is
+owned-domain failure, not a reason to weaken the supervisor or adopt foreign state.
+
+`tests/evals/runner-domain.ts` adds the real test using existing prepare/launch:
+concurrently observe positive heartbeat growth before result, require forced-stop
+failure with stopped=true/withheld candidate, verify detached numeric session
+facts, then require unchanged heartbeat size over five100ms samples after stop.
+Persist only bounded synthetic observation/hash facts privately if needed. All
+domain inventory/action completion/reuse fences remain unchanged.
 
 ### 4. Test Plan & Coverage Matrix
 
@@ -435,6 +469,13 @@ missing-facts red. Require positive started count below256, actual EAGAIN and
 local cgroup max-event increase, all child exits awaited, existing candidate hash,
 temp enforcement, unresolved inventory and pending native action intact. CPU/
 memory/persistent-disk over-limit and independent descendants/crash proof stay open.
+Descendant acceptance red first uses a deliberately inert same-path fixture:
+real launch executes, but no advancing heartbeat is observed. After implementation,
+assert detached session leader != parent session, initial heartbeat actually
+advances, forced stop ends observed daemon process, heartbeat stays unchanged,
+heartbeat contains `T.` (SIGTERM observed followed by continued writing),
+native action pending and inventory unresolved. Host observation is independent
+of worker stop ACK but supports only this known fixture, not general quiescence.
 
 ### 5. Security, Observability & Edge Cases
 
@@ -454,6 +495,11 @@ PID attempts are capped at256 independently of enforcement; children only sleep
 for30 seconds and never fork/write/read host inputs. Use fixed absolute executable
 and empty environment. EAGAIN without this domain's counter increase is failure,
 not proof (e.g. an ancestor/host limit). Never kill a numeric/worker-supplied PID.
+Descendant probe spawns exactly one child inside the existing domain, no host
+subprocess. Child30-second timer and1,500-byte heartbeat ceiling bound
+failures; new dedicated workspace files only, exclusive creation/mode0640 for
+inherited supervisor ACL. No symlink traversal, host path/credential inspection,
+raw diagnostics, broad stop, removal or post-stop quiescence claims.
 
 ### 6. Blast Radius & Rollback Plan
 
@@ -470,6 +516,9 @@ evidence and stopped containers; temp files belong only to the container tmpfs.
 PID continuation remains fixture/assertion-only over `d68d832`; no supervisor/
 store/schema/profile changes. Ordinary child reaping is not independent runtime
 quiescence qualification or permission to clear inventory fences/reuse state.
+Descendant slice adds only fixture/physical assertions plus governance/contract
+evidence over `b80b675`. Keep production code/profile/store/pins unchanged; rollback
+is test-only. Preserve all stopped/created containers and old/new state/evidence.
 
 ### 7. Definition of Done (DoD)
 
@@ -494,6 +543,11 @@ snapshot. This instruction does not authorize committing the subsequent slice.
 For this PID continuation, additionally run `bun test ./tests/evals/runner-domain.ts
 -t 'actual nonroot access probe'` three times immediately after native full coverage
 to exercise instrumentation-free saturation/reaping repeatedly.
+For descendant continuation, focused red/green is `bun test ./tests/evals/runner-domain.ts
+-t 'detached descendant'`. Run it three times after the native full corpus in
+addition to the declared ordered split gates; PID/transport regressions remain
+in full coverage. Record initial heartbeat growth and bounded post-stop samples,
+fresh roots/coverage delta, security checks and labeled-container snapshot.
 
 **Owner-approved split gate (2026-10-26):** owner explicitly approved replacing
 the combined Bubblewrap physical-domain gate after reviewing its lost UID mapping
@@ -761,6 +815,58 @@ markers absent from fixture/test code. No new logs/exports or safety-test remova
 **Subsequent owner instruction:** “commit and continue” authorizes committing
 the verified bounded PID-cap fixture/assertion/evidence slice and continuing
 offline P2 qualification only. No push, G2 closure or production/provider authority.
+
+#### Detached-descendant continuation evidence — 2026-10-26
+
+PID-cap slice committed as `b80b675`. New fixture/physical assertion changes only;
+production supervisor, protocol, profile, store and dependencies unchanged.
+Acceptance red with the inert same-path fixture executed the actual domain and
+failed on absent advancing heartbeat (1 test/3 assertions), not an import/setup
+error. Implemented fixture green first passed20 assertions, then strengthened
+with actual child-handle SIGTERM delivery/`T.` evidence to21 assertions. Real
+child PID/group/session identity binds detached behavior, and child readiness is
+published only after its marker handler is registered. No raw diagnostic capture,
+host PID guessing, weakened timeout/config checks or quiescence record introduced.
+
+Fresh final state key `gate-piz5rt0w` and log/TMPDIR key `loom-gate-ve13019k`
+were canonical/private0700 and initially empty. Private command/exit manifest and
+step logs retained. All13 execution commands exited0: lint38 files, strict check;
+portable199 tests/2,943 assertions at96.40% functions/91.76% lines; native217
+tests/3,300 assertions at100%/98.60%, launcher100%/99.38%; descendant1 test/21
+assertions three further runs; launcher/transport14/131 three runs; empty-/tmp
+portable/read-only preflight200/2,964 at97.16%/93.76%; automated synthetic drill
+with task completion false;14-package audit/no reported vulnerabilities.
+
+Coverage comparison is scoped, not an aggregate non-regression claim: native
+aggregate lines98.60% versus98.61% baseline, functions unchanged100%. Production
+module coverage is byte-for-byte unchanged in the reports; the new physical-test
+observer adds two uncovered harness lines: unexpected non-ENOENT filesystem error
+rethrow and no-growth timeout return (the latter exercised by the acceptance red,
+not the final green run). No runtime/safety coverage removed or guards weakened.
+Do not manufacture error injection or exclude the test file just to raise its
+test-harness aggregate. Unexpected host-filesystem error injection is not claimed.
+
+Read-only labeled snapshot264 containers,179 exited/85 created/0 running:35 new
+synthetic containers since229, all preserved along with new private DB/input/run
+evidence and bounded `descendant-result.json` host observations. Successful cases
+show initial heartbeat growth, delivered SIGTERM followed by more work, forced
+daemon stop and five unchanged100ms samples. That supports this actor only, not
+general absence of writers, independent domain quiescence, successor reuse or
+task completion. Parent blocking IPC still requires supervision; crash/daemon-loss
+reconciliation, CPU/memory/persistent-disk enforcement, image security, remote CI,
+human review and G2 remain open. This five-file continuation remains uncommitted;
+no push, SDK/provider/production effects or history-engine work started.
+
+Final pinned Gitleaks8.30.1 checks pass all five task files after release archive/
+checksums/executable identity verification. Document validation passes31 local
+links/anchors, seven active sections, unique ADRs/canonical casing and whitespace.
+Production/store/all DDL/profile/access fixture/dependencies/CI/roadmap and prior
+review identity remain unchanged; full fixture/assertion/governance diff inspected.
+No accidental logs, temporary debug code, exports or test exclusions introduced.
+
+**Subsequent owner instruction:** “commit and continue” authorizes committing
+the verified detached-descendant fixture/assertion/evidence slice, then bounded
+offline P2 continuation. No push, G2 closure or new production/provider authority.
 
 ## P2 private IPC execution record (historical)
 

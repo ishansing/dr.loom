@@ -14,7 +14,7 @@ import { createServer, request } from "node:http";
 import type { Socket } from "node:net";
 import { join } from "node:path";
 import * as s from "../../src/index.ts";
-import { dockerJson } from "../../src/runner.ts";
+import { dockerJson, preflightDomain } from "../../src/runner.ts";
 import {
 	assertDomainOwner,
 	runSyntheticDomain,
@@ -334,6 +334,26 @@ function prepare(
 		workspace: { workspaceMount: mount, workspaceImage: image },
 		root,
 	};
+}
+
+async function heartbeatAdvances(path: string): Promise<boolean> {
+	let initial: number | null = null;
+	for (let attempt = 0; attempt < 100; attempt++) {
+		try {
+			const size = statSync(path).size;
+			if (initial === null && size > 0) initial = size;
+			else if (initial !== null && size > initial) return true;
+		} catch (error) {
+			if (
+				!(error instanceof Error) ||
+				!("code" in error) ||
+				error.code !== "ENOENT"
+			)
+				throw error;
+		}
+		await Bun.sleep(50);
+	}
+	return false;
 }
 
 test("actual synthetic domain creates, proposes and stops nonroot without claiming quiescence or completing a task", async () => {
@@ -849,28 +869,9 @@ test("a detached descendant stops writing after forced domain stop without clear
 	);
 	const heartbeat = join(f.input.config.workspaceRoot, "heartbeat.txt");
 	try {
-		const observe = async () => {
-			let initial: number | null = null;
-			for (let attempt = 0; attempt < 100; attempt++) {
-				try {
-					const size = statSync(heartbeat).size;
-					if (initial === null && size > 0) initial = size;
-					else if (initial !== null && size > initial) return true;
-				} catch (error) {
-					if (
-						!(error instanceof Error) ||
-						!("code" in error) ||
-						error.code !== "ENOENT"
-					)
-						throw error;
-				}
-				await Bun.sleep(50);
-			}
-			return false;
-		};
 		const [result, advanced] = await Promise.all([
 			runSyntheticDomain(f.db, f.ctx, f.input, f.workspace, policy),
-			observe(),
+			heartbeatAdvances(heartbeat),
 		]);
 		expect(advanced).toBe(true);
 		expect(result.failure).toBe("cleanup");
@@ -917,6 +918,181 @@ test("a detached descendant stops writing after forced domain stop without clear
 		);
 	} finally {
 		f.db.close();
+	}
+}, 30000);
+
+test("supervisor crash preserves live-domain uncertainty across reopen and requires owned test cleanup", async () => {
+	const f = prepare(
+		readFileSync(
+			join(import.meta.dir, "../fixtures/runner-descendant-worker.ts"),
+			"utf8",
+		),
+	);
+	const dbPath = join(f.root, "store.sqlite"),
+		envelope = join(f.root, "supervisor-input.json"),
+		heartbeat = join(f.input.config.workspaceRoot, "heartbeat.txt");
+	writeFileSync(
+		envelope,
+		JSON.stringify({
+			dbPath,
+			context: f.ctx,
+			input: f.input,
+			workspace: f.workspace,
+			policy,
+		}) + "\n",
+		{ flag: "wx", mode: 0o600 },
+	);
+	f.db.close();
+	let recovered: ReturnType<typeof s.openDb> | null = null;
+	let driver: Bun.Subprocess<"ignore", "ignore", "ignore"> | null = null;
+	let cleanupAttempted = false,
+		stopped = false;
+	const cleanup = async () => {
+		cleanupAttempted = true;
+		recovered ??= s.openDb(dbPath);
+		const domain = s.getDomain(recovered, f.input.domainId);
+		if (!domain?.containerId) return;
+		const checked = await preflightDomain({
+			...f.workspace,
+			endpoint: domain.endpoint,
+			config: domain.config,
+		});
+		const inspect = await dockerJson(
+			domain.endpoint.slice(7),
+			`/containers/${domain.containerId}/json`,
+			"engine",
+		);
+		assertDomainOwner(inspect, domain, domain.containerId, checked.imageId);
+		s.recordDomainObservation(recovered, domain.domainId, {
+			kind: "stop-requested",
+			evidenceRef: "trace:lab-crash-owned-stop",
+		});
+		const state = inspect.State;
+		if (!state || typeof state !== "object" || !("Running" in state))
+			throw new Error("Invalid crash fixture inspect state");
+		if (state.Running !== false)
+			await dockerJson(
+				domain.endpoint.slice(7),
+				`/containers/${domain.containerId}/stop?t=2`,
+				"engine",
+				{ method: "POST", statuses: [204, 304] },
+			);
+		const final = await dockerJson(
+			domain.endpoint.slice(7),
+			`/containers/${domain.containerId}/json`,
+			"engine",
+		);
+		assertDomainOwner(final, domain, domain.containerId, checked.imageId);
+		const finalState = final.State;
+		stopped =
+			!!finalState &&
+			typeof finalState === "object" &&
+			"Running" in finalState &&
+			finalState.Running === false &&
+			"Restarting" in finalState &&
+			finalState.Restarting === false &&
+			"Pid" in finalState &&
+			finalState.Pid === 0;
+		s.recordDomainObservation(recovered, domain.domainId, {
+			kind: "unknown",
+			evidenceRef: stopped
+				? "trace:lab-crash-stopped-unqualified"
+				: "trace:lab-crash-cleanup-unresolved",
+		});
+		if (!stopped) throw new Error("Owned crash fixture cleanup unresolved");
+	};
+	try {
+		driver = Bun.spawn(
+			[
+				process.execPath,
+				"--no-env-file",
+				join(import.meta.dir, "../fixtures/runner-supervisor.ts"),
+				envelope,
+			],
+			{
+				env: {
+					BUN_RUNTIME_TRANSPILER_CACHE_PATH: "0",
+					TMPDIR: process.env.TMPDIR ?? "/tmp/opencode",
+				},
+				stdin: "ignore",
+				stdout: "ignore",
+				stderr: "ignore",
+			},
+		);
+		expect(await heartbeatAdvances(heartbeat)).toBe(true);
+		driver.kill("SIGKILL");
+		expect(await driver.exited).toBe(137);
+		recovered = s.openDb(dbPath);
+		const domain = s.getDomain(recovered, f.input.domainId);
+		if (!domain?.containerId)
+			throw new Error("Crash fixture lost durable container identity");
+		expect(domain.unresolved).toBe(true);
+		expect(domain.events.some((event) => event.kind === "started")).toBe(true);
+		expect(
+			s.getAction(recovered, {
+				runId: f.ctx.runId,
+				threadId: f.ctx.threadId,
+				actionId: f.input.domainId,
+			})?.outcome,
+		).toBe("pending");
+		expect(() =>
+			s.admitDomain(
+				recovered!,
+				f.ctx,
+				{ ...f.input, domainId: randomUUID() },
+				policy,
+			),
+		).toThrow("unresolved");
+		expect(s.getBudget(recovered, f.ctx.runId, "tool-calls")?.used).toBe(1);
+		expect(await heartbeatAdvances(heartbeat)).toBe(true);
+		expect(
+			(
+				await dockerJson(
+					domain.endpoint.slice(7),
+					`/containers/${domain.containerId}/json`,
+					"engine",
+				)
+			).State,
+		).toMatchObject({ Running: true });
+		await cleanup();
+		expect(stopped).toBe(true);
+		const stoppedSize = statSync(heartbeat).size;
+		for (let sample = 0; sample < 5; sample++) {
+			await Bun.sleep(100);
+			expect(statSync(heartbeat).size).toBe(stoppedSize);
+		}
+		expect(s.getDomain(recovered, domain.domainId)?.unresolved).toBe(true);
+		expect(
+			s.getAction(recovered, {
+				runId: f.ctx.runId,
+				threadId: f.ctx.threadId,
+				actionId: f.input.domainId,
+			})?.outcome,
+		).toBe("pending");
+		writeFileSync(
+			join(f.root, "crash-result.json"),
+			JSON.stringify({
+				mode: "synthetic-supervisor-sigkill",
+				reopened: true,
+				liveAfterCrash: true,
+				stopped,
+				stoppedSize,
+				unchangedSamples: 5,
+				quiescenceQualified: false,
+				automaticRecovery: false,
+			}) + "\n",
+			{ flag: "wx", mode: 0o600 },
+		);
+	} finally {
+		try {
+			if (driver) {
+				if (driver.exitCode === null) driver.kill("SIGKILL");
+				await driver.exited;
+			}
+			if (!cleanupAttempted) await cleanup();
+		} finally {
+			recovered?.close();
+		}
 	}
 }, 30000);
 

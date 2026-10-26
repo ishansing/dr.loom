@@ -51,6 +51,19 @@ This regression passes in the217-test native corpus and three further physical
 repetitions. Native coverage100% functions/98.60% lines; production-module
 coverage unchanged, aggregate down0.01 point from new test-harness error/timeout
 branches. Unknown inventory/pending action and successor reuse fences stay intact.
+
+Supervisor-crash continuation runs the same synthetic worker under a separate
+test controller, SIGKILLs that owned controller after live heartbeat, and reopens
+the durable store. It must observe surviving worker activity, pending/unknown
+inventory and fenced successor admission without another budget draw. Test-owned
+cleanup independently rechecks image/mount/worker/ID/name/labels before stop and
+records unknown only. This does not add automatic recovery or qualify daemon loss,
+all descendant writers, workspace reuse or G2; no daemon restart/delete is used.
+The218-test native corpus and three crash repetitions pass. Controller death
+demonstrably leaves the worker running; only explicit test-owned cleanup stops it.
+Native coverage100% functions/98.59% lines; production coverage unchanged, with
+the0.01-point aggregate change from additional harness guards. Production
+automatic crash reconciliation remains unimplemented and G2 stays open.
 Owner subsequently requested “commit and continue”; the historical preparation
 baseline/approval chronology follows. PR #6 is now merged at `bd397e7`.
 Historical preparation baseline `8e148ed`; branch `feat/p2-isolated-runner` was stacked on research

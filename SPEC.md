@@ -306,6 +306,14 @@ only; no cleanup/reconciliation API, quiescence recording, reuse/reset permissio
 SDK/provider, resource-profile or production change. This tests one known actor,
 not absence of all escaped processes or full G2 qualification.
 
+**Supervisor-crash continuation after `9f0849c`:** owner requested “commit and
+continue”. Add one actual post-start supervisor-SIGKILL/reopen regression using
+the existing bounded descendant fixture. Prove an active worker can outlive its
+controller, inventory/action uncertainty survives reopen, and successor admission
+remains fenced. Test-owned recovery cleanup independently proves identity before
+stop and records unknown only. No supported recovery API/service, lease revival,
+quiescence/reset/reuse/task completion, daemon restart, SDK/provider or G2 change.
+
 ### 2. Environment & Upstream State
 
 Baseline portable193 tests/2,880 assertions,99.47% functions/96.69% lines; full
@@ -328,6 +336,11 @@ Descendant baseline: native216 tests/3,279 assertions,100%/98.61%; portable199/
 setsid/new session/process-group leader. Verify real session IDs in the fixed
 image; Linux pid_namespaces(7) describes namespace-init termination killing its
 remaining processes. No binary, dependency or kernel/daemon changes.
+Crash baseline: native217 tests/3,300 assertions,100%/98.60%; portable199/2,943,
+96.40%/91.76%. Reuse installed Bun subprocess owned-handle SIGKILL/exited semantics,
+existing SQLite reopen getters/unknown observation and native Engine inspect/stop.
+Revalidate ownership through generic physical preflight/image ID and existing
+`assertDomainOwner`, not caller PID or worker text. No new dependency assumptions.
 
 ### 3. Architecture & File Manifest
 
@@ -446,6 +459,23 @@ failure with stopped=true/withheld candidate, verify detached numeric session
 facts, then require unchanged heartbeat size over five100ms samples after stop.
 Persist only bounded synthetic observation/hash facts privately if needed. All
 domain inventory/action completion/reuse fences remain unchanged.
+Add `tests/fixtures/runner-supervisor.ts`, a test-only native controller driver
+reading one private synthetic launch envelope and opening the existing prepared
+store, then invoking existing `runSyntheticDomain`; ignore stdio, no ambient env
+or providers. `tests/evals/runner-domain.ts` writes that envelope mode0600, closes
+its initial DB handle, launches the driver by owned process handle, observes real
+heartbeat growth, SIGKILLs the driver, awaits its exit and reopens the same store.
+Reuse the existing heartbeat observer as a shared two-caller test helper without
+changing its bounded timeout/error behavior. Assert live growth continues after
+the crash, exact durable container ID/pending action/budget1/unresolved fence.
+
+Test-owned cleanup is a narrow local helper, not exported production recovery:
+read durable domain, generic preflight selected image/mount/worker, exact native
+inspect ownership check, append stop-requested, stop only that owned ID, inspect
+again and append unknown/unqualified cleanup. No uncertain create/start retry,
+foreign adoption, kill/reset or deletes. A finally path kills/awaits the test
+controller and attempts this cleanup once if not already attempted; failed or
+unprovable cleanup remains a named test failure, never silent best effort/reuse.
 
 ### 4. Test Plan & Coverage Matrix
 
@@ -476,6 +506,13 @@ advances, forced stop ends observed daemon process, heartbeat stays unchanged,
 heartbeat contains `T.` (SIGTERM observed followed by continued writing),
 native action pending and inventory unresolved. Host observation is independent
 of worker stop ACK but supports only this known fixture, not general quiescence.
+Crash acceptance red starts an inert driver first: missing live heartbeat must
+fail before claiming a crash trajectory. Green requires driver signal exit137,
+reopened durable identity, continued actor activity with running daemon state,
+rejected successor admission and no extra budget draw, owned stop, five unchanged
+100ms heartbeat samples, pending native action and unresolved inventory. Repeat
+the physical crash case three times after full native coverage. No test passes
+by driver natural completion, worker30-second timeout or marking quiescence.
 
 ### 5. Security, Observability & Edge Cases
 
@@ -500,6 +537,11 @@ subprocess. Child30-second timer and1,500-byte heartbeat ceiling bound
 failures; new dedicated workspace files only, exclusive creation/mode0640 for
 inherited supervisor ACL. No symlink traversal, host path/credential inspection,
 raw diagnostics, broad stop, removal or post-stop quiescence claims.
+Crash driver receives only one private synthetic JSON file and selected fixed
+module path; empty/minimal explicitly constructed environment, no credential/cache
+inspection. SIGKILL targets only the owned driver handle. Container cleanup always
+uses independent inspect ownership, never domain name alone or worker PID. Keep
+failed evidence and unknown lifecycle facts; do not start a replacement worker.
 
 ### 6. Blast Radius & Rollback Plan
 
@@ -519,6 +561,9 @@ quiescence qualification or permission to clear inventory fences/reuse state.
 Descendant slice adds only fixture/physical assertions plus governance/contract
 evidence over `b80b675`. Keep production code/profile/store/pins unchanged; rollback
 is test-only. Preserve all stopped/created containers and old/new state/evidence.
+Crash slice changes test driver/evaluation helper/assertions and documentation
+only over `9f0849c`; production supervisor/store/schema/profile remain unchanged.
+It documents the absence of automatic crash cleanup, not its implementation.
 
 ### 7. Definition of Done (DoD)
 
@@ -548,6 +593,11 @@ For descendant continuation, focused red/green is `bun test ./tests/evals/runner
 addition to the declared ordered split gates; PID/transport regressions remain
 in full coverage. Record initial heartbeat growth and bounded post-stop samples,
 fresh roots/coverage delta, security checks and labeled-container snapshot.
+For crash continuation, red/green is `bun test ./tests/evals/runner-domain.ts
+-t 'supervisor crash'`; repeat that command three times after full native coverage
+then continue existing transport/empty-/tmp/drill/audit/security gates. Compare
+217-test baseline and unchanged production coverage; record all retained effects
+and exact private command/exit evidence. No subsequent commit/push inferred.
 
 **Owner-approved split gate (2026-10-26):** owner explicitly approved replacing
 the combined Bubblewrap physical-domain gate after reviewing its lost UID mapping
@@ -867,6 +917,60 @@ No accidental logs, temporary debug code, exports or test exclusions introduced.
 **Subsequent owner instruction:** “commit and continue” authorizes committing
 the verified detached-descendant fixture/assertion/evidence slice, then bounded
 offline P2 continuation. No push, G2 closure or new production/provider authority.
+
+#### Supervisor-crash continuation evidence — 2026-10-26
+
+Detached-stop slice committed as `9f0849c`. Test-only native driver, shared bounded
+heartbeat observer and actual crash/reopen/owned-stop assertions added; production
+runtime/store/profile and prior actor fixtures unchanged. Acceptance red ran an
+inert driver and failed on absent live heartbeat (1 test/3 assertions), not an
+import/setup failure. Real driver green passes1 test/19 assertions: controller
+exit137, durable started/container identity after reopen, pending action/budget1,
+rejected successor, continued actor writes/running daemon state after crash, then
+owned stop and five unchanged100ms host samples without clearing uncertainty.
+
+Fresh final state key `gate-zu04w91z` and log/TMPDIR key `loom-gate-jgol4zfi` were
+canonical/private0700 and initially empty; private command/exit manifest and all
+step logs retained. All13 execution commands exit0: lint39 files; strict check;
+portable199 tests/2,943 assertions,96.40% functions/91.76% lines; native218 tests/
+3,319 assertions,100%/98.59%, launcher100%/99.38%; crash1/19 three further runs;
+launcher/transport14/131 three runs; empty-/tmp portable/read-only preflight200/
+2,964 at97.16%/93.76%; automated synthetic drill/task completion false; audit14
+packages/no reported vulnerabilities. No test skipped or safety guard relaxed.
+
+Coverage comparison: production-module coverage unchanged against `9f0849c`;
+native aggregate98.59% versus98.60%, functions100% unchanged. Added observer/
+cleanup harness error/missing-identity/unresolved branches are not all exercised
+in the final success run; initial red exercised no-heartbeat/no-domain handling.
+This is not an aggregate non-regression or complete harness-fault coverage claim.
+No coverage exclusion or removed defensive check hides the difference.
+
+Labeled daemon snapshot298 containers,203 exited/95 created/0 running,34 new
+synthetic containers since264. Five owned controller handles were SIGKILLed and
+awaited across initial green/full/repeats; inert red driver exited without launch.
+All container/input/workspace/SQLite/private crash-result evidence retained; no
+daemon restart, image/mount/old data deletion or permission repair. Existing and
+new unknown inventory/action fences remain in place; no replacement dispatched.
+
+**Confirmed operational limitation:** controller crash can leave this worker
+running. The successful test-owned stop is explicit independent cleanup, not a
+production reconciliation implementation or supported automatic recovery. Crash
+windows before ID persistence, daemon loss, arbitrary descendant quiescence,
+CPU/memory/persistent-disk enforcement, image security, remote CI/human review
+and G2 remain open. Current five-file continuation stays uncommitted; no push,
+SDK/provider/production authority or separate history-engine work enabled.
+
+Final five-file Gitleaks8.30.1 scan passes after pinned archive/checksums/executable
+verification. Document checks pass31 local links/anchors, seven active sections,
+unique ADRs/canonical casing and `git diff --check`. Production source/store/all
+DDL/profile/prior actor fixtures/dependencies/CI/roadmap and historical review
+identity unchanged. Full task diff inspected: bounded synthetic envelope/results,
+ignored driver stdio, no accidental raw logging/exports or safety-test exclusions.
+
+**Subsequent owner instruction:** “commit and continue” authorizes committing
+the verified supervisor-crash fixture/assertion/evidence slice and investigating
+the next bounded offline P2 recovery seam. No push, G2 closure, automatic cleanup
+authority or production/provider effects inferred from the evidence commit.
 
 ## P2 private IPC execution record (historical)
 

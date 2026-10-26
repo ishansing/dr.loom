@@ -1527,3 +1527,32 @@ removed/exclusions added to mask that difference. Snapshot264 labeled containers
 179 exited/85 created/0 running; all retained. Known actor's heartbeat ceased over
 the bounded window after forced stop; no quiescence/reuse/task-completion or crash-
 recovery qualification inferred. Exact evidence/limitations/root keys in SPEC.
+
+**Supervisor-crash continuation after `9f0849c`:** owner requested “commit and
+continue”; detached-stop slice committed. Add a test-only native controller driver
+and post-start SIGKILL/reopen regression using the same bounded descendant fixture.
+Driver receives one private synthetic envelope with explicitly constructed minimal
+env/no stdio, invokes existing run API and owns no new recovery authority. Parent
+test observes heartbeat growth, kills only its driver handle, reopens SQLite and
+requires persisted ID/pending action/budget1/unresolved admission fence plus worker
+activity after controller death. Cleanup reuses generic preflight and exact native
+`assertDomainOwner` before one test-owned stop/inspect/unknown-observation attempt;
+no adoption, replay/start, lease revival, delete or quiescence/reuse permission.
+Engine1.56 docs confirm StdinOnce closes stdin on attach disconnect, not a cleanup
+guarantee; stop204/304 statuses unchanged. Acceptance red used an inert driver and
+failed on missing live heartbeat; actual driver green passes1 test/19 assertions.
+This is crash-persistence and manual owned-stop evidence, not supported automatic
+reconciliation, daemon-loss recovery, general quiescence or G2 qualification.
+Final ordered split gates still pending; production source/profile/deps unchanged.
+
+**Supervisor-crash final execution evidence:** ordered split gates exit0 with
+native218 tests/3,319 assertions,100% functions/98.59% lines; three further1/19
+crash repetitions; portable199, transport14/131 three times, empty-/tmp portable/
+preflight200 tests, drill and14-package audit. Production coverage unchanged;
+aggregate98.59 versus98.60 reflects new test cleanup/error guards, not lost runtime
+coverage; not all harness faults are injected. Snapshot298 labeled containers,
+203 exited/95 created/0 running, all preserved. Driver death demonstrably leaves
+a live worker, so supported automatic crash cleanup remains absent. Reopened
+inventory fences reuse; explicit test-owned identity-checked stop leaves unknown/
+pending state. No production recovery/quiescence/G2 qualification follows. Exact
+commands, fresh-root keys, retained effects and remaining gaps are in SPEC.

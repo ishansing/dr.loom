@@ -411,13 +411,44 @@ reuse. Leave code uncommitted unless separately requested; no push/phase closure
 Fresh baseline and deterministic reds first. Ordered final gates: `bun run lint`
 → `bun run check` → `bun test --coverage` → with explicit approved lab paths and
 `LOOM_LAB_STATE`, `bun test --coverage tests ./tests/evals/runner-preflight.ts
-./tests/evals/runner-domain.ts` → focused launcher corpus three times → initially
-empty `/tmp` portable and combined lab coverage with only approved capped mount/
-new explicit evidence root writable → `bun run drill` → `bun audit` → verified
+./tests/evals/runner-domain.ts` using fresh private native state/TMPDIR → focused
+launcher corpus three times → initially empty `/tmp` portable/read-only preflight
+coverage under Bubblewrap → `bun run drill` → `bun audit` → verified
 scoped Gitleaks/document/protected-file/DDL/historical checks and `git diff --check`.
 Compare both coverage baselines, preserving all mandatory tests. Record every
 unavailable/failing check, actual effect/ACL command, retained evidence and limits.
 No synthetic/native mock counts as actual container/access/cleanup proof.
+
+**Owner-approved split gate (2026-10-26):** owner explicitly approved replacing
+the combined Bubblewrap physical-domain gate after reviewing its lost UID mapping
+and the reduced claim. Keep the historical failed run below; it did not pass.
+Native physical tests preserve host IDs and use fresh private state/TMPDIR, not
+an isolated controller filesystem or literal empty host `/tmp`. No runtime identity
+check is weakened. This test-strategy approval is not G2/production approval.
+Exact commands, in order (fresh roots created only for this invocation):
+
+```bash
+export LOOM_LAB_ENDPOINT="unix:///run/user/$UID/docker.sock"
+export LOOM_LAB_MOUNT="/run/media/$USER/loom-workspace"
+export LOOM_LAB_IMAGE="$HOME/.local/share/loom-lab/workspace-2g.img"
+export LOOM_LAB_STATE="$(mktemp -d "$HOME/.local/share/loom-lab/gate-XXXXXX")"
+export TMPDIR="$(mktemp -d /tmp/opencode/loom-gate-XXXXXX)"
+bun run lint
+bun run check
+bun test --coverage
+bun test --coverage tests ./tests/evals/runner-preflight.ts ./tests/evals/runner-domain.ts
+bun test tests/runner-launch.test.ts tests/runner.test.ts
+bun test tests/runner-launch.test.ts tests/runner.test.ts
+bun test tests/runner-launch.test.ts tests/runner.test.ts
+env -u TMPDIR bwrap --ro-bind / / --bind "$LOOM_LAB_MOUNT" "$LOOM_LAB_MOUNT" --tmpfs /tmp --dev-bind /dev /dev --proc /proc bun test --coverage tests ./tests/evals/runner-preflight.ts
+bun run drill
+bun audit
+```
+
+Verify both fresh roots are operator-owned mode0700, canonical and initially empty
+before starting; retain state and failed evidence. Then pinned scoped Gitleaks,
+document/protected-file/history/DDL checks, labeled native container-state snapshot
+and `git diff --check`. No mount/image/old evidence mutation or broad cleanup.
 
 #### Bootstrap verification record — 2026-10-26 (closure blocked)
 
@@ -482,6 +513,91 @@ before affected verification closure; do not weaken runtime identity assertions.
 bootstrap/evidence slice with the failed required namespace gate explicitly open;
 the earlier uncommitted status describes the pre-authorization artifact. Commit
 does not waive that gate, establish release readiness, authorize push or close G2.
+
+#### Post-commit namespace investigation — 2026-10-26
+
+Owner requested continuation after bootstrap commit `8befd5a`; clean branch
+confirmed. Read-only investigation only, no application/test or phase change.
+Minimal deterministic probe reads the current rootless child PID from its selected
+runtime file and compares native `/proc/<pid>/uid_map` against the same read under
+`bwrap --ro-bind / / --proc /proc cat /proc/<pid>/uid_map`: native subordinate row
+`1 100000 65536`, Bubblewrap `1 4294967295 65536`; assertion fails as intended.
+
+Installed Bubblewrap0.13.1 is non-setuid and has no file capabilities. Matching
+upstream tag source `bubblewrap.c` lines2971–2973 automatically enables a user
+namespace for nonroot callers without `--userns`; lines3099–3105 attempt `setns`
+for an explicit namespace. A temporary read-only host namespace FD passed through
+`bwrap --userns <fd> --ro-bind / / --proc /proc cat /proc/self/uid_map` exits1:
+joining the specified user namespace failed. `unshare --mount -- true` exits1,
+Operation not permitted. No daemon namespace entry, root execution, UID/GID map
+write, helper install, service/daemon change or container dispatch attempted.
+Upstream source: https://github.com/containers/bubblewrap/blob/v0.13.1/bubblewrap.c.
+Targeted upstream issue search returned no results; deduplication is incomplete,
+and these documented privilege semantics are not asserted to be an upstream bug.
+
+**Proposed disposition, NOT approved:** retain the passing portable/read-only
+preflight empty-/tmp check; pair it with the full physical corpus on the native
+host using fresh private state/TMPDIR. This preserves physical UID/access checks
+but does not prove controller filesystem isolation or literal empty host `/tmp`.
+Adoption requires explicit owner approval of that reduced verification claim and
+updated exact DoD commands before execution as a replacement. Otherwise keep the
+combined namespace gate blocked pending an approved UID-preserving lab setup.
+No supporting physical rerun is needed to establish the namespace limitation.
+
+**Disposition:** owner subsequently replied “Approved” to the split replacement
+gate and its explicit missing controller-isolation claim. The DoD above supersedes
+the proposed/unapproved status for future verification only; historical failures
+and the reduced evidence scope remain recorded. Execute the revised checks before
+claiming this bootstrap's local verification gate is satisfied.
+
+#### Approved split-gate execution — 2026-10-26 (local verification passed)
+
+Executed the revised DoD against unchanged bootstrap code at `8befd5a`, with only
+SPEC/ADR/contract documentation modified. Fresh state root key `gate-8rr2dzn7`
+under the existing private lab parent and TMPDIR key `loom-gate-a8yt0phe` under
+`/tmp/opencode` were canonical, operator-owned0700 and empty before the run.
+Private step logs and a command/exit manifest remain in that TMPDIR; durable
+synthetic input/SQLite/fault evidence remains in the state root. No old evidence
+or existing image/mount was deleted, reformatted or re-permissioned.
+
+All execution commands exited0, in declared order:
+
+- `bun run lint`:37 files, no fixes; `bun run check`: strict typecheck pass.
+- `bun test --coverage`:199 tests/2,943 assertions,96.40% functions/91.76% lines.
+  Portable aggregate is unchanged, not a physical execution coverage claim.
+- Native full+preflight+domain coverage with fresh state/TMPDIR:216 tests/3,276
+  assertions,100% functions/98.61% lines; launcher100%/99.38%. Matches the last
+  native run and exceeds pre-bootstrap aggregate100%/98.48%; existing module
+  coverage unchanged. Defensive non101-upgrade handling remains uncovered.
+- Focused launcher/transport corpus:14 tests/131 assertions on each of three runs.
+- Bubblewrap portable/read-only preflight with initially-empty `/tmp`:200 tests/
+  2,964 assertions,97.16% functions/93.76% lines. No actual-domain test runs inside
+  this controller-only user namespace; physical checks run natively above.
+- `bun run drill`: automated synthetic fixture only, task completion false.
+- `bun audit`:14 packages, no reported vulnerabilities; no auto-fix/upgrade.
+
+Final scoped security/document checks pass: pinned Gitleaks8.30.1 archive and
+checksums SHA256 plus executable byte-match verified; all11 bootstrap task files
+scanned at current bytes. Three changed documents pass31 local links/anchors,
+seven active sections, unique ADR/canonical casing and `git diff --check`.
+Code/tests, store/all DDL, protocol/exports, dependencies/lock, CI, roadmap and
+historical T-07 review identity are unchanged from the committed bootstrap.
+
+Post-run read-only `loom.domain`-label-filtered daemon snapshot:160 retained
+containers,105 exited/55 created/0 running. The additional28 synthetic containers
+and their new run directories/evidence are retained. This is not independent
+descendant quiescence; all inventory cleanup uncertainty/reuse fences stay intact.
+
+Owner-approved replacement resolves the bootstrap test-strategy blocker only.
+Historical combined namespace failure remains failed evidence. No controller
+filesystem-isolation/literal empty host `/tmp`, image vulnerability, over-limit,
+escaped-descendant, crash/reconciliation, remote CI or human-review qualification
+is claimed. G2 remains open; no SDK/provider, production, push, phase advancement
+or new commit authorized by this test-strategy approval.
+
+**Subsequent owner instruction:** “commit and continue” explicitly authorizes
+committing the split-gate disposition/evidence documentation. Continue bounded
+offline P2 work only; no push, G2 closure or additional production authority.
 
 ## P2 private IPC execution record (historical)
 

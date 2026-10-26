@@ -3,6 +3,17 @@
 Status: **inventory, physical preflight and IPC committed; governed synthetic
 bootstrap in progress; independent cleanup/containment qualification pending**.
 Inventory `264c0b2`, physical preflight `e40acc3`, IPC/owned worker `3ed86ee`.
+
+Bootstrap implementation committed as `8befd5a`. Owner approved a split verification
+gate: native full physical tests with fresh private state/TMPDIR preserve mapped
+UID checks; portable/read-only preflight retains Bubblewrap empty-`/tmp` tests.
+The original combined Bubblewrap gate failed due to unmapped subordinate IDs and
+is retained as failed evidence, not relabeled passed. The replacement does not
+prove controller filesystem isolation or literal empty host `/tmp`; no G2 closure
+or independent cleanup qualification follows. Exact commands/results live in SPEC.
+The approved split run passes:216 native tests at100% function/98.61% line
+coverage and200 portable/read-only preflight tests with initially-empty `/tmp`.
+These are bootstrap-local verification results, not full containment qualification.
 Owner subsequently requested “commit and continue”; the historical preparation
 baseline/approval chronology follows. PR #6 is now merged at `bd397e7`.
 Historical preparation baseline `8e148ed`; branch `feat/p2-isolated-runner` was stacked on research

@@ -1410,3 +1410,35 @@ remote CI, image security scan or human approval is claimed.
 **Commit authorization:** owner subsequently requested “commit”; recording the
 bootstrap with its failed required namespace gate retained, not waived. This
 supersedes the leave-uncommitted instruction only; no push or G2 closure authorized.
+
+**Post-commit investigation (`8befd5a`):** installed non-setuid/capability-free
+Bubblewrap0.13.1 matches its tag's automatic nonroot user-namespace behavior
+(`bubblewrap.c`2971–2973). Minimal mapping assertion reproduces subordinate-ID
+loss; explicit current-host namespace reuse and mount-only unshare each fail
+unprivileged. Read-only probes only, no root/daemon-namespace fallback or host
+configuration change. Source: https://github.com/containers/bubblewrap/blob/v0.13.1/bubblewrap.c.
+Targeted issue search found no result (incomplete deduplication); not claimed as
+an upstream defect. Recommend owner disposition of a split gate: existing portable
+empty-/tmp proof plus native physical corpus with fresh private state/TMPDIR,
+explicitly without controller filesystem-isolation/literal empty-host-/tmp proof.
+This is a proposal, not an approved replacement or waiver; required gate remains
+failed and no application code or G2 status changes.
+
+**Owner disposition — split gate APPROVED:** owner replied “Approved” to the
+explicit split-gate proposal. Revise SPEC DoD before execution: full physical
+corpus runs natively with fresh private evidence/TMPDIR and unchanged UID guards;
+portable/read-only preflight retains Bubblewrap initially-empty `/tmp` proof.
+This replaces the combined namespace gate for bootstrap verification only, not
+controller filesystem isolation/literal empty host `/tmp` proof. Preserve its
+historical failure; no G2 closure, production authority, push or commit inferred.
+
+**Approved split-gate evidence:** unchanged bootstrap `8befd5a` passes the revised
+ordered checks with new private0700 state/TMPDIR: portable199 tests, native216
+tests/3,276 assertions at100% functions/98.61% lines, focused14 tests three times,
+Bubblewrap portable/read-only preflight200 tests, drill and14-package audit.
+Exact commands, retained root/log keys and coverage comparison are in SPEC.
+Labeled daemon snapshot160 containers (105 exited/55 created/0 running), all
+preserved. Local bootstrap verification now passes under the approved reduced
+claim; original combined namespace run still failed. Independent cleanup/recovery,
+controller filesystem isolation and G2 remain unqualified; no runtime code,
+identity guard, schema, provider or production authority changed.

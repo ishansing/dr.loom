@@ -286,6 +286,12 @@ push, automatic action/task completion or G2 closure. Stopped-container metadata
 alone will NOT record quiescence: leave inventory unresolved until independent
 cleanup qualification/reconciliation is implemented.
 
+**Continuation after `20442be`:** owner requested “commit and continue”. Extend
+the existing owned access probe to qualify actual64 MiB tmpfs ENOSPC enforcement
+on `/tmp` and `/dev/shm` under unchanged profile1. Test-only continuation within
+offline P2, not a new runtime API/phase. No persistent-workspace fill, process
+pressure, host-memory OOM, resource-profile change or cleanup-state transition.
+
 ### 2. Environment & Upstream State
 
 Baseline portable193 tests/2,880 assertions,99.47% functions/96.69% lines; full
@@ -296,6 +302,10 @@ host165531 in the observed namespace; recheck actual maps before scoped ACL
 provisioning. Official Engine1.56 create/attach/start/stop/inspect schemas rechecked:
 nonrecursive bind options, memory+swap semantics, private cgroup namespace and
 204/304 stop results. No runtime/package upgrade or ambient Docker client config.
+Continuation baseline: native216 tests/3,276 assertions,100% functions/98.61%
+lines; portable199/2,943,96.40%/91.76%; approved split gate passed at `20442be`.
+Use installed Bun1.4.4/Node-compatible `statfsSync`, fixed1 MiB write chunks and
+Linux tmpfs capacity/ENOSPC behavior; no dependency/API promotion.
 
 ### 3. Architecture & File Manifest
 
@@ -372,6 +382,14 @@ no existing file ACL is widened or repaired and no recursive change is performed
 refusing any runtime UID/GID other than65532 before filesystem probes; emits only
 the existing ready/proposal grammar and bounded synthetic candidate report.
 Existing worker mode/fixtures updated only if a failing real access test requires it.
+For the continuation, extend only `tests/fixtures/runner-access-worker.ts` and its
+existing actual-domain assertion in `tests/evals/runner-domain.ts`. After current
+identity/capability/cgroup checks and host start, validate each temp root is tmpfs
+with64 MiB capacity; exclusively create one synthetic file there. At most65
+one-MiB writes per mount using a single fixed buffer; require ENOSPC before any
+successful write above64 MiB and record bounded capacity/written/denied facts in the existing
+hash-bound candidate. No general probe API, arbitrary paths, raw exceptions,
+extra IPC frames or host-side execution of absolute-path writes.
 
 ### 4. Test Plan & Coverage Matrix
 
@@ -384,6 +402,12 @@ kill/lease change and foreign name collision. Assert unresolved inventory/pendin
 audit after every unqualified stop, no successor reuse or reset. Preserve evidence
 on failure. No actual over-limit/resource or escaped-descendant qualification claim
 from inspect metadata or a successful smoke run; missing required lab is blocked.
+Continuation acceptance: update the existing physical access test first and run
+it red on missing tmpfs enforcement facts before changing the worker. Green must
+show actual writes and ENOSPC on both fixed roots, matching candidate hash and
+preserved unknown/pending inventory. Native UID/access/cgroup and protocol/fault
+regressions remain mandatory. This adds temp-filesystem enforcement evidence only;
+CPU/PID/memory/disk over-limit and descendant/crash proof remain open.
 
 ### 5. Security, Observability & Edge Cases
 
@@ -395,6 +419,10 @@ paths are canonical, operator-owned and private; ACL grants only the measured
 mapped ID on newly created exact paths, never parent trees. Retain failures and
 stopped containers; classify limitations honestly, especially no independent
 quiescence proof, image vulnerability scan or provider/production support.
+Temp probe attempt cap is130 MiB combined data plus one1 MiB reusable buffer;
+successful expected writes are at most128 MiB across both fixed tmpfs mounts.
+never allocate unbounded chunks, touch existing names, fill persistent data or
+unlink old evidence. Wrong filesystem/capacity fails before any probe write.
 
 ### 6. Blast Radius & Rollback Plan
 
@@ -405,6 +433,9 @@ ACLs only. Keep created containers stopped and all synthetic state/evidence; no
 automatic rm, broad cleanup, formatting or old-data ownership changes. On failure,
 stop only proven-owned domains where possible, retain uncertain facts and block
 reuse. Leave code uncommitted unless separately requested; no push/phase closure.
+Continuation rollback is fixture/assertion-only; production supervisor/store/
+profile/pins remain byte-identical to `20442be`. Retain dedicated input/workspace
+evidence and stopped containers; temp files belong only to the container tmpfs.
 
 ### 7. Definition of Done (DoD)
 
@@ -418,6 +449,10 @@ scoped Gitleaks/document/protected-file/DDL/historical checks and `git diff --ch
 Compare both coverage baselines, preserving all mandatory tests. Record every
 unavailable/failing check, actual effect/ACL command, retained evidence and limits.
 No synthetic/native mock counts as actual container/access/cleanup proof.
+For tmpfs continuation, run the focused actual-access red first, then use the same
+ordered commands below with fresh roots. Compare against the continuation baseline
+and keep all existing assertions. Finish scoped secret/document/protected-file
+checks and record the added temp-write effects; no further commit implied.
 
 **Owner-approved split gate (2026-10-26):** owner explicitly approved replacing
 the combined Bubblewrap physical-domain gate after reviewing its lost UID mapping
@@ -598,6 +633,45 @@ or new commit authorized by this test-strategy approval.
 **Subsequent owner instruction:** “commit and continue” explicitly authorizes
 committing the split-gate disposition/evidence documentation. Continue bounded
 offline P2 work only; no push, G2 closure or additional production authority.
+
+#### Bounded tmpfs continuation evidence — 2026-10-26
+
+Split-gate documentation committed as `20442be`; subsequent changes are the
+access fixture, its existing physical assertion and governance/contract docs only.
+Acceptance red: focused actual access command failed on missing `tmpfs` facts
+with the original worker, not setup/import. After the fixture change, focused
+actual access passes1 test/8 assertions: both roots accept64 MiB then ENOSPC;
+candidate SHA256 matches and action remains pending/inventory unresolved.
+
+Fresh ordered DoD run uses private initially-empty0700 state key `gate-wbw0js50`
+and log/TMPDIR key `loom-gate-pa0qhgu0`; command/exit manifest retained privately.
+Lint37 files and strict typecheck exit0. Portable199 tests/2,943 assertions,
+96.40% functions/91.76% lines; native216 tests/3,277 assertions,100%/98.61%,
+launcher100%/99.38%; unchanged coverage against `20442be` across existing modules.
+Focused14 tests/131 assertions pass three times; empty-/tmp portable/read-only
+preflight200 tests/2,964 assertions,97.16%/93.76%. Drill remains automated synthetic
+with task completion false; audit14 packages/no reported vulnerabilities. All
+execution commands exit0; no test skipped, profile or supervisor logic changed.
+
+Effects: red/green plus full native run add30 retained synthetic containers.
+Labeled read-only snapshot190 total,125 exited/65 created/0 running. Successful
+probe runs write128 MiB total to container-only tmpfs, never fill the persistent
+workspace; bounded candidate/evidence remains there normally. Keep all prior
+state/files/containers and scoped new-directory ACLs; no cleanup/reuse assertion.
+Memory/CPU/PID/persistent-disk enforcement, independent descendant cleanup,
+supervisor-crash/daemon-loss reconciliation, image security, remote CI/human review
+and G2 remain open. New test/fixture slice is uncommitted; no push/SDK/provider or
+production effect enabled.
+
+Final five-file pinned Gitleaks8.30.1 scan passes after archive/checksum/executable
+identity verification. Document checks pass31 local links/anchors, seven active
+sections, unique ADRs/canonical casing and `git diff --check`. Production source,
+store/all DDL/profile, dependencies/lock/CI/roadmap and historical review hash are
+unchanged. Full task diff inspected; no unintended logging, cleanup or exports.
+
+**Subsequent owner instruction:** “commit and continue” authorizes committing
+the verified bounded tmpfs fixture/assertion/evidence slice, then continuing
+offline P2 qualification. No push, G2 closure or production/provider authority.
 
 ## P2 private IPC execution record (historical)
 

@@ -14,6 +14,14 @@ or independent cleanup qualification follows. Exact commands/results live in SPE
 The approved split run passes:216 native tests at100% function/98.61% line
 coverage and200 portable/read-only preflight tests with initially-empty `/tmp`.
 These are bootstrap-local verification results, not full containment qualification.
+
+Bounded temp-cap continuation extends the owned access fixture, not the runner:
+verify both fixed temp roots are64 MiB tmpfs, then write64 MiB of synthetic data
+to each and require the next bounded write to fail ENOSPC. Total attempt ceiling
+is130 MiB with a single reusable1 MiB buffer; the persistent workspace is not
+filled. Candidate hash binds the observed facts; pending/unknown inventory stays
+unchanged. CPU/PID/memory/disk pressure and independent cleanup remain separate
+qualification gates. See active SPEC for fresh test results and limitations.
 Owner subsequently requested “commit and continue”; the historical preparation
 baseline/approval chronology follows. PR #6 is now merged at `bd397e7`.
 Historical preparation baseline `8e148ed`; branch `feat/p2-isolated-runner` was stacked on research

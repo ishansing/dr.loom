@@ -432,8 +432,19 @@ test("actual nonroot access probe denies root/input/outside writes and exposes o
 			memoryMiB: 4096,
 			pids: 256,
 			swap: false,
+			tmpfs: {
+				tmp: { capacityBytes: 67108864, writtenBytes: 67108864, denied: true },
+				shm: { capacityBytes: 67108864, writtenBytes: 67108864, denied: true },
+			},
 		});
 		expect(result.domain?.unresolved).toBe(true);
+		expect(
+			s.getAction(f.db, {
+				runId: f.ctx.runId,
+				threadId: f.ctx.threadId,
+				actionId: f.input.domainId,
+			})?.outcome,
+		).toBe("pending");
 	} finally {
 		f.db.close();
 	}

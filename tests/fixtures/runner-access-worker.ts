@@ -1,5 +1,13 @@
 import { createHash } from "node:crypto";
-import { readFileSync, readSync, writeFileSync, writeSync } from "node:fs";
+import {
+	closeSync,
+	openSync,
+	readFileSync,
+	readSync,
+	statfsSync,
+	writeFileSync,
+	writeSync,
+} from "node:fs";
 
 // Container-only trusted probe; never touch absolute paths under a native host UID.
 if (
@@ -53,6 +61,41 @@ try {
 		if (readFileSync(`/sys/fs/cgroup/${file}`, "utf8").trim() !== expected)
 			throw new Error();
 	}
+	const roots = ["/tmp", "/dev/shm"] as const;
+	for (const root of roots) {
+		const fs = statfsSync(root);
+		if (fs.type !== 0x01021994 || fs.bsize * fs.blocks !== 67108864)
+			throw new Error();
+	}
+	const chunk = Buffer.alloc(1048576, 97);
+	const fill = (root: (typeof roots)[number]) => {
+		const fd = openSync(`${root}/loom-synthetic-capacity.bin`, "wx", 0o600);
+		let writtenBytes = 0,
+			denied = false;
+		try {
+			for (let attempt = 0; attempt < 65; attempt++) {
+				try {
+					const bytes = writeSync(fd, chunk);
+					writtenBytes += bytes;
+					if (bytes !== chunk.length) throw new Error();
+				} catch (error) {
+					if (
+						!(error instanceof Error) ||
+						!("code" in error) ||
+						error.code !== "ENOSPC"
+					)
+						throw new Error();
+					denied = true;
+					break;
+				}
+			}
+		} finally {
+			closeSync(fd);
+		}
+		if (!denied || writtenBytes !== 67108864) throw new Error();
+		return { capacityBytes: 67108864, writtenBytes, denied };
+	};
+	const tmpfs = { tmp: fill(roots[0]), shm: fill(roots[1]) };
 	const content =
 		JSON.stringify({
 			uid: process.getuid!(),
@@ -69,6 +112,7 @@ try {
 			memoryMiB: 4096,
 			pids: 256,
 			swap: false,
+			tmpfs,
 		}) + "\n";
 	// Preserve the inherited named-supervisor ACL read mask.
 	writeFileSync("candidate.txt", content, { flag: "wx", mode: 0o640 });

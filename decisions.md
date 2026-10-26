@@ -1442,3 +1442,25 @@ preserved. Local bootstrap verification now passes under the approved reduced
 claim; original combined namespace run still failed. Independent cleanup/recovery,
 controller filesystem isolation and G2 remain unqualified; no runtime code,
 identity guard, schema, provider or production authority changed.
+
+**Bounded temp-filesystem continuation after `20442be`:** owner requested “commit
+and continue”; split-gate disposition/evidence committed, then extend the existing
+owned access probe only. Acceptance red observed missing tmpfs facts from the
+real container before changing the fixture. Updated probe verifies both roots are
+64 MiB Linux tmpfs before writes, uses one1 MiB buffer and at most65 write attempts
+per root, and requires64 MiB written followed by ENOSPC. Linux tmpfs(5) documents
+the size upper limit: https://man7.org/linux/man-pages/man5/tmpfs.5.html.
+Focused real-access green passes with candidate-hash and pending-action assertions.
+No persistent-workspace fill, host OOM/process stress, changed profile, supervisor/
+store/schema change or new dependency. This is actual temp-cap evidence, not CPU/
+PID/memory/disk enforcement or independent cleanup proof; final gates still pending.
+
+**Temp-cap final execution evidence:** ordered approved split gates pass: native216
+tests/3,277 assertions at100% functions/98.61% lines (coverage unchanged), portable
+199 tests, focused14 tests three times, empty-/tmp portable/preflight200 tests,
+drill and14-package audit. Actual fixture confirms64 MiB then ENOSPC on each
+temp mount;128 MiB expected successful writes, bounded130 MiB attempt ceiling.
+Labeled snapshot190 containers,125 exited/65 created/0 running, all preserved.
+No runtime/store/profile change or independent cleanup inference; broader resource/
+recovery/image/human/CI qualification and G2 stay open. Exact red/green evidence,
+private retained-root keys and remaining scope are in SPEC.

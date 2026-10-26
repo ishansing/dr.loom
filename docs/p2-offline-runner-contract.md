@@ -1,7 +1,8 @@
 # P2-A — owner-approved offline isolated-runner scope
 
-Status: **inventory committed; read-only physical preflight in progress;
-launcher/containment qualification pending**. Inventory commit: `264c0b2`.
+Status: **inventory and physical preflight committed; bounded IPC/owned worker
+implementation in progress; launcher/containment qualification pending**.
+Inventory commit: `264c0b2`; physical preflight commit: `e40acc3`.
 Owner subsequently requested “commit and continue”; the historical preparation
 baseline/approval chronology follows. PR #6 is now merged at `bd397e7`.
 Baseline `8e148ed`; branch `feat/p2-isolated-runner` is stacked on research
@@ -88,6 +89,41 @@ daemon restart or rootful-context modification is part of this proposal.
 
 These are reversible implementation defaults for review, not a public protocol
 release. Exact schemas and deterministic encoding fixtures precede code.
+
+### Private v1 transport/worker implementation cut
+
+`RunnerOutput` in `src/runner-protocol.ts` incrementally consumes Docker1.56's
+non-TTY8-byte multiplexed headers and strictly bounded NDJSON. Only stdout1 is
+accepted; stderr2, stdin echo0, unknown streams, nonzero reserved header bytes and
+empty payload frames fail closed. The parser does not implement a general Docker
+stream viewer. Headers announce unsigned big-endian payload lengths, charged
+against the64 KiB aggregate before allocation. JSON frame limit includes newline.
+Two exact frame shapes are accepted, in order:
+
+```json
+{"version":1,"type":"ready","seq":1}
+{"version":1,"type":"candidate-proposed","seq":2,"path":"candidate.txt","sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}
+```
+
+The displayed hash is synthetic. Unknown/missing fields, malformed UTF-8/JSON,
+BOM-prefixed JSON, wrong sequence/path/hash and partial/trailing output reject.
+Any error poisons the parser; only `runner-output:invalid` escapes. `finish()` is
+required for a normal terminal stream, but even successful finish is not proof of
+worker exit, cleanup, file contents or task success. Fixed command encodings:
+
+```json
+{"version":1,"type":"start"}
+{"version":1,"type":"stop"}
+```
+
+Each encoded command ends with one newline. The self-contained owned fixture
+`tests/fixtures/runner-worker.ts` starts ready, creates only `candidate.txt` with
+fixed synthetic text using exclusive create on start, proposes its hash and waits
+for stop. No start means no write; existing candidates are never overwritten.
+Malformed/foreign/repeated-start/oversized/partial input or EOF without stop exits
+64, withholding diagnostics. Native tests use empty environment/temporary cwd
+and `--no-env-file`; no Docker workload, identity mapping/access or descendant
+containment is qualified by those subprocess tests.
 
 ## Admission, durable launch inventory and cleanup
 

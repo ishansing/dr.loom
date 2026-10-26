@@ -1262,3 +1262,46 @@ pass. Mandatory full+actual-lab coverage passes175 tests/2,338 assertions at100%
 functions/98.31% lines, also with initially empty `/tmp`. Existing module coverage
 is unchanged. Lint/strict check, three focused repetitions, automated drill and
 14-package dependency audit pass. See SPEC for exact commands and remaining gates.
+
+**Commit event — 2026-10-26:** owner requested “commit”; verified physical
+preflight committed as `e40acc3`, then owner requested continuation. No push or
+launcher/containment qualification inferred.
+
+## [ADR-025] - 2026-10-26 (P2 private IPC and owned worker)
+
+**Title:** Bound and validate the private stream before connecting Docker effects.
+
+**Status:** Accepted within approved ADR-022 offline scope; new transport/worker
+cut is uncommitted and subject to fresh local gates, not G2 or human sign-off.
+
+**Context & Problem Statement:** The supervisor must not trust process stdout or
+worker proposals as identity, arbitrary host instructions or task completion.
+Validated preflight alone cannot safely consume future Docker attach output.
+The capped mount disappeared between sessions; re-establish approved storage for
+mandatory physical regression gates, never fall back to an ordinary directory.
+
+**Options Evaluated:** Adopt a generic RPC/framing library; buffer full attach
+output and validate after exit; or implement the fixed two-frame private grammar
+with bounded incremental state. A generic library/protocol adds unused public
+surface; whole-output buffering cannot meet fail-closed streaming limits.
+
+**Decision & Rationale:** One owned parser accepts exactly ready then a fixed-path
+candidate SHA256 proposal; it handles non-TTY Docker multiplexing, strict UTF-8/
+JSON/sequence/schema and early payload limits with8-byte/4 KiB buffers. Errors
+erase internal buffers and permanently poison the instance, exposing only a fixed
+safe code. Preserve UTF-8 BOM bytes so JSON parsing rejects them: a deterministic
+red reproduced TextDecoder's default BOM stripping. Supervisor vocabulary is only
+start/stop. A self-contained synthetic worker has bounded strict input, exclusive
+fixed-file creation, no imported Loom authority and no raw error diagnostics.
+Native process assertions cover lifecycle/bytes/file preservation; they do not
+establish container containment or subprocess line coverage.
+
+**Consequences & Tech Debt:** No package/authority/store migration or public run
+CLI. Stop-before-start is harmless; candidate-plus-EOF or duplicate-start still
+fails, demonstrating that even valid proposal bytes are not process success.
+Kernel UID/GID mapping currently maps65532 to host165531; access/ACL provisioning
+and actual runtime proof remain later, with no ownership or permission fallback.
+Future launcher must pin final config, mediate admission/start/stop, call parser
+finish on normal EOF, reconcile kill/crash/daemon loss and independently establish
+domain quiescence before reuse. No SDK/provider/live use or standalone-history
+build is enabled. Owner: implementing developer; no performance claim measured.

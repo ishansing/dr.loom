@@ -277,6 +277,170 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
 
 ### 1. Phase Objective & Scope
 
+Owner committed physical preflight as `e40acc3` and requested “continue”. On the
+clean `feat/p2-isolated-runner` branch, implement the private bounded output
+protocol and owned synthetic worker before wiring Docker create/start/stop.
+This is the transport/worker cut of ADR-022's approved offline launch path, not
+an executable general-purpose runner or G2 qualification. No SDK/provider,
+production effect, dependency, push or automatic task-completion change.
+
+### 2. Environment & Upstream State
+
+Bun1.4.4, existing schema6. Last complete selected-lab baseline:175 tests/2,338
+assertions,100% functions/98.31% lines; portable174 tests/2,317 assertions,
+99.40%/96.28%. Recheck both. Rootless Docker29.9.2 still reports expected security
+and cgroup metadata; current namespace UID/GID maps are `0→operator` and
+`1..65536→100000..165535`, so container65532 maps to host165531 for both.
+That is read-only mapping evidence, not workload access proof. The capped mount
+is absent again and no loop binds the approved existing2 GiB image. Restore it
+with the previously approved noninteractive udisks commands for required
+preflight regression gates; preserve data, no format/ownership/daemon changes.
+
+### 3. Architecture & File Manifest
+
+`src/runner-protocol.ts`: one incremental `RunnerOutput` parser for Docker's
+non-TTY multiplexed attach bytes. `push(Uint8Array)` returns validated frames;
+`finish()` requires a complete terminal proposal and no partial header/payload/
+line. Any malformed input poisons the parser permanently; no later push/finish
+recovers or exposes bytes. Exactly8-byte Docker headers: stdout1/stderr2,
+reserved bytes zero, unsigned BE payload length. Reject zero-length frames,
+unknown streams and payloads exceeding the remaining64 KiB aggregate output
+budget before allocation. Stderr is always withheld/rejected, not logged.
+
+Stdout is strict UTF-8 NDJSON, at most4096 encoded bytes per frame including
+newline; max65536 combined payload bytes. Buffer only the8-byte header and fixed
+4096-byte line storage, not a whole incoming chunk. Reject invalid UTF-8/JSON,
+unknown/missing fields, arrays/null, partial EOF, out-of-order/duplicate frames,
+noninteger/wrong sequences and all bytes after the terminal frame. v1 schemas:
+`{version:1,type:"ready",seq:1}` then
+`{version:1,type:"candidate-proposed",seq:2,path:"candidate.txt",sha256:HEX64}`.
+No identity, arbitrary path/body/prose, approval/grant/reset/provider command or
+completion field is accepted. Return only fresh objects containing validated
+fields. Parser errors have one fixed safe code without raw diagnostics.
+
+`encodeRunnerCommand("start"|"stop")` returns the exact UTF-8 bytes for
+`{"version":1,"type":"start"}\n` or `{"version":1,"type":"stop"}\n`; runtime
+invalid commands reject. This is the only supervisor command vocabulary.
+`tests/fixtures/runner-worker.ts` is the self-contained trusted Bun worker input:
+emit ready, wait for bounded strict commands, exclusive-create only fixed relative
+`candidate.txt` with the exact synthetic content `loom synthetic candidate\n`,
+emit its SHA256 proposal, then wait for stop. Stop before start exits cleanly with
+no candidate. Stop after proposal exits cleanly. Duplicate start, unknown fields,
+invalid/oversized/partial input or EOF without stop exits64 with no diagnostic
+body. The worker never loads Loom, SDK/settings/credentials or network clients.
+No heartbeat/descendant fixture until the launcher can own its cleanup.
+
+`tests/runner-protocol.test.ts`: deterministic raw wire/JSON fixtures, every byte
+split, frame and total budget edges, poisoning, no raw-error leakage, and native
+worker subprocess tests under a minimal empty environment/disposable cwd with
+`--no-env-file`. No public CLI, root facade export or generic transport abstraction
+yet; the future supervisor is the responsible caller. Existing preflight/store
+contracts remain unchanged. Contract/decisions record exact schemas and proof.
+
+### 4. Test Plan & Coverage Matrix
+
+Failing acceptance tests precede parser/worker implementation. Unit tests cover
+framing, payload/frame limits, strict decode/schema/order/EOF, command bytes,
+poisoning and proposed hash/path safety. Native process tests cover start→proposal
+→stop, stop-before-start, denied duplicate/foreign commands, UTF-8/oversize/partial
+stdin, missing stop and existing-candidate preservation. Existing safety corpus
+plus mandatory actual-lab preflight remains required. Native worker tests are not
+container, access-control or cleanup proof; subprocess worker line coverage is
+not inferred from control-plane coverage.
+
+### 5. Security, Observability & Edge Cases
+
+Never emit/persist unvalidated output or daemon/worker diagnostics; use synthetic
+sentinels only. No worker-controlled host identity or arbitrary host path. Return
+proposal metadata, never verified completion. No UID0/world-writable fallback,
+recursive ownership or ad-hoc ACL provisioning. Current mapping suggests a narrow
+named-user ACL scheme for a later launch cut, but no permissions are changed here.
+Actual65532 write/supervisor-read/outside-write-denial must precede support claims.
+Docker stream EOF/worker exit alone cannot establish descendant quiescence.
+
+### 6. Blast Radius & Rollback Plan
+
+Add protocol owner, owned test worker and tests/docs only. No schema, existing
+preflight/API, dependencies or authority behavior change. Tests write only their
+new disposable directory, preserve an existing candidate within that fixture,
+and clean only their own temporary state. Restored approved mount stays mounted;
+no broad cleanup/unmount. Leave new code uncommitted unless separately requested.
+Historical execution records and approvals remain byte-preserved.
+
+### 7. Definition of Done (DoD)
+
+Fresh baseline first, then reds. Final ordered gates: `bun run lint` →
+`bun run check` → `bun test --coverage` → with explicit existing
+`LOOM_LAB_ENDPOINT`, `LOOM_LAB_MOUNT`, `LOOM_LAB_IMAGE`,
+`bun test --coverage tests ./tests/evals/runner-preflight.ts` →
+`bun test tests/runner-protocol.test.ts` three times → initially-empty `/tmp`
+portable and full+lab coverage using the documented bubblewrap commands →
+`bun run drill` → `bun audit` → verified scoped Gitleaks, document/protected-file/
+DDL/historical-record checks and `git diff --check`. Compare portable and mandatory
+combined coverage separately; no exclusions/skips or invented Docker claims.
+Missing required lab gates remain blocked, not a pass. Record exact counts and
+limits before sign-off; no commit/push, launcher effects or G2 closure inferred.
+
+**Execution evidence — 2026-10-26:** fresh baseline reproduced portable174 tests/
+2,317 assertions at99.40% functions/96.28% lines and mandatory full+physical-lab175
+tests/2,338 assertions at100%/98.31%, with lint30 and strict check passing.
+Approved loop setup succeeded; explicit mount returned AlreadyMounted (not an
+exit-zero mount claim), then ext4/rw/nosuid/nodev/device checks passed. Existing
+image/data retained; no permission/ownership, daemon or image changes this cut.
+
+Parser/command acceptance reds failed on explicit not-implemented behavior;
+native worker lifecycle reds reproduced exit64/no candidate from the stub.
+A separate red reproduced default TextDecoder BOM stripping before preserving
+BOM bytes for strict JSON rejection. Docker framing was checked against the
+official [Engine1.56 API specification](https://docs.docker.com/reference/api/engine/version/v1.56.yaml),
+not inferred from a mock or current-main source.
+
+Final ordered commands above all exit0:
+
+- `bun run lint`:33 files/no fixes; `bun run check`: strict typecheck pass.
+- `bun test --coverage`:193 pass/0 fail,2,880 assertions,99.47% functions/96.69%
+  lines versus portable99.40%/96.28% baseline. New protocol100% functions/lines;
+  all prior module coverage unchanged. Portable-only coverage is not the required
+  physical-phase coverage result.
+- Mandatory `bun test --coverage tests ./tests/evals/runner-preflight.ts`, with
+  `LOOM_LAB_ENDPOINT=unix:///run/user/$UID/docker.sock`,
+  `LOOM_LAB_MOUNT=/run/media/$USER/loom-workspace`,
+  `LOOM_LAB_IMAGE=$HOME/.local/share/loom-lab/workspace-2g.img`:
+  194 pass/0 fail,2,901 assertions,100% functions/98.48% lines versus100%/98.31%
+  baseline. This actual lab corpus is read-only preflight, not a container run.
+- `bun test tests/runner-protocol.test.ts` three times:19 pass/0 fail,563
+  assertions each. Covers every wire split, poisoned state, frame/budget boundaries,
+  safe errors and native interactive worker readiness/start/proposal/stop.
+- `bwrap --ro-bind / / --tmpfs /tmp --dev-bind /dev /dev --proc /proc bun test --coverage`:
+  same193-test/2,880-assertion portable results and coverage with initially empty
+  `/tmp`. With the explicit lab environment above,
+  `bwrap --ro-bind / / --bind "$LOOM_LAB_MOUNT" "$LOOM_LAB_MOUNT" --tmpfs /tmp
+  --dev-bind /dev /dev --proc /proc bun test --coverage tests ./tests/evals/runner-preflight.ts`
+  reproduces194 tests/2,901 assertions/100% functions/98.48% lines. No required
+  lab skip or coverage exclusion was added.
+- `bun run drill`: synthetic automated fixture pass, not human attestation;
+  `bun audit`:14 packages/no known vulnerabilities, no auto-fix.
+- Document/protected-file checks:63 local links/anchors, seven active sections,
+  unique ADRs/canonical casing, preserved previous ADR bytes and historical SPEC/
+  review identity, untouched source/preflight/store/DDL v1–v6/dependencies/pins.
+  `git diff --check` passes. The temporary scanner was absent; official pinned
+  Gitleaks8.30.1 archive/checksums were restored outside Loom, release SHA256 and
+  archive/executable identity verified. Scoped stdin scans of all6 complete task
+  files pass with an empty scanner environment.
+
+Coverage above measures imported control-plane modules; native subprocess tests
+exercise the owned worker but do not produce worker line coverage. Worker source
+was strict-typechecked and linted, not given an invented coverage percentage.
+No Docker workload, UID65532 access test, ACL provisioning, resource/cleanup proof,
+SDK/provider call or standalone-history build occurred. New code stays uncommitted;
+no remote CI, fixed-artifact human review, push or G2 closure claimed. Next is the
+supervised Docker create/start/stop path and actual least-privilege access proof,
+with its own exact contract and acceptance reds before effects.
+
+## P2 physical preflight execution record (historical)
+
+### 1. Phase Objective & Scope
+
 Owner requested “commit and continue”; verified inventory is committed as
 `264c0b2` on `feat/p2-isolated-runner`. Continue ADR-022's approved offline scope
 with the physical preflight cut before Docker launch. Implement read-only engine,

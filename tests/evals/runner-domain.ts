@@ -417,7 +417,8 @@ test("actual nonroot access probe denies root/input/outside writes and exposes o
 		expect(createHash("sha256").update(content).digest("hex")).toBe(
 			result.candidate.sha256,
 		);
-		expect(JSON.parse(content.toString())).toEqual({
+		const report = JSON.parse(content.toString());
+		expect(report).toEqual({
 			uid: 65532,
 			gid: 65532,
 			euid: 65532,
@@ -436,7 +437,16 @@ test("actual nonroot access probe denies root/input/outside writes and exposes o
 				tmp: { capacityBytes: 67108864, writtenBytes: 67108864, denied: true },
 				shm: { capacityBytes: 67108864, writtenBytes: 67108864, denied: true },
 			},
+			pidCap: {
+				limit: 256,
+				started: expect.any(Number),
+				denied: true,
+				eventsIncreased: true,
+				allReaped: true,
+			},
 		});
+		expect(report.pidCap.started).toBeGreaterThan(0);
+		expect(report.pidCap.started).toBeLessThan(256);
 		expect(result.domain?.unresolved).toBe(true);
 		expect(
 			s.getAction(f.db, {

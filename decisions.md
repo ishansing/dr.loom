@@ -1464,3 +1464,37 @@ Labeled snapshot190 containers,125 exited/65 created/0 running, all preserved.
 No runtime/store/profile change or independent cleanup inference; broader resource/
 recovery/image/human/CI qualification and G2 stay open. Exact red/green evidence,
 private retained-root keys and remaining scope are in SPEC.
+
+**Bounded PID-cap continuation after `d68d832`:** owner requested “commit and
+continue”; tmpfs slice committed. Extend only the same owned access fixture and
+physical assertion: at most256 `/bin/sleep 30` spawn attempts, empty env/no stdio
+pipes, require EAGAIN plus own cgroup `pids.events max` increase, then kill recorded
+child handles and await their exits before proposing. Threads count against the
+limit, so assert positive child count below256, not a fixed number. Installed Bun
+subprocess declarations confirm handle kill/exited semantics; Linux cgroup-v2 docs
+confirm fork/clone EAGAIN at pids.max and max-event semantics:
+https://docs.kernel.org/admin-guide/cgroup-v2.html. Host kernel7.2.8-9-omarchy;
+profile1/Bun1.4.4/rootless Docker29.9.2 and dependencies unchanged.
+
+**PID exhaustion diagnosis/workaround:** acceptance red first reproduced missing
+PID facts. Initial fixture also failed before reap completion at the full256-task
+ceiling (252 children in instrumented evidence), with protocol or unresolved-cleanup
+results. Narrow synthetic stage diagnostics identified `before-reap`; per-spawn
+diagnostic delay hid the failure. Capturing each child's exit promise immediately
+after spawn, before saturation, then awaiting those existing promises after kill,
+passes three instrumentation-free physical repetitions without changed limits or
+arbitrary sleeps. Exact Bun watcher/thread cause is unconfirmed; version-tag
+source URLs returned404 and targeted issue search returned no result, so upstream
+deduplication is incomplete and no new bug/report is asserted. Temporary debug
+code removed; failed synthetic evidence retained privately, not repaired/deleted.
+No independent quiescence or general Bun PID-exhaustion resilience claim; final
+ordered gates still pending for this fixture/assertion-only slice.
+
+**PID-cap final execution evidence:** approved split gates pass unchanged production
+code/profile: native216 tests/3,279 assertions at100% functions/98.61% lines,
+portable199 tests, actual-access1/10 three final repetitions, launcher/transport
+14/131 three times, empty-/tmp portable/preflight200 tests, drill and14-package
+audit. Existing module coverage unchanged. No debug code remains. Snapshot229
+labeled containers,154 exited/75 created/0 running, all preserved. Exact commands,
+retained-root keys, diagnosed limitation and bounded child effects in SPEC; no
+general runtime exhaustion resilience, independent cleanup/reuse or G2 closure.

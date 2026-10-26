@@ -292,6 +292,13 @@ on `/tmp` and `/dev/shm` under unchanged profile1. Test-only continuation within
 offline P2, not a new runtime API/phase. No persistent-workspace fill, process
 pressure, host-memory OOM, resource-profile change or cleanup-state transition.
 
+**PID-cap continuation after `d68d832`:** owner again requested “commit and
+continue”. Within unchanged offline profile1, qualify actual cgroup PID denial
+using the existing owned access fixture. This continuation adds bounded in-domain
+child processes only; prior tmpfs slice's no-process-pressure scope is historical.
+No host process spawning by the probe, fork bomb, resource-limit increase,
+persistent-disk fill, host OOM, SDK/provider or cleanup-state transition.
+
 ### 2. Environment & Upstream State
 
 Baseline portable193 tests/2,880 assertions,99.47% functions/96.69% lines; full
@@ -306,6 +313,9 @@ Continuation baseline: native216 tests/3,276 assertions,100% functions/98.61%
 lines; portable199/2,943,96.40%/91.76%; approved split gate passed at `20442be`.
 Use installed Bun1.4.4/Node-compatible `statfsSync`, fixed1 MiB write chunks and
 Linux tmpfs capacity/ENOSPC behavior; no dependency/API promotion.
+PID continuation baseline: native216 tests/3,277 assertions,100%/98.61%; portable
+199/2,943,96.40%/91.76%. Recheck selected image's fixed `/bin/sleep` via real owned
+execution and Linux cgroup-v2 `pids.events`/EAGAIN behavior before claiming proof.
 
 ### 3. Architecture & File Manifest
 
@@ -390,6 +400,18 @@ one-MiB writes per mount using a single fixed buffer; require ENOSPC before any
 successful write above64 MiB and record bounded capacity/written/denied facts in the existing
 hash-bound candidate. No general probe API, arbitrary paths, raw exceptions,
 extra IPC frames or host-side execution of absolute-path writes.
+For PID continuation, reuse these same two fixture/assertion files. After existing
+identity/cgroup/tmpfs checks and host start, read local `pids.events max`, attempt
+at most256 fixed `/bin/sleep 30` children with no stdin/stdout/stderr pipes or
+inherited environment, and require EAGAIN plus an increased local max event count.
+Always SIGKILL only recorded owned child handles and await all their exit promises
+before candidate output. Report bounded limit/started/denied/events-increased/
+all-reaped facts; do not assume a fixed child count because threads count too.
+The supervisor's existing deadline/owned-stop remains the failure backstop.
+Capture each child's exit promise immediately after spawn, before saturation;
+deferred exit observation reproduced failure before reaping at the PID ceiling.
+Do not mask that failure with arbitrary sleeps, extra task headroom or a relaxed
+profile. Exact Bun internal cause remains a hypothesis, not an upstream finding.
 
 ### 4. Test Plan & Coverage Matrix
 
@@ -408,6 +430,11 @@ show actual writes and ENOSPC on both fixed roots, matching candidate hash and
 preserved unknown/pending inventory. Native UID/access/cgroup and protocol/fault
 regressions remain mandatory. This adds temp-filesystem enforcement evidence only;
 CPU/PID/memory/disk over-limit and descendant/crash proof remain open.
+PID acceptance: add expected PID facts to the real access test first and reproduce
+missing-facts red. Require positive started count below256, actual EAGAIN and
+local cgroup max-event increase, all child exits awaited, existing candidate hash,
+temp enforcement, unresolved inventory and pending native action intact. CPU/
+memory/persistent-disk over-limit and independent descendants/crash proof stay open.
 
 ### 5. Security, Observability & Edge Cases
 
@@ -423,6 +450,10 @@ Temp probe attempt cap is130 MiB combined data plus one1 MiB reusable buffer;
 successful expected writes are at most128 MiB across both fixed tmpfs mounts.
 never allocate unbounded chunks, touch existing names, fill persistent data or
 unlink old evidence. Wrong filesystem/capacity fails before any probe write.
+PID attempts are capped at256 independently of enforcement; children only sleep
+for30 seconds and never fork/write/read host inputs. Use fixed absolute executable
+and empty environment. EAGAIN without this domain's counter increase is failure,
+not proof (e.g. an ancestor/host limit). Never kill a numeric/worker-supplied PID.
 
 ### 6. Blast Radius & Rollback Plan
 
@@ -436,6 +467,9 @@ reuse. Leave code uncommitted unless separately requested; no push/phase closure
 Continuation rollback is fixture/assertion-only; production supervisor/store/
 profile/pins remain byte-identical to `20442be`. Retain dedicated input/workspace
 evidence and stopped containers; temp files belong only to the container tmpfs.
+PID continuation remains fixture/assertion-only over `d68d832`; no supervisor/
+store/schema/profile changes. Ordinary child reaping is not independent runtime
+quiescence qualification or permission to clear inventory fences/reuse state.
 
 ### 7. Definition of Done (DoD)
 
@@ -453,6 +487,13 @@ For tmpfs continuation, run the focused actual-access red first, then use the sa
 ordered commands below with fresh roots. Compare against the continuation baseline
 and keep all existing assertions. Finish scoped secret/document/protected-file
 checks and record the added temp-write effects; no further commit implied.
+PID continuation uses the same focused actual-access red/green then full ordered
+split-gate commands, with fresh private roots and the above baseline. Preserve all
+existing tests/coverage; record bounded child effects and native labeled-container
+snapshot. This instruction does not authorize committing the subsequent slice.
+For this PID continuation, additionally run `bun test ./tests/evals/runner-domain.ts
+-t 'actual nonroot access probe'` three times immediately after native full coverage
+to exercise instrumentation-free saturation/reaping repeatedly.
 
 **Owner-approved split gate (2026-10-26):** owner explicitly approved replacing
 the combined Bubblewrap physical-domain gate after reviewing its lost UID mapping
@@ -672,6 +713,54 @@ unchanged. Full task diff inspected; no unintended logging, cleanup or exports.
 **Subsequent owner instruction:** “commit and continue” authorizes committing
 the verified bounded tmpfs fixture/assertion/evidence slice, then continuing
 offline P2 qualification. No push, G2 closure or production/provider authority.
+
+#### Bounded PID-cap continuation evidence — 2026-10-26
+
+Tmpfs slice committed as `d68d832`; production code/profile remain unchanged.
+Focused actual-access red first reproduced absent PID facts. Initial new fixture
+then exposed failure at saturation before deferred child-exit waiting completed:
+protocol/unresolved-cleanup, with only synthetic stage diagnostics retained in
+new private evidence. Capturing each child's exit promise at spawn instead of
+first accessing it after saturation resolves the tested trajectory without
+arbitrary waits or extra task headroom. Exact Bun internal cause remains a
+hypothesis; matching source URLs returned404 and issue search had no result
+(incomplete upstream deduplication). No new upstream bug is asserted. All tagged
+debug instrumentation removed from task code; failed evidence remains preserved.
+
+Three instrumentation-free focused physical repetitions passed before final
+gates. Ordered final run uses canonical initially-empty0700 state key
+`gate-4y69hyyn` and log/TMPDIR key `loom-gate-h_8hgsh3`, with private command/exit
+manifest retained. All13 execution commands exit0: lint37 files; strict check;
+portable199 tests/2,943 assertions at96.40%/91.76%; native216 tests/3,279 assertions
+at100%/98.61%, launcher100%/99.38%; three additional actual-access repetitions
+1 test/10 assertions each; three focused launcher/transport runs14/131 each;
+empty-/tmp portable/preflight200/2,964 at97.16%/93.76%; automated synthetic drill
+with task completion false; audit14 packages/no reported vulnerabilities.
+Coverage across existing modules is unchanged against `d68d832`. Candidate hash,
+actual tmpfs ENOSPC, nonroot/access/cgroup facts, pending action and unresolved
+inventory all remain asserted; no skipped tests or relaxed PID/config guards.
+
+Native labeled snapshot229 containers,154 exited/75 created/0 running:39 new
+synthetic containers since the prior190-container snapshot, all retained. Probe
+spawns at most256 sleeping children per run; on success observed EAGAIN and
+increased own max-event counter, killed recorded handles and awaited exits before
+candidate output. This is not independent domain quiescence or a general runtime
+exhaustion-resilience guarantee. Preserve prior failed/created/exited state and
+new workspace/input/DB evidence; no image/mount/old data deletion or permission
+repair. CPU/memory/persistent-disk enforcement, escaped descendants/crash recovery,
+image security/remote CI/human review and G2 remain open. Subsequent five-file
+fixture/assertion/governance slice stays uncommitted; no push/SDK/provider effects.
+
+Final security/document/protected-file checks exit0: pinned scanner archive and
+checksums hashes/executable byte-match verified, five task files pass Gitleaks;
+31 local links/anchors, seven active sections, unique ADR/canonical casing and
+`git diff --check` pass. Production source/store/all DDL/profile/dependencies/CI/
+roadmap and prior review identity unchanged; full task diff inspected and debug
+markers absent from fixture/test code. No new logs/exports or safety-test removal.
+
+**Subsequent owner instruction:** “commit and continue” authorizes committing
+the verified bounded PID-cap fixture/assertion/evidence slice and continuing
+offline P2 qualification only. No push, G2 closure or production/provider authority.
 
 ## P2 private IPC execution record (historical)
 

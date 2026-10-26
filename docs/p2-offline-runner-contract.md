@@ -22,6 +22,19 @@ is130 MiB with a single reusable1 MiB buffer; the persistent workspace is not
 filled. Candidate hash binds the observed facts; pending/unknown inventory stays
 unchanged. CPU/PID/memory/disk pressure and independent cleanup remain separate
 qualification gates. See active SPEC for fresh test results and limitations.
+
+PID-cap continuation attempts at most256 fixed sleeping children under the same
+256-task cgroup, requires EAGAIN and increased local `pids.events max`, then kills
+only recorded child handles and awaits their pre-registered exits before proposal.
+Threads consume slots too; no fixed number of child processes is assumed. This
+is bounded fixture proof of the PID controller, not independent descendant
+quiescence, general runtime resilience at exhaustion or permission to reuse state.
+The final PID-cap run passes216 native tests/3,279 assertions at unchanged100%
+function/98.61% line coverage plus three repeated actual-access checks. Each
+child's exit promise is captured before saturation; deferred first access after
+saturation reproduced failure. Exact Bun internal cause is unconfirmed; no
+runtime upgrade or extra task headroom is used to hide it. Broader CPU/memory/
+persistent-disk and independent cleanup/recovery qualification remain open.
 Owner subsequently requested “commit and continue”; the historical preparation
 baseline/approval chronology follows. PR #6 is now merged at `bd397e7`.
 Historical preparation baseline `8e148ed`; branch `feat/p2-isolated-runner` was stacked on research

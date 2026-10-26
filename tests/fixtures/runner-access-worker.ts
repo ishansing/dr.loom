@@ -96,6 +96,59 @@ try {
 		return { capacityBytes: 67108864, writtenBytes, denied };
 	};
 	const tmpfs = { tmp: fill(roots[0]), shm: fill(roots[1]) };
+	const maxEvents = () => {
+		const match = /^max (\d+)$/m.exec(
+			readFileSync("/sys/fs/cgroup/pids.events", "utf8"),
+		);
+		if (!match || !Number.isSafeInteger(Number(match[1]))) throw new Error();
+		return Number(match[1]);
+	};
+	const before = maxEvents();
+	const children: Bun.Subprocess<"ignore", "ignore", "ignore">[] = [];
+	const exits: Promise<number>[] = [];
+	let pidDenied = false;
+	try {
+		for (let attempt = 0; attempt < 256; attempt++) {
+			try {
+				children.push(
+					Bun.spawn(["/bin/sleep", "30"], {
+						env: {},
+						stdin: "ignore",
+						stdout: "ignore",
+						stderr: "ignore",
+					}),
+				);
+				// Register exit observation before saturating the cgroup.
+				exits.push(children[children.length - 1]!.exited);
+			} catch (error) {
+				if (
+					!(error instanceof Error) ||
+					!("code" in error) ||
+					error.code !== "EAGAIN"
+				)
+					throw new Error();
+				pidDenied = true;
+				break;
+			}
+		}
+	} finally {
+		for (const child of children) child.kill("SIGKILL");
+		await Promise.all(exits);
+	}
+	if (
+		!pidDenied ||
+		children.length < 1 ||
+		children.length >= 256 ||
+		maxEvents() <= before
+	)
+		throw new Error();
+	const pidCap = {
+		limit: 256,
+		started: children.length,
+		denied: pidDenied,
+		eventsIncreased: true,
+		allReaped: true,
+	};
 	const content =
 		JSON.stringify({
 			uid: process.getuid!(),
@@ -113,6 +166,7 @@ try {
 			pids: 256,
 			swap: false,
 			tmpfs,
+			pidCap,
 		}) + "\n";
 	// Preserve the inherited named-supervisor ACL read mask.
 	writeFileSync("candidate.txt", content, { flag: "wx", mode: 0o640 });

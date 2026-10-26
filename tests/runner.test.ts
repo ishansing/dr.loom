@@ -13,7 +13,7 @@ import {
 } from "node:fs";
 import { createServer } from "node:http";
 import { join } from "node:path";
-import { preflightDomain } from "../src/runner.ts";
+import { dockerJson, preflightDomain } from "../src/runner.ts";
 import { OFFLINE_DOMAIN_PROFILE } from "../src/store.ts";
 
 const worker = "// trusted synthetic preflight fixture\n";
@@ -340,6 +340,54 @@ test("a named-pipe worker cannot block preflight while opening input", async () 
 		expect(child.exitCode).toBe(0);
 		expect(child.stdout.toString()).toBe("");
 		expect(child.stderr.toString()).toBe("");
+	} finally {
+		await f.close();
+	}
+});
+
+test("native internal POST transport accepts only selected status codes and bounded JSON or empty stop replies", async () => {
+	const f = await fixture();
+	try {
+		f.responses.set("/v1.56/empty", { status: 204, body: null });
+		await expect(
+			dockerJson(f.options.endpoint.slice(7), "/empty", "engine", {
+				method: "POST",
+				statuses: [204],
+				body: { synthetic: true },
+			}),
+		).resolves.toEqual({});
+		expect(f.requests).toEqual(["POST /v1.56/empty"]);
+		f.responses.set("/v1.56/empty", { status: 304, body: null });
+		await expect(
+			dockerJson(f.options.endpoint.slice(7), "/empty", "engine", {
+				method: "POST",
+				statuses: [204, 304],
+			}),
+		).resolves.toEqual({});
+		f.responses.set("/v1.56/empty", {
+			status: 201,
+			body: { Id: "a".repeat(64) },
+		});
+		await expect(
+			dockerJson(f.options.endpoint.slice(7), "/empty", "engine", {
+				method: "POST",
+				statuses: [201],
+				body: { synthetic: true },
+			}),
+		).resolves.toEqual({ Id: "a".repeat(64) });
+		for (const response of [
+			{ status: 500, body: "PRIVATE-SENTINEL" },
+			{ status: 204, body: null },
+			{ status: 201, body: "PRIVATE-SENTINEL" },
+		]) {
+			f.responses.set("/v1.56/empty", response);
+			await expect(
+				dockerJson(f.options.endpoint.slice(7), "/empty", "engine", {
+					method: "POST",
+					statuses: [201],
+				}),
+			).rejects.toThrow("runner-preflight:");
+		}
 	} finally {
 		await f.close();
 	}

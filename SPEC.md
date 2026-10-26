@@ -277,6 +277,216 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
 
 ### 1. Phase Objective & Scope
 
+Owner requested “commit and continue”; IPC/owned worker committed as `3ed86ee`
+on clean `feat/p2-isolated-runner`. Implement the first governed synthetic Docker
+create→attach→start→proposal→stop path over existing inventory/preflight/protocol.
+Qualify actual nonroot write/supervisor read and denied root/input writes on the
+approved rootless lab. No SDK/provider, general execution service, CLI, package,
+push, automatic action/task completion or G2 closure. Stopped-container metadata
+alone will NOT record quiescence: leave inventory unresolved until independent
+cleanup qualification/reconciliation is implemented.
+
+### 2. Environment & Upstream State
+
+Baseline portable193 tests/2,880 assertions,99.47% functions/96.69% lines; full
+plus mandatory physical preflight194 tests/2,901 assertions,100%/98.48%. Existing
+ext42 GiB workspace is currently mounted rw/nosuid/nodev, rootless Docker29.9.2/
+API1.56 and pinned Bun image remain selected. Namespace UID/GID65532 maps to
+host165531 in the observed namespace; recheck actual maps before scoped ACL
+provisioning. Official Engine1.56 create/attach/start/stop/inspect schemas rechecked:
+nonrecursive bind options, memory+swap semantics, private cgroup namespace and
+204/304 stop results. No runtime/package upgrade or ambient Docker client config.
+
+### 3. Architecture & File Manifest
+
+`src/runner.ts` remains preflight/native HTTP owner; extend its bounded JSON
+transport for fixed internal POSTs/empty204/304 replies, preserving GET behavior.
+`src/runner-launch.ts` owns fixed create payload, inspect ownership/config checks,
+and `runSyntheticDomain(db, context, launchInput, workspacePaths, policy)`.
+Snapshot all caller inputs. Real effects use fresh Date.now gates, never a supplied
+fixture clock. Preflight before admission; existing `admitDomain` atomically
+applies policy/budget/audit/inventory. Deny/ask executes no POST. Duplicate domain
+IDs reject, never resume/replay a start. Recheck deadline/live write gate directly
+before create/start and the host start command; no network await inside SQLite.
+Enforce the approved one-worker ceiling per authoritative store: atomically fence
+all unresolved domains, including disjoint roots, before executable admission.
+The generic metadata admission API remains unchanged; only the executable profile
+has this stricter ceiling. Native overlapping launch attempts may admit only one.
+The synthetic executable profile also requires an empty dedicated workspace both
+before admission and immediately before start. Preserve/reject existing files;
+never delete them to pass. This prevents ambient cwd config/preload input from
+escaping the sealed-worker startup contract. General physical preflight remains
+usable for inspecting nonempty evidence; only executable admission is stricter.
+The initial executable profile accepts trusted root supervisor authority only;
+reject grant authority before effects. Delegated launch needs a shared per-dispatch
+grant/policy revalidation contract without a second budget draw, not duplicated
+authorization logic in the launcher. Existing grant-aware metadata admission is
+unchanged and is not permission to bypass this executable-profile restriction.
+
+Create by stable `loom-<domainId>` name and labels binding domain/run/config hash.
+Profile1: exact digest,65532:65532, explicit `/usr/local/bin/bun --no-env-file
+/input/worker.ts`, `/workspace` cwd, explicit synthetic-only environment (no host
+environment), read-only rootfs/input, nonrecursive private bind mounts and no extra
+volumes/devices/privilege/ports. Network none, all capabilities dropped,
+no-new-privileges, private PID/IPC/cgroup namespace,2 CPUs,4 GiB memory with no
+swap,256 PIDs,64 MiB `/tmp` and `/dev/shm`, no Docker logs/restart/auto-removal.
+No ambient daemon runtime selection: explicitly bind the installed selected `runc`
+runtime (current default confirmed through native `/info`) and inspect it.
+Persist exact64-hex created ID before start. Inspect exact ID/name/image/labels and
+critical config before start. Foreign/corrupt ownership forbids stop; mismatched
+security config blocks start but permits stopping only independently owned IDs.
+
+Attach before start through native HTTP upgrade, no Docker CLI/config. Register
+bounded parser before resuming output. Ready10 seconds from start dispatch (not
+from a potentially delayed acknowledgment), absolute wall deadline,
+100ms live kill/lease/deadline checks. Ready permits only the fixed host start
+command after a fresh gate; candidate is proposal metadata only. A valid proposal
+gets the cooperative IPC stop command and2-second grace. Failed/poisoned sessions
+close immediately and use independently owned Docker SIGTERM/2-second/KILL cleanup;
+5-second bounded inspect. Malformed/late/stderr output is withheld, fails safely
+and requests cleanup. EOF requires parser.finish for a normal proposal; worker
+failure/nonzero exit must not become success. Return only safe classified failure,
+validated candidate metadata and stopped observation, never task completion.
+
+Late create/start/stop/unknown facts remain recordable after kill. Transport/create
+uncertainty, foreign collisions, daemon loss and unqualified cleanup remain unknown;
+never invent not-created/not-executed or retry. Even normal observed stop appends
+unknown/unqualified-cleanup, retaining workspace/reset fences and pending native
+action. No automated audit finish, lease renewal or reset. Cleanup never deletes
+containers/workspaces/evidence. Abrupt supervisor exit remains a recovery blocker
+until a later owned reconciliation implementation is qualified.
+
+`tests/runner-launch.test.ts`: fixed-payload/ownership/config and native Unix HTTP
+negative checks. `tests/evals/runner-domain.ts`: explicitly selected actual lab
+corpus, with durable synthetic DB/input evidence under an explicit operator-owned
+`LOOM_LAB_STATE` directory and new dedicated run directories on the capped mount.
+Only these new directories/files get named-user ACLs: mapped65532 gets read/execute
+input and rwx workspace; ordinary group/other get none. Default workspace ACL gives
+the supervisor read access; candidate mode must preserve that ACL's read mask.
+No chown, root helper, UID0 or world-writable fallback. Existing image/data untouched.
+An actual65532 candidate-write red reproduced supervisor EACCES:0600 zeroed the
+named-user ACL's effective read mask. Synthetic candidate mode0640 preserves the
+supervisor read mask while default ordinary-group/other ACL entries remain none;
+no existing file ACL is widened or repaired and no recursive change is performed.
+`tests/fixtures/runner-access-worker.ts` is an owned container-only access probe,
+refusing any runtime UID/GID other than65532 before filesystem probes; emits only
+the existing ready/proposal grammar and bounded synthetic candidate report.
+Existing worker mode/fixtures updated only if a failing real access test requires it.
+
+### 4. Test Plan & Coverage Matrix
+
+Acceptance reds precede application/effect logic. Unit/native: exact fixed payload,
+foreign identity/config drift, bounded native POST/empty-response failures and safe
+errors. Actual selected lab: normal native worker, UID/GID/candidate owner and
+supervisor-read proof, denied root/input writes, stale/killed/deny/ask/budget paths,
+duplicate non-replay, malformed/stderr/no-ready worker cleanup, absolute deadline,
+kill/lease change and foreign name collision. Assert unresolved inventory/pending
+audit after every unqualified stop, no successor reuse or reset. Preserve evidence
+on failure. No actual over-limit/resource or escaped-descendant qualification claim
+from inspect metadata or a successful smoke run; missing required lab is blocked.
+
+### 5. Security, Observability & Edge Cases
+
+Never persist/forward raw attach/stderr/daemon body; no credentials or ambient
+client context. Bound requests and output, validate final immutable config and
+fresh authority, independently prove ownership before cleanup. Cancellation is not
+remote rollback; unknown create/start stays fenced. Trusted host fixture/state
+paths are canonical, operator-owned and private; ACL grants only the measured
+mapped ID on newly created exact paths, never parent trees. Retain failures and
+stopped containers; classify limitations honestly, especially no independent
+quiescence proof, image vulnerability scan or provider/production support.
+
+### 6. Blast Radius & Rollback Plan
+
+Extend runner transport; add selected-backend supervisor/tests/owned access probe.
+No migration, core authority rewrite, dependency or public CLI/facade change.
+Lab effects are approved offline fixed-profile containers and narrow new directory
+ACLs only. Keep created containers stopped and all synthetic state/evidence; no
+automatic rm, broad cleanup, formatting or old-data ownership changes. On failure,
+stop only proven-owned domains where possible, retain uncertain facts and block
+reuse. Leave code uncommitted unless separately requested; no push/phase closure.
+
+### 7. Definition of Done (DoD)
+
+Fresh baseline and deterministic reds first. Ordered final gates: `bun run lint`
+→ `bun run check` → `bun test --coverage` → with explicit approved lab paths and
+`LOOM_LAB_STATE`, `bun test --coverage tests ./tests/evals/runner-preflight.ts
+./tests/evals/runner-domain.ts` → focused launcher corpus three times → initially
+empty `/tmp` portable and combined lab coverage with only approved capped mount/
+new explicit evidence root writable → `bun run drill` → `bun audit` → verified
+scoped Gitleaks/document/protected-file/DDL/historical checks and `git diff --check`.
+Compare both coverage baselines, preserving all mandatory tests. Record every
+unavailable/failing check, actual effect/ACL command, retained evidence and limits.
+No synthetic/native mock counts as actual container/access/cleanup proof.
+
+#### Bootstrap verification record — 2026-10-26 (closure blocked)
+
+Latest ordered lint37 files/strict typecheck passed. Portable coverage passed199
+tests/2,943 assertions,96.40% functions/91.76% lines; this excludes actual launch
+execution and is not the physical-phase coverage pass. Mandatory native full+lab
+coverage passed216 tests/3,276 assertions,100% functions/98.61% lines against
+100%/98.48% baseline; launcher100%/99.38%, with only defensive non101-upgrade
+handling uncovered. Existing core module coverage is unchanged. Focused
+`bun test tests/runner-launch.test.ts tests/runner.test.ts` passed14 tests/131
+assertions three times. Bubblewrap initially-empty `/tmp` portable+read-only
+preflight coverage passed200 tests/2,964 assertions,97.16%/93.76%.
+
+**Required combined namespace gate FAILED, not waived:** `bwrap --ro-bind / /
+--bind "$LOOM_LAB_MOUNT" "$LOOM_LAB_MOUNT" --bind "$LOOM_LAB_STATE"
+"$LOOM_LAB_STATE" --tmpfs /tmp --dev-bind /dev /dev --proc /proc bun test
+--coverage tests ./tests/evals/runner-preflight.ts ./tests/evals/runner-domain.ts`
+exited1:200 pass/16 fail/2,980 assertions. Bubblewrap maps only controller1000;
+the rootless daemon subordinate mapping reads `1 4294967295 65536` instead of
+native `1 100000 65536`. Actual-domain setup correctly refuses the mismatched
+identity before ACL provisioning or dispatch. Raw failure evidence is retained
+privately outside the repository. Linux user_namespaces(7) documents reader-relative
+maps/unmapped IDs; this is confirmed namespace semantics, not a new upstream bug.
+No identity relaxation, privileged/helper fallback or dependency installation.
+
+Native-host fresh private evidence-root/TMPDIR execution may provide supporting
+evidence only; it cannot replace the failed isolation gate without reviewed
+test-strategy disposition. Implementing developer owns remaining checks/evidence;
+owner disposition is required before replacing this required gate. No phase
+closure, commit, independent approval or G2 qualification follows from smoke tests.
+
+Remaining local checks completed without changing application/test code:
+`bun run drill` exit0 (`automated-fixture-only`, `verifiedTaskCompletion:false`);
+`bun audit` exit0,14 packages/no reported vulnerabilities, no auto-fix. Verified
+Gitleaks8.30.1 release/checksums SHA256 and executable byte-match against its
+archive; all11 changed/new task files pass redacted stdin scans. Document check
+passes31 local links/anchors across the three changed documents, seven active
+sections, unique ADRs and canonical casing. Protected store (including all v1–v6
+DDL), protocol, exports, dependency/lock files, CI and roadmap are unchanged.
+Historical T-07 review SHA256 remains
+`ceca07bed47c1e39bb80b01c064a508387acbbd713517bf7ca36d54a92d532fa`.
+`git diff --check` passes. Full application diff inspected; no new dependency,
+schema, public export/CLI, provider or completion behavior introduced.
+
+Read-only native `GET /v1.56/containers/json?all=true&filters=...` restricted to
+label `loom.domain` found132 retained containers:87 exited,45 created,0 running.
+This is a labeled daemon snapshot, not proof about unlabeled processes/descendants
+or independent cleanup. No container/files/image/mount/evidence deletion or
+permission repair performed. Private lab DB/input/fault evidence remains under
+the approved lab evidence root and run directories on the capped workspace.
+
+Fresh native-host TMPDIR/evidence-root support run was not performed: it cannot
+resolve the required namespace blocker and is not an approved replacement.
+Image security scan, actual over-limit/escaped-descendant and supervisor-crash/
+daemon-loss reconciliation proof, remote CI and independent human review remain
+unqualified. Bootstrap diff remains uncommitted on `feat/p2-isolated-runner` over
+`3ed86ee`; no push, production effect, SDK install or G2 advancement. Next owner
+action: disposition a UID-preserving replacement for the failed namespace gate
+before affected verification closure; do not weaken runtime identity assertions.
+
+**Commit authorization:** owner subsequently requested “commit”. Commit this
+bootstrap/evidence slice with the failed required namespace gate explicitly open;
+the earlier uncommitted status describes the pre-authorization artifact. Commit
+does not waive that gate, establish release readiness, authorize push or close G2.
+
+## P2 private IPC execution record (historical)
+
+### 1. Phase Objective & Scope
+
 Owner committed physical preflight as `e40acc3` and requested “continue”. On the
 clean `feat/p2-isolated-runner` branch, implement the private bounded output
 protocol and owned synthetic worker before wiring Docker create/start/stop.

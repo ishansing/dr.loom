@@ -6,6 +6,7 @@ import {
 	mkdtempSync,
 	readFileSync,
 	rmSync,
+	statSync,
 	writeFileSync,
 } from "node:fs";
 import { join } from "node:path";
@@ -293,19 +294,27 @@ function workerFixture(stdin: Uint8Array, existing?: string) {
 			)
 				throw error;
 		}
-		return { child, content };
+		return {
+			child,
+			content,
+			mode:
+				content === null
+					? null
+					: statSync(join(dir, "candidate.txt")).mode & 0o777,
+		};
 	} finally {
 		rmSync(dir, { recursive: true, force: true });
 	}
 }
 
 test("owned native worker proposes only its fixed synthetic file then stops without task-completion output", () => {
-	const { child, content } = workerFixture(
+	const { child, content, mode } = workerFixture(
 		Buffer.concat([encodeRunnerCommand("start"), encodeRunnerCommand("stop")]),
 	);
 	expect(child.exitCode).toBe(0);
 	expect(child.stderr.toString()).toBe("");
 	expect(content).toBe("loom synthetic candidate\n");
+	expect(mode).toBe(0o640);
 	const parser = new RunnerOutput();
 	expect(parser.push(wire(child.stdout))).toEqual([
 		ready,

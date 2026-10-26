@@ -1305,3 +1305,108 @@ Future launcher must pin final config, mediate admission/start/stop, call parser
 finish on normal EOF, reconcile kill/crash/daemon loss and independently establish
 domain quiescence before reuse. No SDK/provider/live use or standalone-history
 build is enabled. Owner: implementing developer; no performance claim measured.
+
+**Commit event — 2026-10-26:** owner requested “commit and continue”; verified
+IPC/worker committed as `3ed86ee`. Continue the approved offline supervisor cut;
+no push, independent approval or containment/G2 closure inferred.
+
+## [ADR-026] - 2026-10-26 (P2 governed synthetic bootstrap)
+
+**Title:** Start only bound owned domains; retain uncertainty after observed stop.
+
+**Status:** Accepted within ADR-022's offline scope; implementation/lab gates in
+progress, no untrusted-workload or production qualification.
+
+**Context & Problem Statement:** Inventory/preflight/framing cannot execute or
+stop a worker. A real bootstrap needs fresh authority, immutable Docker identity,
+bounded private attachment and honest late/unknown lifecycle facts. Metadata-only
+stopped status does not independently establish descendant quiescence.
+
+**Options Evaluated:** Reuse the operator Docker CLI/context; add a generic sandbox
+driver; or extend the existing native Unix HTTP owner with a selected-backend
+supervisor. Choose the latter, preserving bounded diagnostics and avoiding client
+credential/config loading. Automatically marking stopped as quiescent is excluded
+by SPEC; independently qualified cleanup/reconciliation is a subsequent gate.
+
+**Decision & Rationale:** Fixed profile/name/labels bind admission config to created
+ID and inspected image/security/mounts before start. Root trusted-supervisor
+authority only initially: delegated launch requires shared per-dispatch revalidation
+without repeated budget draws, not launcher-side duplication of authorization.
+Fresh kill/lease/deadline gates precede create/start/start-command;100ms active
+watch closes interrupted sessions. Stop only independently proven owned IDs,
+including after kill; do not retry uncertain create/start, stop foreign names,
+remove evidence or automatically finish actions. All stops remain unknown/fenced
+until independent quiescence qualification; valid candidate bytes are not success.
+
+**Consequences & Tech Debt:** New selected-backend API is module-local, no public
+CLI/facade/dependency/schema change. New dedicated lab input/workspace paths use
+measured UID mapping and named-user ACLs only; no parent-tree changes, chown, root
+helper or permissive fallback. Actual access probe, transport races, inspect/config
+drift and cleanup behavior need fresh proof before support. Durable synthetic
+inventory/input evidence and stopped containers are retained; future reconciliation
+must handle supervisor crash/daemon loss before reuse. Actual resource over-limit,
+escaped-descendant, image vulnerability and G2/provider qualification remain open.
+
+**Access red and correction:** first actual bootstrap created/started/proposed/
+stopped with candidate UID/GID165531, but supervisor read failed EACCES. Exact
+numeric ACL showed named supervisor entry masked to none because worker0600
+creation zeroed the ACL mask. Use0640 for the synthetic candidate to retain named
+supervisor read access; ordinary group/other entries remain none. Preserve that
+failed file/evidence unchanged; no chmod/chown repair, recursive ACL change or
+world-writable fallback. Native fixture mode assertion guards this contract.
+
+**Failure-stop refinement:** a valid proposal receives the private cooperative
+stop command with2-second grace. Poisoned/failed channels are closed immediately,
+not reused for potentially compromised IPC; independently owned Docker stop gives
+SIGTERM/2-second/KILL cleanup. Neither path records quiescence from metadata.
+
+**Executable concurrency boundary:** retain generic disjoint-root metadata
+admission, but the selected one-worker runtime profile atomically rejects any
+unresolved inventory in the same authoritative store before admitting execution.
+Use the existing transaction owner, not an in-memory flag or a second scheduler.
+Separate explicit lab databases are independent synthetic deployments; lab workers
+still run sequentially on the selected backend. Unknown cleanup is never a reason
+to bypass the single-worker ceiling.
+
+**Fresh workspace boundary:** executable bootstrap requires an empty dedicated
+workspace before admission and again after create/before start, preserving and
+rejecting all existing data/config files. Native reds reproduced acceptance of a
+nonempty root and startup after staged ambient bunfig input. This closes the
+sealed synthetic startup contract without changing profile1 payload/CLI flags,
+deleting data or restricting general read-only physical evidence inspection.
+
+**Ready-budget correction:** a real controlled4-second delayed start acknowledgment
+reproduced a16.9-second silent-start path, renewing the10-second ready budget after
+dispatch. Measure the ready budget from monotonic host start dispatch instead;
+acknowledgment delay consumes it, never renews it. The wall timer also clamps to
+the fixed maximum rather than extending a session after a backwards wall-clock
+adjustment. Unknown/late external effects still require independent reconciliation.
+
+**Runtime binding:** native `/info` confirms the selected installed default is
+`runc`. Explicitly bind/inspect `HostConfig.Runtime=runc` rather than allowing an
+ambient future daemon default to change startup semantics. The payload regression
+failed before this correction; no runtime install, upgrade or daemon change.
+
+**Verification blocker — combined empty-/tmp namespace gate:** deterministic
+Bubblewrap run exits1 with200 pass/16 fail before actual-domain provisioning:
+its controller-only user namespace makes the daemon subordinate IDs unmapped
+(`1 4294967295 65536`, versus native `1 100000 65536`). Linux
+user_namespaces(7), https://man7.org/linux/man-pages/man7/user_namespaces.7.html,
+documents reader-relative mapping and unmapped-ID semantics; no upstream defect
+or new issue is asserted. Native full+lab216 tests pass at100% functions/98.61%
+lines, but do not satisfy this failed required namespace gate. Preserve identity
+guards and failed evidence; no privileged fallback, map changes or dependency
+installation. Fresh native-host state/TMPDIR is supporting proof only, not an
+approved replacement. Implementing developer records remaining evidence; owner
+must disposition any test-strategy replacement before affected verification closes.
+
+**Local sign-off boundary:** drill/audit, pinned scoped secret scan and changed-doc/
+protected-file checks pass (exact scope in SPEC). Labeled native daemon query
+observes132 retained containers,87 exited/45 created/0 running; no mutation or
+independent descendant-quiescence inference. Leave bootstrap uncommitted and
+G2 open pending the required namespace-gate disposition; no further smoke run,
+remote CI, image security scan or human approval is claimed.
+
+**Commit authorization:** owner subsequently requested “commit”; recording the
+bootstrap with its failed required namespace gate retained, not waived. This
+supersedes the leave-uncommitted instruction only; no push or G2 closure authorized.

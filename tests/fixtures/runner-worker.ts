@@ -41,7 +41,8 @@ try {
 			if (started) throw new Error();
 			started = true;
 			const content = "loom synthetic candidate\n";
-			writeFileSync("candidate.txt", content, { flag: "wx", mode: 0o600 });
+			// Preserve the inherited named-supervisor ACL read mask.
+			writeFileSync("candidate.txt", content, { flag: "wx", mode: 0o640 });
 			writeSync(
 				1,
 				JSON.stringify({

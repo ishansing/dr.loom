@@ -47,22 +47,32 @@ function object(value: unknown): Record<string, unknown> {
 	return value as Record<string, unknown>;
 }
 
-/** Explicit local GET only; never loads Docker configuration or forwards daemon diagnostics. */
-function dockerJson(
+/** Internal native transport; never loads Docker configuration or forwards diagnostics. */
+export function dockerJson(
 	socketPath: string,
 	path: string,
 	failure: "engine" | "image",
+	post?: { method: "POST"; statuses: readonly number[]; body?: object },
 ): Promise<Record<string, unknown>> {
+	const body = post?.body === undefined ? null : JSON.stringify(post.body);
 	return new Promise((resolve, reject) => {
 		const req = request(
 			{
 				socketPath,
 				path: `/v1.56${path}`,
-				method: "GET",
+				method: post?.method ?? "GET",
+				...(body === null
+					? {}
+					: {
+							headers: {
+								"Content-Type": "application/json",
+								"Content-Length": Buffer.byteLength(body),
+							},
+						}),
 				signal: AbortSignal.timeout(5000),
 			},
 			(response) => {
-				if (response.statusCode !== 200) {
+				if (!(post?.statuses ?? [200]).includes(response.statusCode ?? 0)) {
 					response.destroy();
 					reject(new PreflightError(failure));
 					return;
@@ -81,6 +91,14 @@ function dockerJson(
 				response.on("error", () => reject(new PreflightError("transport")));
 				response.on("end", () => {
 					try {
+						if (
+							!bytes &&
+							post &&
+							(response.statusCode === 204 || response.statusCode === 304)
+						) {
+							resolve({});
+							return;
+						}
 						resolve(
 							object(
 								JSON.parse(
@@ -97,7 +115,7 @@ function dockerJson(
 			},
 		);
 		req.on("error", () => reject(new PreflightError("transport")));
-		req.end();
+		req.end(body ?? undefined);
 	});
 }
 

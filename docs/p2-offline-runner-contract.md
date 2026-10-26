@@ -1,11 +1,11 @@
 # P2-A — owner-approved offline isolated-runner scope
 
-Status: **inventory and physical preflight committed; bounded IPC/owned worker
-implementation in progress; launcher/containment qualification pending**.
-Inventory commit: `264c0b2`; physical preflight commit: `e40acc3`.
+Status: **inventory, physical preflight and IPC committed; governed synthetic
+bootstrap in progress; independent cleanup/containment qualification pending**.
+Inventory `264c0b2`, physical preflight `e40acc3`, IPC/owned worker `3ed86ee`.
 Owner subsequently requested “commit and continue”; the historical preparation
 baseline/approval chronology follows. PR #6 is now merged at `bd397e7`.
-Baseline `8e148ed`; branch `feat/p2-isolated-runner` is stacked on research
+Historical preparation baseline `8e148ed`; branch `feat/p2-isolated-runner` was stacked on research
 [PR #6](https://github.com/ishansing/dr.loom/pull/6), not merged master.
 Owner requested “open pr to merge this research and continue with P2”. This
 resumed P2 preparation. The owner subsequently stated “commit and Approved”,
@@ -23,16 +23,16 @@ not G2 itself or production support.
 The separate standalone provenance/history build remains a later reminder after
 this seam is verified; no part of it is implemented here.
 
-## Proposed fixed profile and read-only evidence
+## Fixed offline profile and evidence limits
 
 | Item | Proposed launch contract / current evidence |
 | --- | --- |
 | Backend | Explicit operator-trusted local rootless Docker endpoint;29.9.2 currently reports rootless/seccomp/cgroupns/systemd/cgroup2/overlayfs. Context name alone is insufficient. No rootful/default fallback. |
 | Image | Candidate official `oven/bun:1.4.4-slim`; Linux/amd64 manifest digest `sha256:13b43f8bb2c63f5d89c56205c4279b85620363296a00ada33ff7ad568f3688e7`. Launch by exact digest with pull disabled; missing image fails closed. |
-| Manifest verification | Docker Hub tag index digest `sha256:1846adf22496bd711036aae8be147e57bdebbaea2e5264e3e0b5af1db187d9a4`; selected manifest/config content hashes verified against registry descriptors. No image layers pulled/executed, vulnerability scan, signature/provenance verification or runtime Bun-version qualification performed. |
+| Manifest verification | Docker Hub tag index digest `sha256:1846adf22496bd711036aae8be147e57bdebbaea2e5264e3e0b5af1db187d9a4`; selected manifest/config content hashes verified against registry descriptors. Approved layers were subsequently pulled and owned-worker Bun1.4.4 observed. Vulnerability scan, signature/provenance verification and untrusted-runtime qualification remain pending. |
 | Process | Override image entrypoint with explicit Bun binary/owned read-only script; override empty default image user with nonzero container UID, proposed65532. No ambient SDK/resources, shell startup or host environment. Validate actual uid/gid and mount access, not just flags. |
 | Resources | One worker,2 CPUs,4 GiB RAM,256 PIDs,20-minute maximum wall deadline, no restart policy. Rootfs read-only, ALL capabilities dropped, no-new-privileges, private PID/IPC/network namespaces; no host devices, privileged mode or daemon socket. Read back config and test actual enforcement. |
-| Persistent writes | Only a dedicated run directory on the existing capped2 GiB ext4 workspace. The image exists, is operator-owned/regular/non-symlink/exactly2 GiB, but its mount is absent. Never fall back to an ordinary directory or ignored Docker storage-size option. |
+| Persistent writes | Only a fresh dedicated run directory on the existing capped2 GiB ext4 workspace. The approved mount is restored, but preflight must still reject an absent/wrong mount. Never fall back to an ordinary directory or ignored Docker storage-size option. |
 | Temp storage |64 MiB `/tmp` and64 MiB `/dev/shm`; explicit mount modes, no writable root layer or additional volume. Accepted persistent cap does not include these separately bounded tmpfs mounts. |
 | Network | `none`; no provider/broker/DNS/MCP access, port publication or implicit image pull at start. Registry metadata research is not permission to enable worker egress. |
 | Logs | Docker logging disabled; private bounded attach streams only. No raw runner output or daemon diagnostic forwarded to persistent logs/operator. Retain only validated metadata and safe classified failures. |
@@ -51,7 +51,8 @@ Continuation evidence: the existing image was mapped by noninteractive udisks;
 the expected filesystem was already mounted when the explicit mount returned AlreadyMounted.
 The exact ext4 mount is2 GiB-backed, rw/nosuid/nodev, with zero loop offset/limit.
 The approved immutable Bun image was pulled anonymously with an empty temporary
-Docker client config into the rootless daemon; no account login or workload ran.
+Docker client config into the rootless daemon; no account login or workload ran at
+that preflight stage. Governed owned-worker bootstrap follows below.
 Read-only preflight checks actual visible mount IDs, backing inode and filesystem
 size, rejecting symlinks, nested bind aliases and input on the writable filesystem.
 This is not workload UID mapping, resource enforcement or cleanup qualification.
@@ -124,6 +125,48 @@ Malformed/foreign/repeated-start/oversized/partial input or EOF without stop exi
 64, withholding diagnostics. Native tests use empty environment/temporary cwd
 and `--no-env-file`; no Docker workload, identity mapping/access or descendant
 containment is qualified by those subprocess tests.
+
+## Governed synthetic bootstrap — not independent cleanup qualification
+
+`src/runner-launch.ts` owns the selected-backend bootstrap. This first executable
+profile accepts trusted root supervisor authority only; grant-based launch requires
+a shared per-dispatch revalidation contract before it can be enabled. There is no
+public run CLI, SDK/provider integration or generic sandbox driver.
+
+Preflight and sealed worker hash precede atomic policy/budget/audit/inventory
+admission. Require an empty synthetic workspace both before admission and after
+create/before start; reject/preserve existing data or staged ambient cwd config.
+The executable profile atomically fences any unresolved domain in the same store,
+even disjoint roots, honoring its one-worker ceiling without changing generic
+metadata admission. Duplicate launch IDs never restart/replay. All effects use
+fresh host kill/lease/deadline gates, ignoring a caller's fixture clock.
+
+Create only the fixed digest/nonroot/resource/no-network/no-log profile, bind the
+native64-hex ID before start, inspect name/image/labels/security/mounts, and attach
+through a private native Unix HTTP upgrade. Start acknowledgment delay consumes
+the monotonic10-second ready budget; it never renews it. Poll active authority
+every100ms. A valid proposal receives the private stop command and2-second grace;
+failed/poisoned channels close immediately, then owned Docker stop provides
+SIGTERM/2-second/KILL cleanup. Never stop an unproven/foreign identity or retry an
+uncertain create/start. Raw daemon/worker diagnostics stay withheld.
+
+Actual lab bootstrap observes real/effective UID/GID65532, candidate ownership
+mapped to165531, supervisor-read access, denied root/input/outside writes,
+no-new-privileges/zero effective capabilities and configured cgroup limits. Only
+new exact input/workspace paths receive measured named-user ACLs; ordinary group
+and other entries remain denied. Candidate0640 preserves the named supervisor
+read mask;0600 was proven to mask it off. Failed original evidence is retained,
+not repaired with chown, broad ACL changes or permissive fallback.
+
+Even a normal observed zero-exit stop records **unknown/unqualified cleanup**, keeps
+inventory unresolved and the native action pending, and blocks reuse/reset.
+`stopped` is a daemon observation, not descendant quiescence, candidate verification
+or task completion. Native proxy faults exercise uncertainty/config/ownership
+failures against the actual selected backend without enabling unsafe flags.
+Durable synthetic DB/input evidence and stopped/created containers are retained.
+Actual over-limit tests, escaped descendants, supervisor-crash/daemon-loss recovery,
+image security review and independent quiescence remain mandatory before support;
+no G2 closure or untrusted execution is inferred from this bootstrap.
 
 ## Admission, durable launch inventory and cleanup
 

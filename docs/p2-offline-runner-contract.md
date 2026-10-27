@@ -64,6 +64,24 @@ demonstrably leaves the worker running; only explicit test-owned cleanup stops i
 Native coverage100% functions/98.59% lines; production coverage unchanged, with
 the0.01-point aggregate change from additional harness guards. Production
 automatic crash reconciliation remains unimplemented and G2 stays open.
+
+Owner-approved stop-only recovery is implemented locally as `stopSyntheticDomain`
+in the existing launcher module (locally verified, no public CLI/index export).
+An explicit trusted supervisor under the existing nonroot UID may stop only an
+unresolved inventory-bound ID after fresh backend/image/native ownership proof.
+Launch worker/workspace checks remain mandatory for create/start, but missing
+launch paths and revoked leases/kill do not block this cleanup-only operation.
+No new execution, name adoption, extra budget draw, deletion, lease revival or
+quiescence/completion; unknown inventory and pending actions/reuse/reset fences
+remain. Unbound/foreign/backend/corrupt states fail closed, repeated observed stop
+does not dispatch another POST. Live cleanup and explicit recovery share one owned
+stop implementation; automatic startup recovery and independent quiescence remain
+unqualified. Renamed synthetic launch paths/evidence are retained, not repaired.
+Fresh native verification passes221 tests/3,454 assertions at100% function/98.61%
+line coverage, plus three repeated recovery corpora. This includes cleanup after
+kill/lease release with both launch roots missing, strict authority/identity/
+inventory errors and idempotent observed-stop behavior. The approved split gate's
+reduced controller-isolation claim remains unchanged; G2 stays open.
 Owner subsequently requested “commit and continue”; the historical preparation
 baseline/approval chronology follows. PR #6 is now merged at `bd397e7`.
 Historical preparation baseline `8e148ed`; branch `feat/p2-isolated-runner` was stacked on research

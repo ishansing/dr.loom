@@ -270,35 +270,28 @@ function inspectWorkspace(input: DomainPreflightInput): string {
 	return mount.fields[2]!;
 }
 
-/** Point-in-time host checks only: no launch, execution permit or containment certification. */
-export async function preflightDomain(
-	input: DomainPreflightInput,
-): Promise<DomainPreflight> {
+function checkEnginePlatform(): void {
+	if (
+		process.platform !== "linux" ||
+		process.arch !== "x64" ||
+		!process.geteuid?.()
+	)
+		throw new PreflightError("engine");
+}
+
+/** Selected backend/image proof is also usable when old launch paths are missing. */
+export async function preflightDomainBackend(
+	endpoint: string,
+): Promise<Pick<DomainPreflight, "imageId">> {
 	try {
-		input = structuredClone(input);
-		if (
-			process.platform !== "linux" ||
-			process.arch !== "x64" ||
-			!process.geteuid?.()
-		)
-			throw new PreflightError("engine");
-		if (
-			Object.keys(input).some(
-				(key) =>
-					!["endpoint", "config", "workspaceMount", "workspaceImage"].includes(
-						key,
-					),
-			)
-		)
-			throw new PreflightError("input");
-		inspectInput(input.config);
-		validateDomainEndpoint(input.endpoint);
-		const socketPath = input.endpoint.slice(7);
+		checkEnginePlatform();
+		validateDomainEndpoint(endpoint);
+		const socketPath = endpoint.slice(7);
 		canonical(socketPath);
 		const socket = lstatSync(socketPath);
 		if (
 			!socket.isSocket() ||
-			socket.uid !== process.geteuid() ||
+			socket.uid !== process.geteuid!() ||
 			socket.mode & 0o007
 		)
 			throw new PreflightError("endpoint");
@@ -347,6 +340,31 @@ export async function preflightDomain(
 			(config.Volumes != null && Object.keys(object(config.Volumes)).length)
 		)
 			throw new PreflightError("image");
+		return { imageId: image.Id };
+	} catch (error) {
+		if (error instanceof PreflightError) throw error;
+		throw new PreflightError("input");
+	}
+}
+
+/** Point-in-time host checks only: no launch, execution permit or containment certification. */
+export async function preflightDomain(
+	input: DomainPreflightInput,
+): Promise<DomainPreflight> {
+	try {
+		input = structuredClone(input);
+		checkEnginePlatform();
+		if (
+			Object.keys(input).some(
+				(key) =>
+					!["endpoint", "config", "workspaceMount", "workspaceImage"].includes(
+						key,
+					),
+			)
+		)
+			throw new PreflightError("input");
+		inspectInput(input.config);
+		const backend = await preflightDomainBackend(input.endpoint);
 		let workspaceDevice: string;
 		try {
 			workspaceDevice = inspectWorkspace(input);
@@ -354,7 +372,7 @@ export async function preflightDomain(
 			throw new PreflightError("workspace");
 		}
 		return {
-			imageId: image.Id,
+			imageId: backend.imageId,
 			workerSha256: input.config.workerSha256,
 			workspaceDevice,
 		};

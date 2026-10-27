@@ -13,7 +13,11 @@ import {
 } from "node:fs";
 import { createServer } from "node:http";
 import { join } from "node:path";
-import { dockerJson, preflightDomain } from "../src/runner.ts";
+import {
+	dockerJson,
+	preflightDomain,
+	preflightDomainBackend,
+} from "../src/runner.ts";
 import { OFFLINE_DOMAIN_PROFILE } from "../src/store.ts";
 
 const worker = "// trusted synthetic preflight fixture\n";
@@ -135,6 +139,29 @@ test("preflight rejects ordinary directories after bounded read-only engine/imag
 		expect(
 			f.requests.every((request) => request.startsWith("GET /v1.56/")),
 		).toBe(true);
+	} finally {
+		await f.close();
+	}
+});
+
+test("backend proof does not require launch paths but full launch validation still does", async () => {
+	const f = await fixture();
+	try {
+		f.options.config.inputRoot = join(f.dir, "missing-input");
+		f.options.config.workspaceRoot = join(f.dir, "missing-workspace");
+		await expect(preflightDomain(f.options)).rejects.toThrow(
+			"runner-preflight:input",
+		);
+		expect(f.requests).toEqual([]);
+		await expect(preflightDomainBackend(f.options.endpoint)).resolves.toEqual({
+			imageId: `sha256:${"a".repeat(64)}`,
+		});
+		expect(f.requests).toHaveLength(3);
+		expect(f.requests.every((call) => call.startsWith("GET "))).toBe(true);
+		f.responses.set("/v1.56/info", { body: { ...info, SecurityOptions: [] } });
+		await expect(preflightDomainBackend(f.options.endpoint)).rejects.toThrow(
+			"runner-preflight:engine",
+		);
 	} finally {
 		await f.close();
 	}

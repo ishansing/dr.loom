@@ -5,6 +5,7 @@ import {
 	assertDomainOwner,
 	buildDomainCreate,
 	runSyntheticDomain,
+	stopSyntheticDomain,
 } from "../src/runner-launch.ts";
 
 function domainFixture() {
@@ -70,6 +71,72 @@ function domainFixture() {
 		db.close();
 	}
 }
+
+test("explicit stop-only recovery rejects delegated authority and extra targets before backend access", async () => {
+	const db = s.openDb();
+	s.initSchema(db);
+	try {
+		await expect(
+			Reflect.apply(stopSyntheticDomain, null, [
+				db,
+				{
+					domainId: "missing",
+					authority: { kind: "grant", grantId: "revoked" },
+				},
+			]),
+		).rejects.toThrow("runner-launch:authority");
+		await expect(
+			Reflect.apply(stopSyntheticDomain, null, [
+				db,
+				{
+					domainId: "missing",
+					authority: { kind: "root" },
+					endpoint: "unix:///foreign.sock",
+				},
+			]),
+		).rejects.toThrow("runner-launch:input");
+		await expect(
+			stopSyntheticDomain(db, {
+				domainId: "missing",
+				authority: { kind: "root" },
+			}),
+		).rejects.toThrow("runner-launch:inventory");
+		await expect(
+			Reflect.apply(stopSyntheticDomain, null, [
+				db,
+				{
+					domainId: "missing",
+					authority: { kind: "root", grantId: "foreign" },
+				},
+			]),
+		).rejects.toThrow("runner-launch:input");
+		await expect(
+			Reflect.apply(stopSyntheticDomain, null, [
+				db,
+				{
+					domainId: "missing",
+					authority: { kind: "root" },
+					callback: () => {},
+				},
+			]),
+		).rejects.toThrow("runner-launch:input");
+		await expect(
+			Reflect.apply(stopSyntheticDomain, null, [
+				db,
+				{ domainId: "missing", authority: Object.assign([], { kind: "root" }) },
+			]),
+		).rejects.toThrow("runner-launch:authority");
+		await expect(
+			Reflect.apply(stopSyntheticDomain, null, [
+				db,
+				Object.assign([], { domainId: "missing", authority: { kind: "root" } }),
+			]),
+		).rejects.toThrow("runner-launch:input");
+		expect(s.listDomains(db)).toEqual([]);
+	} finally {
+		db.close();
+	}
+});
 const imageId = `sha256:${"c".repeat(64)}`;
 const containerId = "d".repeat(64);
 

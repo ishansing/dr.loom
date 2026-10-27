@@ -7,6 +7,7 @@ import {
 	type DomainPreflightInput,
 	dockerJson,
 	preflightDomain,
+	preflightDomainBackend,
 } from "./runner.ts";
 import {
 	encodeRunnerCommand,
@@ -37,6 +38,64 @@ export interface SyntheticLaunchResult {
 	failure: string | null;
 }
 
+/** Explicit trusted-supervisor cleanup only; observed stop never clears reuse fences. */
+export async function stopSyntheticDomain(
+	db: Database,
+	input: Pick<SyntheticLaunchInput, "domainId" | "authority">,
+): Promise<Pick<SyntheticLaunchResult, "domain" | "stopped" | "failure">> {
+	try {
+		input = structuredClone(input);
+	} catch {
+		throw new LaunchError("input");
+	}
+	if (!input || typeof input !== "object" || Array.isArray(input))
+		throw new LaunchError("input");
+	if (
+		!input.authority ||
+		typeof input.authority !== "object" ||
+		Array.isArray(input.authority) ||
+		input.authority.kind !== "root"
+	)
+		throw new LaunchError("authority");
+	if (
+		Object.keys(input).length !== 2 ||
+		!Object.hasOwn(input, "domainId") ||
+		Object.keys(input.authority).length !== 1
+	)
+		throw new LaunchError("input");
+	let domain;
+	try {
+		domain = getDomain(db, input.domainId);
+		if (!domain) throw new Error();
+	} catch {
+		throw new LaunchError("inventory");
+	}
+	if (!domain.unresolved) throw new LaunchError("resolved");
+	if (!domain.containerId)
+		return {
+			domain: recordUnqualified(db, domain.domainId, false),
+			stopped: false,
+			failure: "unbound",
+		};
+	let result: { stopped: boolean; failure: string | null };
+	try {
+		const checked = await preflightDomainBackend(domain.endpoint);
+		const cleanup = await stopOwnedDomain(
+			db,
+			domain,
+			domain.containerId,
+			checked.imageId,
+		);
+		result = { stopped: cleanup.stopped, failure: cleanup.failure };
+	} catch {
+		result = { stopped: false, failure: "backend" };
+	}
+	return {
+		domain: recordUnqualified(db, domain.domainId, result.stopped),
+		...result,
+	};
+}
+
 class LaunchError extends Error {
 	readonly code: string;
 	constructor(code: string) {
@@ -51,6 +110,77 @@ function object(value: unknown, code: string): Record<string, unknown> {
 }
 function equal(a: unknown, b: unknown): boolean {
 	return JSON.stringify(a) === JSON.stringify(b);
+}
+
+function recordUnqualified(
+	db: Database,
+	domainId: string,
+	stopped: boolean,
+): DomainRecord {
+	try {
+		const recorded = recordDomainObservation(db, domainId, {
+			kind: "unknown",
+			evidenceRef: stopped
+				? "trace:runner-stopped-unqualified"
+				: "trace:runner-cleanup-unresolved",
+		});
+		if (!getDomain(db, domainId)) throw new LaunchError("inventory");
+		return recorded;
+	} catch {
+		throw new LaunchError("inventory");
+	}
+}
+
+async function stopOwnedDomain(
+	db: Database,
+	domain: DomainRecord,
+	id: string,
+	imageId: string,
+): Promise<{
+	stopped: boolean;
+	failure: string | null;
+	workerFailed: boolean;
+}> {
+	let stopped = false,
+		failure: string | null = null,
+		workerFailed = false;
+	try {
+		recordDomainObservation(db, domain.domainId, {
+			kind: "stop-requested",
+			evidenceRef: "trace:runner-owned-stop",
+		});
+	} catch {
+		failure = "inventory";
+	}
+	try {
+		const inspected = await dockerJson(
+			domain.endpoint.slice(7),
+			`/containers/${id}/json`,
+			"engine",
+		);
+		assertDomainOwner(inspected, domain, id, imageId);
+		if (object(inspected.State, "cleanup").Running !== false)
+			await dockerJson(
+				domain.endpoint.slice(7),
+				`/containers/${id}/stop?t=2`,
+				"engine",
+				{ method: "POST", statuses: [204, 304] },
+			);
+		const final = await dockerJson(
+			domain.endpoint.slice(7),
+			`/containers/${id}/json`,
+			"engine",
+		);
+		assertDomainOwner(final, domain, id, imageId);
+		const state = object(final.State, "cleanup");
+		stopped =
+			state.Running === false && state.Restarting === false && state.Pid === 0;
+		workerFailed = stopped && state.ExitCode !== 0;
+		if (!stopped) failure = "cleanup";
+	} catch {
+		failure = "cleanup";
+	}
+	return { stopped, failure, workerFailed };
 }
 
 async function preflightSynthetic(input: DomainPreflightInput) {
@@ -304,62 +434,19 @@ export async function runSyntheticDomain(
 	} finally {
 		connection?.socket.destroy();
 		if (id) {
-			try {
-				recordDomainObservation(db, domain.domainId, {
-					kind: "stop-requested",
-					evidenceRef: "trace:runner-owned-stop",
-				});
-			} catch {
-				failure = "inventory";
-			}
-			try {
-				const inspected = await dockerJson(
-					socketPath,
-					`/containers/${id}/json`,
-					"engine",
-				);
-				assertDomainOwner(inspected, domain, id, checked.imageId);
-				if (object(inspected.State, "cleanup").Running !== false)
-					await dockerJson(socketPath, `/containers/${id}/stop?t=2`, "engine", {
-						method: "POST",
-						statuses: [204, 304],
-					});
-				const final = await dockerJson(
-					socketPath,
-					`/containers/${id}/json`,
-					"engine",
-				);
-				assertDomainOwner(final, domain, id, checked.imageId);
-				const state = object(final.State, "cleanup");
-				stopped =
-					state.Running === false &&
-					state.Restarting === false &&
-					state.Pid === 0;
-				if (!stopped) failure = "cleanup";
-				else if (!failure && state.ExitCode !== 0) failure = "worker";
-			} catch {
-				failure = "cleanup";
-			}
+			const result = await stopOwnedDomain(db, domain, id, checked.imageId);
+			stopped = result.stopped;
+			if (result.failure) failure = result.failure;
+			else if (!failure && result.workerFailed) failure = "worker";
 		}
 	}
-	try {
-		const recorded = recordDomainObservation(db, domain.domainId, {
-			kind: "unknown",
-			evidenceRef: stopped
-				? "trace:runner-stopped-unqualified"
-				: "trace:runner-cleanup-unresolved",
-		});
-		if (!getDomain(db, domain.domainId)) throw new LaunchError("inventory");
-		return {
-			decision: admitted.decision,
-			domain: recorded,
-			candidate: failure ? null : candidate,
-			failure,
-			stopped,
-		};
-	} catch {
-		throw new LaunchError("inventory");
-	}
+	return {
+		decision: admitted.decision,
+		domain: recordUnqualified(db, domain.domainId, stopped),
+		candidate: failure ? null : candidate,
+		failure,
+		stopped,
+	};
 }
 
 export function buildDomainCreate(domain: DomainRecord) {

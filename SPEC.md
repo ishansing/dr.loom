@@ -314,6 +314,13 @@ remains fenced. Test-owned recovery cleanup independently proves identity before
 stop and records unknown only. No supported recovery API/service, lease revival,
 quiescence/reset/reuse/task completion, daemon restart, SDK/provider or G2 change.
 
+**Approved stop-only recovery continuation:** owner explicitly approved the
+proposed contract through the recovery-authority question. Implement one explicit
+trusted-supervisor stop operation as the existing nonroot user; root means Loom
+authority, never UID0. It may clean up unresolved already-bound domains after
+kill/lease loss or missing launch files, without create/start/adoption/deletion,
+extra budget, automatic startup work, quiescence/completion or reuse permission.
+
 ### 2. Environment & Upstream State
 
 Baseline portable193 tests/2,880 assertions,99.47% functions/96.69% lines; full
@@ -341,6 +348,10 @@ Crash baseline: native217 tests/3,300 assertions,100%/98.60%; portable199/2,943,
 existing SQLite reopen getters/unknown observation and native Engine inspect/stop.
 Revalidate ownership through generic physical preflight/image ID and existing
 `assertDomainOwner`, not caller PID or worker text. No new dependency assumptions.
+Recovery implementation baseline is `e112478`: native218 tests/3,319 assertions,
+100% functions/98.59% lines; portable199/2,943 at96.40%/91.76%. Reuse pinned
+Docker29.9.2/API1.56/image and installed native HTTP/store semantics. Revalidate
+selected endpoint/engine/image independently of launch-only filesystem readiness.
 
 ### 3. Architecture & File Manifest
 
@@ -477,6 +488,28 @@ foreign adoption, kill/reset or deletes. A finally path kills/awaits the test
 controller and attempts this cleanup once if not already attempted; failed or
 unprovable cleanup remains a named test failure, never silent best effort/reuse.
 
+For approved implementation, `src/runner.ts` exposes module-internal
+`preflightDomainBackend(endpoint)` returning validated imageId; full launch
+preflight still validates all prior input/workspace requirements and errors.
+`src/runner-launch.ts` adds `stopSyntheticDomain(db, {domainId, authority:{kind:
+"root"}})` returning existing domain/stopped/failure result fields. Clone/strictly
+validate input and reject delegated/extra authority before any effects; validate
+durable inventory, reject resolved/missing/corrupt records. Unbound records remain
+unknown with failure=unbound and no backend adoption/dispatch. Bound records get
+fresh backend/image proof and share private owned-stop implementation with live
+cleanup. Stop-requested persistence failure does not prevent proven-owned cleanup;
+inventory failure is never success. Every normal result retains unknown inventory
+and pending native action; failed final inventory writes throw a safe inventory
+error after effects. No caller-supplied endpoint/container ID/config/clock.
+
+Affected callers/tests: replace crash test's manual stop implementation with the
+new stop interface (keep finally cleanup); keep existing launch fault corpus and
+unit payload/ownership checks. `tests/runner.test.ts` covers backend validation
+without launch paths, `tests/runner-launch.test.ts` authority/input/missing-record
+rejection, and selected native eval covers intact/missing-path/kill/lease-loss,
+foreign/unbound/backend-fault/idempotent-stop/inventory-write failures. No schema,
+SDK/provider, dependency, public index or CLI export changes.
+
 ### 4. Test Plan & Coverage Matrix
 
 Acceptance reds precede application/effect logic. Unit/native: exact fixed payload,
@@ -513,6 +546,15 @@ rejected successor admission and no extra budget draw, owned stop, five unchange
 100ms heartbeat samples, pending native action and unresolved inventory. Repeat
 the physical crash case three times after full native coverage. No test passes
 by driver natural completion, worker30-second timeout or marking quiescence.
+Approved stop seam reds precede implementation. Exercise authority rejection first,
+then actual crash recovery through `stopSyntheticDomain` with the existing manual
+stop as temporary failure fallback until the interface works. Test path loss by
+renaming only this new synthetic run's input/workspace directories to retained
+names, not deleting data; cleanup must not require launch-file repair. Assert
+fresh backend/image/foreign ownership failures never stop/adopt/create/start,
+same stopped-domain reconciliation never draws budget or completes native action,
+ignored stop/unknown event writes fail safely, and killed/stale leases still allow
+only explicit cleanup. Repeat actual recovery corpus three times, no skipped gates.
 
 ### 5. Security, Observability & Edge Cases
 
@@ -542,6 +584,12 @@ module path; empty/minimal explicitly constructed environment, no credential/cac
 inspection. SIGKILL targets only the owned driver handle. Container cleanup always
 uses independent inspect ownership, never domain name alone or worker PID. Keep
 failed evidence and unknown lifecycle facts; do not start a replacement worker.
+Approved authority exception is cleanup-only: no live write gate/grant/policy
+budget draw is required to stop an already-owned admitted domain after kill/expiry.
+Selected rootless backend/image plus native ID/name/labels/image proof are still
+mandatory before any stop. Missing launch paths cannot block that proof; unavailable
+backend or unbound/foreign identity cannot be converted to not-executed/quiescent.
+Preserve bounded safe errors and requests; never forward raw diagnostics.
 
 ### 6. Blast Radius & Rollback Plan
 
@@ -564,6 +612,11 @@ is test-only. Preserve all stopped/created containers and old/new state/evidence
 Crash slice changes test driver/evaluation helper/assertions and documentation
 only over `9f0849c`; production supervisor/store/schema/profile remain unchanged.
 It documents the absence of automatic crash cleanup, not its implementation.
+Approved implementation changes only responsible runner modules and their existing
+tests/callers/docs. Rollback restores code, not inventory history; all domains stay
+unknown/fenced until independent quiescence is qualified. No startup scheduler,
+lease recovery, daemon change or automatic state repair. Preserve renamed synthetic
+paths, private evidence and stopped/created containers; no broad cleanup.
 
 ### 7. Definition of Done (DoD)
 
@@ -598,6 +651,14 @@ For crash continuation, red/green is `bun test ./tests/evals/runner-domain.ts
 then continue existing transport/empty-/tmp/drill/audit/security gates. Compare
 217-test baseline and unchanged production coverage; record all retained effects
 and exact private command/exit evidence. No subsequent commit/push inferred.
+For approved recovery implementation use the existing exact ordered split-gate
+commands with fresh private roots, comparing against218 native baseline. Add three
+`bun test ./tests/evals/runner-domain.ts -t 'explicit stop-only recovery|supervisor crash'`
+repetitions after native full coverage. Unit/backend/authority reds first; restart
+lint→strict check→portable/native coverage after corrections, then focused launcher
+three times→empty-/tmp portable/preflight→drill→audit→pinned secrets/docs/protected
+DDL/history/whitespace checks and native labeled snapshot. Record all limitations;
+no code commit/push or G2 closure inferred from approval.
 
 **Owner-approved split gate (2026-10-26):** owner explicitly approved replacing
 the combined Bubblewrap physical-domain gate after reviewing its lost UID mapping
@@ -971,6 +1032,141 @@ ignored driver stdio, no accidental raw logging/exports or safety-test exclusion
 the verified supervisor-crash fixture/assertion/evidence slice and investigating
 the next bounded offline P2 recovery seam. No push, G2 closure, automatic cleanup
 authority or production/provider effects inferred from the evidence commit.
+
+#### Next recovery seam proposal — approval pending
+
+Crash/reopen slice committed as `e112478`; clean branch confirmed before this
+read-only design continuation. Existing `preflightDomain` combines worker/path/
+workspace launch prerequisites with endpoint/engine/image checks. Requiring that
+whole launch check to stop an admitted owned domain would block cleanup when old
+launch files or mounts are unavailable. `recordDomainObservation` already permits
+trusted late facts after kill/lease loss; it does not itself authorize a Docker
+dispatch. Research `research/pi/16-p0-crash-recovery.md` distinguishes controller
+death, identity-bound cleanup and qualified reuse; its old Bubblewrap/pidfd probes
+do not certify this Docker implementation. No dependency or runtime change follows.
+
+**Proposed material contract, not implemented:** explicit trusted-supervisor
+`authority.kind=root` stop-only recovery under the existing nonroot operator UID
+(never Linux UID0/sudo). Permit cleanup after kill/lease loss without another
+budget draw. Accept only a validated unresolved domain with durable native ID;
+unbound/foreign/corrupt/unsupported identities stay unresolved with no adoption
+or name-based search/start. Independently validate selected Unix backend, pinned
+image and exact native ID/name/labels/image before stop, even if old worker files/
+workspace mounts are missing. Stop/inspect then record unknown only; pending
+action and all workspace/reset/reuse fences remain. No create/start/replay, delete,
+lease revival, quiescence/completion or daemon/startup automation/CLI promotion.
+
+Proposed implementation locality: split reusable backend/image validation from
+launch-only filesystem checks in `src/runner.ts`; share independently owned stop
+implementation in `src/runner-launch.ts` across normal cleanup and explicit
+recovery. Replace crash-test manual cleanup with that same narrow module interface,
+not a second supervisor or separate journal. No schema/dependency/public index
+export needed. Existing launch validation and failure classifications must remain.
+Before code, obtain owner disposition and update all seven active sections with
+the exact interface, root/late-cleanup security rule, negative/race test matrix and
+fresh ordered split-gate DoD. Baseline218 native tests/3,319 assertions,100%/
+98.59%; portable199/2,943,96.40%/91.76%; no fresh application runs for this docs-
+only proposal. Required reds include delegated/revoked-grant authority, absent durable ID,
+foreign identity, backend loss, missing launch paths, kill/lease loss, ignored
+inventory writes and no create/start/budget/reuse side effects.
+
+Until approved, retain the existing tested manual-cleanup limitation and G2 open;
+no recovery implementation, new container/effect, install, push or commit performed
+by this proposal. Owner decides whether to grant this narrowly scoped cleanup
+dispatch authority; it is not implied by permission to append observations.
+
+**Owner disposition:** approved the explicit stop-only recovery contract. The
+pending/proposed text above records the pre-approval design, not current refusal.
+No automatic cleanup service or CLI/public-index interface authorized.
+
+Proposal-only checks pass: verified pinned Gitleaks8.30.1 scans on the two changed
+governance documents;29 local links/anchors, seven active sections, unique ADRs/
+canonical casing and `git diff --check`. All non-governance files and historical
+review identity unchanged. Application/typecheck/coverage/drill/audit reruns are
+N/A for this read-only proposal; prior artifact evidence is not a new execution.
+
+#### Approved explicit stop-only recovery evidence — 2026-10-27
+
+Owner explicitly approved ADR-027's narrow recovery contract. Implemented
+`stopSyntheticDomain` and shared owned-stop/unqualified-record code in the existing
+launcher module; separated backend/image proof from launch-only filesystem checks
+in the existing preflight module. Tests use this same stop interface, not a second
+manual cleanup implementation. Store/schema/pins/protocol/public index/CLI and
+actor fixtures remain unchanged. Root means trusted supervisor authority under
+the existing nonroot operator, never UID0 or worker-granted authority.
+
+Reds were observed before implementation: unit authority check rejected the
+unimplemented stop stub; actual crash recovery rejected its no-stop result while
+the then-existing test fallback safely stopped the owned fixture. Greens include
+intact recovery and kill/released-lease recovery after renaming only new synthetic
+input/workspace roots to retained names. Both stop safely without launch-file
+repair, new execution, budget draw, lease revival or state completion. Repeated
+observed stop adds no POST or inventory event. Foreign/unbound/resolved/backend
+and ignored-observation failures remain fenced; invalid/delegated/extra/uncloneable
+inputs reject before effects. Existing nonzero-exit/protocol/kill/lease/admission
+and ignored-write safety regressions remain in the mandatory actual corpus.
+
+Intermediate failures are retained, not relabeled passes: extracted platform
+checking initially needed a TypeScript narrowing correction (TS2722); the runtime
+platform/nonroot check remains intact. Focused actual tests then failed before
+dispatch when the approved mount was absent; scoped existing-image restoration
+and exact UDisks results are in ADR-027. First ordered run stopped at formatting
+exit1 and was corrected. Review of a subsequent exit-zero run found aggregate
+function coverage99.88% because the crash-test cleanup wrapper was only a fallback;
+normal and finally cleanup now share that same wrapper, removing duplicate stop
+call setup. All applicable gates were restarted after these corrections; no guard,
+test, coverage file or threshold excluded to manufacture a pass.
+Final shape review also reproduced array envelopes/authority reaching lookup;
+strict object-shape rejection and two new authority/input regressions close that
+gap before lookup. No worker gained host-interface access. All gates below were
+restarted again against those final guards, not reused from the earlier artifact.
+
+Final ordered execution uses canonical operator-owned0700 initially-empty state
+key `gate-ft_0a_0x` and log/TMPDIR key `loom-gate-o84wj_s7`. All13 command/exit
+records and private logs are retained. Every final command exited0:
+
+- Lint39 files/no fixes and strict typecheck.
+- Portable201 tests/2,957 assertions,95.88% functions/91.73% lines. This suite does
+  not execute physical recovery; its aggregate falls from96.40%/91.76% as selected-
+  backend implementation grows and is not the mandatory physical coverage pass.
+- Native full+preflight+domain221 tests/3,454 assertions,100% functions/98.61%
+  lines versus baseline218/3,319 at100%/98.59%. Launcher100%/99.46% versus99.38%;
+  preflight100%/98.99% versus98.95%. Unmodified core-module coverage unchanged.
+- Recovery corpus2 tests/85 assertions on each of three runs; unit/transport
+  focused16/145 on each of three runs.
+- Approved split's empty-/tmp portable/read-only preflight202/2,978 at96.65%/
+  93.68%; no controller filesystem-isolation or physical empty-host-/tmp claim.
+- Automated synthetic drill/task completion false; audit14 packages/no reported
+  vulnerabilities, no auto-fix/upgrade.
+
+Read-only labeled snapshot431 containers,298 exited/133 created/0 running;133
+additional synthetic containers since the298 snapshot, including intermediate
+diagnostic/final runs, all retained. New run/input/DB/proxy/crash-result evidence
+and renamed `.retained` paths stay preserved. Existing image/data was mounted,
+never reformatted/deleted/re-permissioned; no ordinary-directory or rootful fallback.
+
+Explicit stop-only recovery is locally verified, not automatic startup recovery
+or independent quiescence. Unbound uncertain create, unavailable/foreign/corrupt
+backends, all-descendant proof, controller filesystem isolation, CPU/memory/
+persistent-disk over-limit, image security scan, remote CI/independent human review,
+SDK/provider qualification and G2 remain open. Unknown inventory, pending native
+actions and kill/reset/reuse fences stay intact. Eight-file recovery implementation/
+test/governance diff remains uncommitted over `e112478`; no push or phase advancement.
+
+Final security/document checks pass: initial scanner verification was blocked by
+expired external temporary files, not waived. Restored the same Gitleaks8.30.1
+official release outside Loom; archive/checksums SHA256 and executable byte identity
+match the recorded pins. All eight task files pass redacted stdin scans.31 local
+links/anchors, seven active sections, unique ADRs/canonical casing and
+`git diff --check` pass. Store/all v1–v6 DDL, protocol, public exports, actor
+fixtures, dependency/lock files, CI, roadmap/playbook and prior review hash remain
+byte-identical. Full task diff inspected; no raw diagnostics, temporary debug code,
+accidental logs, extra public surface or safety-test exclusions introduced.
+
+**Subsequent owner instruction:** “commit and continue” authorizes committing the
+verified explicit stop-only recovery implementation/tests/evidence and continuing
+bounded offline P2 qualification. No push, startup automation, G2 closure or new
+production/provider authority inferred.
 
 ## P2 private IPC execution record (historical)
 

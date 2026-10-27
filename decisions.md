@@ -1556,3 +1556,90 @@ a live worker, so supported automatic crash cleanup remains absent. Reopened
 inventory fences reuse; explicit test-owned identity-checked stop leaves unknown/
 pending state. No production recovery/quiescence/G2 qualification follows. Exact
 commands, fresh-root keys, retained effects and remaining gaps are in SPEC.
+
+## [ADR-027] - 2026-10-26 (Explicit owned-domain stop recovery)
+
+**Title:** Separate recovery stop authority from new execution and launch-file readiness.
+
+**Status:** Accepted, implemented and locally verified within explicitly approved
+offline scope; independent review and G2 remain open.
+
+**Context & Problem Statement:** Crash tests at `e112478` show workers can survive
+their supervisor while durable inventory correctly fences reuse. Current cleanup
+is tied to the live launcher or a test-only manual helper. Full launch preflight
+depends on intact worker/workspace paths, which can obstruct recovery of an
+otherwise independently provable owned domain. Late-observation permission is
+not by itself permission for a new native stop request.
+
+**Options Evaluated:** Keep manual test cleanup only; reuse full launch preflight
+for recovery and require repaired paths; or provide one explicit trusted-supervisor
+stop operation sharing backend/image/ownership checks and the live launcher's stop
+implementation. Recommend the third, with launch filesystem checks still mandatory
+for create/start and unknown cleanup still blocking all reuse/reset.
+
+**Decision & Rationale:** Existing nonroot controller with trusted
+`authority.kind=root` (not host UID0) may stop only a validated inventory-bound
+native ID for an unresolved domain after independent backend/image/ID/name/label proof, including after
+kill/lease expiry or missing launch paths. No extra budget draw, new execution,
+adoption by name, foreign stop, delete, lease revival or completion/quiescence.
+Missing ID, corrupt ownership or unavailable backend remains unresolved. Explicit
+call only; no daemon/startup automation, public CLI or untrusted caller access.
+
+**Consequences & Tech Debt:** Under the accepted scope, factor current backend
+validation and owned stop at their existing responsible modules; test the real
+recovery interface instead of keeping manual cleanup as a parallel implementation.
+No schema/pin/dependency change. Fresh negative/actual crash/kill/expiry/missing-
+path/foreign/transport/inventory-write gates required before support. Independent
+domain quiescence/reuse, uncertain-create reconciliation, daemon-loss recovery,
+SDK/provider/production use and G2 remain separate unqualified work.
+
+**Owner approval event:** selected “Approve stop-only recovery (Recommended)”.
+Implement explicit trusted-root supervisor cleanup under the existing nonroot UID,
+including kill/lease loss and missing launch paths, with independent backend/image/
+identity proof. No create/start/adoption/deletion, extra budget, startup automation,
+quiescence/reuse or completion. Exact module interface and seven-section test/gate
+contract updated in active SPEC before tests/application changes. No public CLI,
+schema/dependency or provider/production authority added by this approval.
+
+**Implementation event — 2026-10-27:** `stopSyntheticDomain` strictly accepts only
+trusted root authority/domain ID, validates immutable inventory and fresh backend/
+image/native ownership, and shares owned stop plus unqualified-observation code
+with the live launcher. Launch filesystem checks remain mandatory for execution,
+not cleanup. Nonzero worker exit still blocks launch success; explicit cleanup
+only reports observed stop and does not treat exit137 as task success. Unit red
+first rejected the stub's lack of authority validation; actual crash red rejected
+its lack of stop behavior. Both are green; repeated stop adds no POST/budget/event
+and cannot clear unknown/action/reset/reuse fences. Kill/released lease plus
+renamed retained launch directories succeeds without repairing them. Foreign,
+unbound/resolved, backend and ignored-inventory-write cases remain fail-closed.
+Final ordered gates pending; no startup reconciliation/CLI or schema/deps change.
+
+**Lab restoration — 2026-10-27:** initial focused actual corpus failed before
+dispatch because the approved mount was absent. Read-only checks found no loop
+mapping and the same regular owner-held2 GiB image. Under existing restoration
+approval, `udisksctl loop-setup --file <approved-image> --no-user-interaction`
+exited0 and automounted it as returned `/dev/loop0`; explicit mount exited1/
+AlreadyMounted. `findmnt` independently confirms ext4/rw/nosuid/nodev at the
+approved target. No ordinary-directory fallback, format/delete, daemon change,
+rootful fallback or permission repair; failed partial synthetic evidence retained.
+
+**Final execution evidence — 2026-10-27:** approved explicit recovery passes the
+restarted ordered split gates: native221 tests/3,454 assertions at100% functions/
+98.61% lines (baseline100%/98.59%), launcher99.46% lines and preflight98.99%; core
+module coverage unchanged. Portable201 tests, recovery2/85 three times, unit/
+transport16/145 three times, empty-/tmp portable/preflight202 tests, drill and
+14-package audit pass. Missing-path/killed-lease recovery stops only the bound
+owned ID; repeated stop adds no POST, budget or event and leaves unknown/pending/
+reuse/reset fences intact. Review consolidated normal/finally test cleanup through
+the same stop wrapper after an intermediate99.88%-function report; final native
+coverage100%, with no exclusions/guard removal. Exact attempts/roots in SPEC.
+Final input review reproduced array-role/envelope shape acceptance before lookup;
+strict rejection and red→green regressions added, then every ordered gate rerun.
+Labeled snapshot431 containers,298 exited/133 created/0 running, all preserved.
+No startup scheduler, adoption/create/start, automatic state repair, quiescence/
+completion, public CLI, dependency/schema change, push, G2 or provider authority.
+
+Pinned eight-file secret scans and scoped document/protected-file checks pass;
+expired temporary scanner restored at the same verified8.30.1 release/hash outside
+Loom, not upgraded or counted as an unavailable pass. Exact results in SPEC; new
+implementation remains uncommitted pending a separate owner commit instruction.

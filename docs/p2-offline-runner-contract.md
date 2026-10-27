@@ -82,6 +82,18 @@ line coverage, plus three repeated recovery corpora. This includes cleanup after
 kill/lease release with both launch roots missing, strict authority/identity/
 inventory errors and idempotent observed-stop behavior. The approved split gate's
 reduced controller-isolation claim remains unchanged; G2 stays open.
+
+Active-worker refusal continuation fault-injects503 backend unavailability and
+foreign inspect labels only through the private test proxy. Worker heartbeat must
+continue while recovery refuses without a POST, retains the original bound ID and
+keeps action/cleanup/reuse uncertainty. After explicit restoration of the same
+proxy, existing owned-stop recovery must stop the same worker without another
+start or budget draw. No actual daemon restart, alternate endpoint/fallback,
+production behavior change or general daemon-loss/quiescence proof is implied.
+This passes in the221-test native corpus/3,528 assertions and three further
+recovery repetitions. Production modules and coverage are unchanged; aggregate
+100% functions/98.59% lines includes new unexercised defensive proxy-upgrade
+refusal code. General daemon-loss and independent quiescence remain open.
 Owner subsequently requested “commit and continue”; the historical preparation
 baseline/approval chronology follows. PR #6 is now merged at `bd397e7`.
 Historical preparation baseline `8e148ed`; branch `feat/p2-isolated-runner` was stacked on research

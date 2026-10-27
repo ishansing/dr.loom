@@ -321,6 +321,13 @@ authority, never UID0. It may clean up unresolved already-bound domains after
 kill/lease loss or missing launch files, without create/start/adoption/deletion,
 extra budget, automatic startup work, quiescence/completion or reuse permission.
 
+**Active-worker refusal continuation after `5b67c49`:** owner requested “commit
+and continue”. Add actual active-worker coverage for temporary backend refusal
+and foreign inspect replies through the existing private Unix fault proxy, then
+explicit caller retry after restoring that same proxy. Test-only; no Docker daemon
+restart/reconfiguration, alternate backend, retry scheduler, authority expansion,
+new execution/adoption, budget draw, quiescence/reuse or production/provider change.
+
 ### 2. Environment & Upstream State
 
 Baseline portable193 tests/2,880 assertions,99.47% functions/96.69% lines; full
@@ -352,6 +359,10 @@ Recovery implementation baseline is `e112478`: native218 tests/3,319 assertions,
 100% functions/98.59% lines; portable199/2,943 at96.40%/91.76%. Reuse pinned
 Docker29.9.2/API1.56/image and installed native HTTP/store semantics. Revalidate
 selected endpoint/engine/image independently of launch-only filesystem readiness.
+Continuation baseline: native221 tests/3,454 assertions at100%/98.61%; portable201/
+2,957 at95.88%/91.73%; approved empty-/tmp portable/preflight202/2,978. Same installed
+Engine/Bun/image and existing HTTP503/ownership validation semantics, no dependency
+or upstream API change. Transport refusal is not a real daemon-crash experiment.
 
 ### 3. Architecture & File Manifest
 
@@ -509,6 +520,16 @@ without launch paths, `tests/runner-launch.test.ts` authority/input/missing-reco
 rejection, and selected native eval covers intact/missing-path/kill/lease-loss,
 foreign/unbound/backend-fault/idempotent-stop/inventory-write failures. No schema,
 SDK/provider, dependency, public index or CLI export changes.
+This continuation modifies only `tests/evals/runner-domain.ts` and documentation.
+Extend the existing private backend fixture with a phase-local `setFault` and
+an unavailable mode returning503 without forwarding requests. Existing ownership
+mode changes only synthetic inspect response labels, never actual container config.
+Extend the current crash/recovery scenario loop with backend-outage and foreign-
+inspect cases after controller death. Real actor must keep advancing heartbeat
+after refused recovery; failed result preserves original bound ID, unknown state,
+pending action and successor fence. Assert no additional POST, raw sentinel body
+exposure, start or budget draw. Explicitly restore the same proxy, then use the
+existing recovery interface to stop the original domain; no new production helper.
 
 ### 4. Test Plan & Coverage Matrix
 
@@ -555,6 +576,13 @@ fresh backend/image/foreign ownership failures never stop/adopt/create/start,
 same stopped-domain reconciliation never draws budget or completes native action,
 ignored stop/unknown event writes fail safely, and killed/stale leases still allow
 only explicit cleanup. Repeat actual recovery corpus three times, no skipped gates.
+Test-only tracer red: unavailable mode initially inert so the new active-refusal
+assertion detects an incorrectly successful stop. Then implement503 rejection in
+the fixture, not application code. Existing owned-stop behavior should require no
+changes. Verify both refusal modes, live-after-failure proof, unchanged original ID,
+no POST/budget/start on refusal, fenced successor/pending action, restored explicit
+stop, idempotent repeat and bounded post-stop heartbeat. Repeat current corpus
+three times; retain all earlier authority/admission/protocol/PID/temp/crash tests.
 
 ### 5. Security, Observability & Edge Cases
 
@@ -590,6 +618,11 @@ Selected rootless backend/image plus native ID/name/labels/image proof are still
 mandatory before any stop. Missing launch paths cannot block that proof; unavailable
 backend or unbound/foreign identity cannot be converted to not-executed/quiescent.
 Preserve bounded safe errors and requests; never forward raw diagnostics.
+Unavailable proxy mode withholds all native dispatch; restoring it in test finally
+is scoped fixture repair, not daemon/network fallback. Restore before owned cleanup
+even when assertions fail, so a synthetic fault cannot strand the test worker.
+Never stop based on a refused/foreign reply. Existing actor lifetime/heartbeat caps,
+private state/ACLs, no raw secrets and unknown/reset/reuse fences remain unchanged.
 
 ### 6. Blast Radius & Rollback Plan
 
@@ -617,6 +650,9 @@ tests/callers/docs. Rollback restores code, not inventory history; all domains s
 unknown/fenced until independent quiescence is qualified. No startup scheduler,
 lease recovery, daemon change or automatic state repair. Preserve renamed synthetic
 paths, private evidence and stopped/created containers; no broad cleanup.
+Refusal continuation leaves every production module/profile/schema/dependency byte
+identical to `5b67c49`; rollback is test/doc-only. Retain synthetic containers and
+all fault/recovery inputs/results; no filesystem/data repair or deletion.
 
 ### 7. Definition of Done (DoD)
 
@@ -659,6 +695,11 @@ lint→strict check→portable/native coverage after corrections, then focused l
 three times→empty-/tmp portable/preflight→drill→audit→pinned secrets/docs/protected
 DDL/history/whitespace checks and native labeled snapshot. Record all limitations;
 no code commit/push or G2 closure inferred from approval.
+For active-refusal continuation run the current actual recovery test red/green,
+then the same exact ordered split gates with fresh private roots and three
+`'explicit stop-only recovery|supervisor crash'` repetitions. Compare221-test
+baseline and unchanged production coverage; record refused-call POST counts,
+continued heartbeat, final labeled state and all scoped security/doc checks.
 
 **Owner-approved split gate (2026-10-26):** owner explicitly approved replacing
 the combined Bubblewrap physical-domain gate after reviewing its lost UID mapping
@@ -1167,6 +1208,63 @@ accidental logs, extra public surface or safety-test exclusions introduced.
 verified explicit stop-only recovery implementation/tests/evidence and continuing
 bounded offline P2 qualification. No push, startup automation, G2 closure or new
 production/provider authority inferred.
+
+#### Active-worker recovery refusals evidence — 2026-10-27
+
+Explicit recovery committed as `5b67c49`; this continuation changes only the
+selected actual-domain test and governance/contract docs. Private proxy gains
+phase-local fault selection and503 refusal without native forwarding. Existing
+ownership mode changes response labels only. Production code, actor fixtures,
+profile/schema/dependencies and endpoint selection are unchanged.
+
+Acceptance red used an inert unavailable mode and failed because recovery wrongly
+succeeded for the supposed outage (1 test/66 assertions). The controller/worker
+was still cleaned safely in finally. Actual proxy refusal implementation then
+passes1 test/128 assertions across intact, killed/missing-path, backend-outage
+and foreign-inspect scenarios. Refused calls retain the original durable ID,
+unknown/pending state, blocked successor and budget1; no extra POST or sentinel
+exposure. Heartbeat continues before explicit same-proxy restoration. Successful
+recovery then stops that same domain, and its repeat adds no POST/budget/event.
+Bounded refusal/post-delta/live-after-failure facts are retained in crash-result
+evidence. Finally restores only the private proxy mode before owned cleanup;
+no real daemon restart, transport fallback or production retry automation.
+
+Fresh final roots: canonical operator-owned0700 initially-empty state key
+`gate-o73yznbs`, log/TMPDIR key `loom-gate-m88grf03`; private manifest/step logs
+retained. All13 ordered execution commands exit0: lint39 files and strict check;
+portable201 tests/2,957 assertions at95.88% functions/91.73% lines; native221/
+3,528 at100%/98.59%; recovery corpus2/159 three runs; focused unit/transport16/
+145 three runs; empty-/tmp portable/preflight202/2,978 at96.65%/93.68%; automated
+synthetic drill/task completion false;14-package audit/no reported vulnerabilities.
+No tests skipped or runtime controls relaxed.
+
+Coverage is scoped honestly: native aggregate98.59% versus98.61% at `5b67c49`,
+functions100% unchanged. All production-module coverage is unchanged (launcher
+99.46%, preflight98.99% lines); new test-only upgrade-refusal guard lines158–161
+are not exercised by the stop operation's ordinary HTTP requests. This is not a
+complete proxy-protocol coverage or aggregate non-regression claim. Keep that
+defensive guard; do not exclude it or remove checks to manufacture a pass.
+
+Read-only labeled snapshot483 containers,340 exited/143 created/0 running:52 new
+synthetic containers since431, including red/green/final runs, all retained. Prior
+image/mount/data and new private DB/input/fault/crash-result evidence unchanged or
+retained as created; no repair/delete/re-permissioning or daemon changes. This
+qualifies active transport/identity refusal and explicit retry through a restored
+same proxy, NOT actual daemon crash/restart/loss, general quiescence, automatic
+startup cleanup, resource-over-limit/image/human/remote-CI qualification or G2.
+Four-file test/doc diff remains uncommitted; no push, provider/SDK or standalone
+history-engine work enabled.
+
+Final four-file Gitleaks8.30.1 scans pass after pinned archive/checksums/executable
+identity verification.31 local links/anchors, seven active sections, unique ADRs/
+canonical casing and `git diff --check` pass. All production source/store/all DDL/
+profile/actor fixtures/dependencies/CI/roadmap/playbook and historical review hash
+are byte-identical to `5b67c49`. Full test/doc diff inspected: no raw diagnostic
+exposure, accidental debug/log calls, authority changes or safety-test exclusions.
+
+**Subsequent owner instruction:** “commit and continue” authorizes committing
+the verified active-worker refusal test/evidence slice and continuing bounded
+offline P2 work. No push, real daemon restart, G2 closure or provider authority.
 
 ## P2 private IPC execution record (historical)
 

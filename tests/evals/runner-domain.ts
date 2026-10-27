@@ -46,6 +46,7 @@ async function backend(
 		| "attach-response"
 		| "disconnect"
 		| "delay-start"
+		| "unavailable"
 		| "attach",
 	onStarted?: () => void,
 	onCreated?: () => void,
@@ -59,6 +60,11 @@ async function backend(
 	const server = createServer((incoming, outgoing) => {
 		const path = incoming.url!;
 		calls.push(`${incoming.method} ${path}`);
+		if (fault === "unavailable") {
+			incoming.resume();
+			outgoing.writeHead(503).end("PRIVATE-SENTINEL");
+			return;
+		}
 		if (fault === "create" && path.startsWith("/v1.56/containers/create?")) {
 			incoming.resume();
 			outgoing.writeHead(500).end("PRIVATE-SENTINEL");
@@ -148,6 +154,12 @@ async function backend(
 	});
 	server.on("upgrade", (incoming, client, head) => {
 		calls.push(`${incoming.method} ${incoming.url}`);
+		if (fault === "unavailable") {
+			client.end(
+				"HTTP/1.1 503 Service Unavailable\r\nContent-Length: 0\r\n\r\n",
+			);
+			return;
+		}
 		if (fault === "attach") {
 			client.end("HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\n\r\n");
 			return;
@@ -215,6 +227,9 @@ async function backend(
 		calls,
 		observedIds,
 		socketPath,
+		setFault: (next: typeof fault) => {
+			fault = next;
+		},
 		close: async () => {
 			for (const socket of sockets) socket.destroy();
 			server.closeAllConnections();
@@ -1007,7 +1022,12 @@ test("a detached descendant stops writing after forced domain stop without clear
 }, 30000);
 
 test("supervisor crash uses explicit stop-only recovery without launch paths, new budget or reuse permission", async () => {
-	for (const scenario of ["intact", "killed-missing-paths"] as const) {
+	for (const scenario of [
+		"intact",
+		"killed-missing-paths",
+		"backend-outage",
+		"foreign-inspect",
+	] as const) {
 		const f = prepare(
 			readFileSync(
 				join(import.meta.dir, "../fixtures/runner-descendant-worker.ts"),
@@ -1034,6 +1054,12 @@ test("supervisor crash uses explicit stop-only recovery without launch paths, ne
 		let driver: Bun.Subprocess<"ignore", "ignore", "ignore"> | null = null;
 		let cleanupAttempted = false,
 			stopped = false;
+		let refusal: {
+			failure: string | null;
+			stopped: boolean;
+			postDelta: number;
+			liveAfterFailure: boolean;
+		} | null = null;
 		const cleanup = async () => {
 			cleanupAttempted = true;
 			recovered ??= s.openDb(dbPath);
@@ -1103,6 +1129,56 @@ test("supervisor crash uses explicit stop-only recovery without launch paths, ne
 					)
 				).State,
 			).toMatchObject({ Running: true });
+			if (scenario === "backend-outage" || scenario === "foreign-inspect") {
+				const postsBefore = proxy.calls.filter((call) =>
+					call.startsWith("POST "),
+				).length;
+				proxy.setFault(
+					scenario === "backend-outage" ? "unavailable" : "ownership",
+				);
+				const refused = await stopSyntheticDomain(recovered, {
+					domainId: domain.domainId,
+					authority: { kind: "root" },
+				});
+				expect(refused.failure).toBe(
+					scenario === "backend-outage" ? "backend" : "cleanup",
+				);
+				expect(refused.stopped).toBe(false);
+				expect(refused.domain?.containerId).toBe(domain.containerId);
+				expect(refused.domain?.unresolved).toBe(true);
+				expect(refused.domain?.events.at(-1)?.kind).toBe("unknown");
+				expect(
+					proxy.calls.filter((call) => call.startsWith("POST ")).length,
+				).toBe(postsBefore);
+				expect(JSON.stringify(refused)).not.toContain("PRIVATE-SENTINEL");
+				const liveAfterFailure = await heartbeatAdvances(heartbeat);
+				expect(liveAfterFailure).toBe(true);
+				expect(() =>
+					s.admitDomain(
+						recovered!,
+						f.ctx,
+						{ ...f.input, domainId: randomUUID() },
+						policy,
+					),
+				).toThrow("unresolved");
+				expect(s.getBudget(recovered, f.ctx.runId, "tool-calls")?.used).toBe(1);
+				expect(
+					s.getAction(recovered, {
+						runId: f.ctx.runId,
+						threadId: f.ctx.threadId,
+						actionId: f.input.domainId,
+					})?.outcome,
+				).toBe("pending");
+				proxy.setFault("none");
+				refusal = {
+					failure: refused.failure,
+					stopped: refused.stopped,
+					postDelta:
+						proxy.calls.filter((call) => call.startsWith("POST ")).length -
+						postsBefore,
+					liveAfterFailure,
+				};
+			}
 			if (scenario === "killed-missing-paths") {
 				expect(
 					s.releaseWorkspaceLease(recovered, {
@@ -1173,6 +1249,7 @@ test("supervisor crash uses explicit stop-only recovery without launch paths, ne
 				JSON.stringify({
 					mode: "synthetic-supervisor-sigkill",
 					scenario,
+					refusal,
 					reopened: true,
 					liveAfterCrash: true,
 					stopped,
@@ -1186,6 +1263,7 @@ test("supervisor crash uses explicit stop-only recovery without launch paths, ne
 			);
 		} finally {
 			try {
+				proxy.setFault("none");
 				if (driver) {
 					if (driver.exitCode === null) driver.kill("SIGKILL");
 					await driver.exited;

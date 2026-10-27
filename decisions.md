@@ -1643,3 +1643,31 @@ Pinned eight-file secret scans and scoped document/protected-file checks pass;
 expired temporary scanner restored at the same verified8.30.1 release/hash outside
 Loom, not upgraded or counted as an unavailable pass. Exact results in SPEC; new
 implementation remains uncommitted pending a separate owner commit instruction.
+
+**Commit/continuation — 2026-10-27:** owner requested “commit and continue”;
+verified stop-only recovery committed as `5b67c49`. Continue with test-only live
+backend-refusal/foreign-inspect proof, not new recovery authority or daemon changes.
+
+**Active-worker refusal test strategy:** extend the existing private Unix proxy
+with phase-local fault selection,503 refusal (including no upgrade forwarding)
+and its existing synthetic ownership-label disagreement. After supervisor death,
+actual heartbeat must keep advancing through refused recovery; original ID,
+unknown/pending/fenced state and budget1 must survive, with zero added POSTs and
+no raw sentinel exposure. Explicitly restore the same proxy, then stop the same
+domain through the existing interface. Restore fixture mode before finally cleanup
+even on failed assertions. Red observed an incorrectly successful stop with inert
+unavailable mode; green passes1 test/128 assertions over four crash/recovery
+scenarios. No production module, daemon, profile, state schema or dependency change;
+this is transport/metadata refusal proof, not real daemon crash/restart conformance.
+Final ordered gates pending; no code commit/push or G2 closure inferred.
+
+**Active-refusal final execution — 2026-10-27:** ordered split gates pass: native
+221 tests/3,528 assertions at100% functions/98.59% lines, recovery2/159 three times,
+portable201, focused16/145 three times, empty-/tmp portable/preflight202, drill
+and14-package audit. Production code/coverage unchanged;0.02-point aggregate line
+change from the proxy's new defensive upgrade-refusal guard not exercised by
+ordinary stop HTTP. No exclusion or guard removal. Refusal leaves actor live,
+ID/unknown/pending/fences intact and adds no POST/budget; explicit same-proxy
+restoration permits owned stop only. Snapshot483 labeled containers,340 exited/
+143 created/0 running; all retained. This is not real daemon-loss/restart or
+quiescence qualification. Exact roots, red/green and scoped evidence in SPEC.

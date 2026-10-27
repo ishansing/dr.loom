@@ -1671,3 +1671,29 @@ ID/unknown/pending/fences intact and adds no POST/budget; explicit same-proxy
 restoration permits owned stop only. Snapshot483 labeled containers,340 exited/
 143 created/0 running; all retained. This is not real daemon-loss/restart or
 quiescence qualification. Exact roots, red/green and scoped evidence in SPEC.
+
+**Commit/continuation — 2026-10-27:** owner requested “commit and continue”;
+active-refusal tests/evidence committed as `0a37304`. Continue test-only with lost
+stop acknowledgement, not daemon restart or new recovery authority.
+
+**Lost-stop-reply strategy:** private proxy forwards the one owned stop, receives
+native204/304, then closes the controller response connection instead of forwarding
+success. Actual stop may have executed despite caller cleanup failure. Require
+unknown/pending/fenced inventory and budget1, exactly one added stop POST, separate
+native stopped-state/heartbeat observation, then a new explicit recovery call that
+uses GET inspection only. Keep the response-loss fault armed through that call
+and its repeat to detect blind stop replay; finally restores fixture mode before
+owned cleanup. Red observed an unexpected successful result before fault injection;
+green passes1 test/170 assertions across five crash/recovery scenarios. No production
+code/actor/profile/schema/dependency change or actual daemon outage. Independent
+quiescence/task completion and G2 remain open; final ordered gates pending.
+
+**Lost-stop-reply final execution — 2026-10-27:** native221 tests/3,570 assertions
+at100% functions/98.59% lines, recovery2/201 three times, portable201, focused16/
+145 three times, empty-/tmp portable/preflight202, drill and14-package audit pass.
+Production code/coverage unchanged. One actual stop executes but reply loss leaves
+unknown/pending state; separate native/heartbeat observation and explicit GET-only
+recovery establish observed stopped without replay while the fault stays armed.
+Snapshot542 labeled containers,389 exited/153 created/0 running; all retained.
+Exact red/green/roots/results in SPEC; no real daemon restart, general quiescence,
+automatic retry/reuse/completion, push or G2 closure inferred.

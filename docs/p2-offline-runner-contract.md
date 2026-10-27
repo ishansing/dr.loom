@@ -94,6 +94,17 @@ This passes in the221-test native corpus/3,528 assertions and three further
 recovery repetitions. Production modules and coverage are unchanged; aggregate
 100% functions/98.59% lines includes new unexercised defensive proxy-upgrade
 refusal code. General daemon-loss and independent quiescence remain open.
+
+Lost-stop-reply continuation differs from refusal before dispatch: the owned stop
+actually executes, then the private proxy drops its204/304 acknowledgement. The
+caller must retain unknown/pending state, not infer not-executed. Independent
+inspection and bounded heartbeat samples show this actor stopped; a later explicit
+recovery call must confirm that without another stop POST/start/budget draw, even
+while response loss remains armed. This is test-only transport ambiguity proof,
+not real daemon restart, general quiescence or automatic retry qualification.
+This passes in the221-test native corpus/3,570 assertions and three further
+recovery repetitions. Reported100% function/98.59% line coverage and production
+code are unchanged. Unknown inventory/action and reset/reuse fences stay intact.
 Owner subsequently requested “commit and continue”; the historical preparation
 baseline/approval chronology follows. PR #6 is now merged at `bd397e7`.
 Historical preparation baseline `8e148ed`; branch `feat/p2-isolated-runner` was stacked on research

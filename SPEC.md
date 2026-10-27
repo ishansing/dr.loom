@@ -328,6 +328,14 @@ explicit caller retry after restoring that same proxy. Test-only; no Docker daem
 restart/reconfiguration, alternate backend, retry scheduler, authority expansion,
 new execution/adoption, budget draw, quiescence/reuse or production/provider change.
 
+**Lost-stop-reply continuation after `0a37304`:** owner requested “commit and
+continue”. Test an owned stop that executes on the actual backend but whose
+successful acknowledgement is discarded by the private proxy. Recovery must
+report uncertainty, not not-executed/successful task completion. Later explicit
+inspection of the same bound ID may observe stopped without sending another
+stop/create/start or drawing budget. Test-only; no daemon restart or authority,
+profile/schema, automatic retry/reuse/quiescence or provider change.
+
 ### 2. Environment & Upstream State
 
 Baseline portable193 tests/2,880 assertions,99.47% functions/96.69% lines; full
@@ -363,6 +371,10 @@ Continuation baseline: native221 tests/3,454 assertions at100%/98.61%; portable2
 2,957 at95.88%/91.73%; approved empty-/tmp portable/preflight202/2,978. Same installed
 Engine/Bun/image and existing HTTP503/ownership validation semantics, no dependency
 or upstream API change. Transport refusal is not a real daemon-crash experiment.
+Lost-reply baseline: native221/3,528 at100% functions/98.59% lines; portable201/
+2,957 and empty-/tmp portable/preflight202/2,978. Existing selected Engine stop
+204/304 and HTTP transport error semantics are exercised, not upgraded. Proxy
+closes only its response connection after an actual successful stop acknowledgement.
 
 ### 3. Architecture & File Manifest
 
@@ -530,6 +542,15 @@ after refused recovery; failed result preserves original bound ID, unknown state
 pending action and successor fence. Assert no additional POST, raw sentinel body
 exposure, start or budget draw. Explicitly restore the same proxy, then use the
 existing recovery interface to stop the original domain; no new production helper.
+For lost reply, add one phase-local stop-disconnect proxy mode and one scenario
+to the same crash/recovery loop in `tests/evals/runner-domain.ts`; application and
+actor fixtures stay unchanged. Forward the one owned native stop, consume204/304
+then destroy the controller response instead of forwarding success. Require one
+stop POST and cleanup failure/stopped=false/unknown inventory, while independent
+read-only native state and five100ms heartbeat samples show this actor stopped.
+Keep the response-loss mode armed across the later explicit recovery call: only
+fresh GET inspection should be needed, no second stop/create/start. Persist bounded
+uncertain-stop/post-delta/native-observation facts in existing private result data.
 
 ### 4. Test Plan & Coverage Matrix
 
@@ -583,6 +604,12 @@ changes. Verify both refusal modes, live-after-failure proof, unchanged original
 no POST/budget/start on refusal, fenced successor/pending action, restored explicit
 stop, idempotent repeat and bounded post-stop heartbeat. Repeat current corpus
 three times; retain all earlier authority/admission/protocol/PID/temp/crash tests.
+Lost-reply tracer red uses the new scenario before injecting disconnection, so an
+unexpected successful recovery must fail. Green requires actual effect plus lost
+reply, safe cleanup error, unchanged ID/action/budget/fence, no raw error exposure,
+read-only later confirmation and unchanged post-stop heartbeat. Other live refusal
+scenarios still require activity after failure; do not conflate missing reply with
+an operation that never executed. Repeat the same recovery corpus three times.
 
 ### 5. Security, Observability & Edge Cases
 
@@ -623,6 +650,10 @@ is scoped fixture repair, not daemon/network fallback. Restore before owned clea
 even when assertions fail, so a synthetic fault cannot strand the test worker.
 Never stop based on a refused/foreign reply. Existing actor lifetime/heartbeat caps,
 private state/ACLs, no raw secrets and unknown/reset/reuse fences remain unchanged.
+Lost-reply fault fires only after native204/304 for that known stop; never drop a
+create/start reply or invent a stopped state. No untrusted PID signaling, name
+adoption, alternate endpoint or native daemon action beyond existing owned stop.
+Finally restores only private proxy mode before existing owned cleanup on failure.
 
 ### 6. Blast Radius & Rollback Plan
 
@@ -653,6 +684,9 @@ paths, private evidence and stopped/created containers; no broad cleanup.
 Refusal continuation leaves every production module/profile/schema/dependency byte
 identical to `5b67c49`; rollback is test/doc-only. Retain synthetic containers and
 all fault/recovery inputs/results; no filesystem/data repair or deletion.
+Lost-reply rollback is likewise test/doc-only against `0a37304`; preserve all
+effects and evidence. Even confirmed stopped remains unknown/unqualified and all
+reuse/reset/native-action fences survive; no production recovery code changes.
 
 ### 7. Definition of Done (DoD)
 
@@ -700,6 +734,10 @@ then the same exact ordered split gates with fresh private roots and three
 `'explicit stop-only recovery|supervisor crash'` repetitions. Compare221-test
 baseline and unchanged production coverage; record refused-call POST counts,
 continued heartbeat, final labeled state and all scoped security/doc checks.
+For lost reply use the same focused `'supervisor crash'` red/green followed by the
+same exact ordered split gates/recovery repetitions with fresh roots; compare the
+221-test/3,528-assertion baseline and unchanged production coverage. Record actual
+stop POST versus lost acknowledgement distinctly. No further commit/push inferred.
 
 **Owner-approved split gate (2026-10-26):** owner explicitly approved replacing
 the combined Bubblewrap physical-domain gate after reviewing its lost UID mapping
@@ -1265,6 +1303,54 @@ exposure, accidental debug/log calls, authority changes or safety-test exclusion
 **Subsequent owner instruction:** “commit and continue” authorizes committing
 the verified active-worker refusal test/evidence slice and continuing bounded
 offline P2 work. No push, real daemon restart, G2 closure or provider authority.
+
+#### Lost-stop acknowledgement evidence — 2026-10-27
+
+Active-refusal slice committed as `0a37304`; new work is test/doc-only. Tracer red
+failed on unexpected successful recovery before the private stop-disconnect fault
+was implemented (1 test/140 assertions). Green forwards the actual owned stop,
+receives204/304, then destroys only the controller response. Recovery returns
+cleanup failure/stopped=false, preserves bound ID/unknown/pending state, budget1
+and blocked successor. Separate GET state plus five100ms heartbeat samples show
+the known actor really stopped: failure is not evidence of non-execution.
+
+The response-loss fault remains armed through subsequent explicit recovery and
+its repeat. Both confirm stopped through GET inspection without another stop POST,
+create/start, event or budget draw. Common finally restoration affects only the
+private proxy; no daemon restart or native fallback. Bounded uncertainStop evidence
+records reported failure/stopped, exactly one POST and separate native observation.
+Focused green passes1 test/170 assertions across five crash/recovery scenarios.
+
+Fresh canonical/private0700 initially-empty state key `gate-mrp6w5mv` and log/
+TMPDIR key `loom-gate-nta55l6h` retain the command/exit manifest and step logs.
+All13 ordered execution commands exit0: lint39 files; strict check; portable201/
+2,957 at95.88% functions/91.73% lines; native221/3,570 at100%/98.59%; recovery2/
+201 three runs; focused unit/transport16/145 three runs; empty-/tmp portable/read-
+only preflight202/2,978 at96.65%/93.68%; automated synthetic drill/task completion
+false;14-package audit/no reported vulnerabilities. Reported coverage matches
+`0a37304`; all production-module coverage and code remain unchanged. No skipped
+checks, guard removal, coverage exclusions, package or runtime changes.
+
+Read-only labeled snapshot542 containers,389 exited/153 created/0 running:59 new
+synthetic containers since483, including red/green/final runs, all preserved with
+input/workspace/DB/proxy/crash-result evidence. No image/mount/old data deletion,
+permission repair or real daemon restart. This proves the known lost-acknowledgement
+trajectory only, not daemon crash/loss, all-descendant quiescence, startup automation,
+resource-over-limit/image security/human/remote-CI qualification or G2. Unknown
+inventory, pending actions and reset/reuse fences remain. Four-file test/doc diff
+is uncommitted; no push, SDK/provider or standalone history-engine work enabled.
+
+Final pinned Gitleaks8.30.1 scans pass all four task files after archive/checksums/
+executable identity verification.31 local links/anchors, seven active sections,
+unique ADRs/canonical casing and `git diff --check` pass. All production source,
+store/all DDL/profile/actor fixtures/dependencies/CI/roadmap/playbook and prior
+review identity remain byte-identical to `0a37304`. Full test/doc diff inspected;
+no raw diagnostics, accidental logs/debug code, authority changes or exclusions.
+
+**Subsequent owner instruction:** “commit and continue” authorizes committing
+the verified lost-stop-acknowledgement test/evidence slice and investigating the
+next bounded offline cleanup proof. No push, quiescence/reuse authority, daemon
+restart, G2 closure or production/provider effect inferred.
 
 ## P2 private IPC execution record (historical)
 

@@ -47,6 +47,7 @@ async function backend(
 		| "disconnect"
 		| "delay-start"
 		| "unavailable"
+		| "stop-disconnect"
 		| "attach",
 	onStarted?: () => void,
 	onCreated?: () => void,
@@ -73,6 +74,16 @@ async function backend(
 		const upstream = request(
 			{ socketPath, path, method: incoming.method, headers: incoming.headers },
 			(response) => {
+				if (
+					fault === "stop-disconnect" &&
+					incoming.method === "POST" &&
+					/\/containers\/[a-f0-9]+\/stop\?/.test(path) &&
+					[204, 304].includes(response.statusCode ?? 0)
+				) {
+					response.resume();
+					outgoing.destroy();
+					return;
+				}
 				if (
 					path.startsWith("/v1.56/containers/create?") &&
 					response.statusCode === 201
@@ -1027,6 +1038,7 @@ test("supervisor crash uses explicit stop-only recovery without launch paths, ne
 		"killed-missing-paths",
 		"backend-outage",
 		"foreign-inspect",
+		"lost-stop-reply",
 	] as const) {
 		const f = prepare(
 			readFileSync(
@@ -1060,6 +1072,13 @@ test("supervisor crash uses explicit stop-only recovery without launch paths, ne
 			postDelta: number;
 			liveAfterFailure: boolean;
 		} | null = null;
+		let uncertainStop: {
+			failure: string | null;
+			reportedStopped: boolean;
+			postDelta: number;
+			nativeStopped: boolean;
+		} | null = null;
+		let postsAfterLostReply: number | null = null;
 		const cleanup = async () => {
 			cleanupAttempted = true;
 			recovered ??= s.openDb(dbPath);
@@ -1179,6 +1198,62 @@ test("supervisor crash uses explicit stop-only recovery without launch paths, ne
 					liveAfterFailure,
 				};
 			}
+			if (scenario === "lost-stop-reply") {
+				const postsBefore = proxy.calls.filter((call) =>
+					call.startsWith("POST "),
+				).length;
+				proxy.setFault("stop-disconnect");
+				const uncertain = await stopSyntheticDomain(recovered, {
+					domainId: domain.domainId,
+					authority: { kind: "root" },
+				});
+				expect(uncertain.failure).toBe("cleanup");
+				expect(uncertain.stopped).toBe(false);
+				expect(uncertain.domain?.containerId).toBe(domain.containerId);
+				expect(uncertain.domain?.unresolved).toBe(true);
+				expect(uncertain.domain?.events.at(-1)?.kind).toBe("unknown");
+				postsAfterLostReply = proxy.calls.filter((call) =>
+					call.startsWith("POST "),
+				).length;
+				expect(postsAfterLostReply).toBe(postsBefore + 1);
+				expect(
+					await dockerJson(
+						domain.endpoint.slice(7),
+						`/containers/${domain.containerId}/json`,
+						"engine",
+					),
+				).toMatchObject({
+					Id: domain.containerId,
+					State: { Running: false, Restarting: false, Pid: 0 },
+				});
+				const afterEffectSize = statSync(heartbeat).size;
+				for (let sample = 0; sample < 5; sample++) {
+					await Bun.sleep(100);
+					expect(statSync(heartbeat).size).toBe(afterEffectSize);
+				}
+				expect(() =>
+					s.admitDomain(
+						recovered!,
+						f.ctx,
+						{ ...f.input, domainId: randomUUID() },
+						policy,
+					),
+				).toThrow("unresolved");
+				expect(s.getBudget(recovered, f.ctx.runId, "tool-calls")?.used).toBe(1);
+				expect(
+					s.getAction(recovered, {
+						runId: f.ctx.runId,
+						threadId: f.ctx.threadId,
+						actionId: f.input.domainId,
+					})?.outcome,
+				).toBe("pending");
+				uncertainStop = {
+					failure: uncertain.failure,
+					reportedStopped: uncertain.stopped,
+					postDelta: postsAfterLostReply - postsBefore,
+					nativeStopped: true,
+				};
+			}
 			if (scenario === "killed-missing-paths") {
 				expect(
 					s.releaseWorkspaceLease(recovered, {
@@ -1211,6 +1286,10 @@ test("supervisor crash uses explicit stop-only recovery without launch paths, ne
 			if (!recovery) throw new Error("Crash fixture missing cleanup identity");
 			expect(recovery.failure).toBeNull();
 			expect(stopped).toBe(true);
+			if (postsAfterLostReply !== null)
+				expect(
+					proxy.calls.filter((call) => call.startsWith("POST ")).length,
+				).toBe(postsAfterLostReply);
 			const postCount = proxy.calls.filter((call) =>
 				call.startsWith("POST "),
 			).length;
@@ -1250,6 +1329,7 @@ test("supervisor crash uses explicit stop-only recovery without launch paths, ne
 					mode: "synthetic-supervisor-sigkill",
 					scenario,
 					refusal,
+					uncertainStop,
 					reopened: true,
 					liveAfterCrash: true,
 					stopped,

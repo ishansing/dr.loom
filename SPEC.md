@@ -1352,6 +1352,16 @@ the verified lost-stop-acknowledgement test/evidence slice and investigating the
 next bounded offline cleanup proof. No push, quiescence/reuse authority, daemon
 restart, G2 closure or production/provider effect inferred.
 
+**Kernel-observer discovery after `7698e97`:** read-only investigation and primary-
+source notes only. Assess an isolated development probe using installed Python
+pidfd/cgroup facilities around one known owned container; this is a proposed new
+test seam requiring owner confirmation before implementation. No quiescence
+recording, fence release, application integration, signals to observed processes,
+cgroup writes, dependency install, daemon change or additional container dispatch
+authorized by these notes. Findings belong in
+`research/pi/18-p2-kernel-observer-readiness.md`; do not treat old research or
+namespace-keeper observations as container/descendant cleanup proof.
+
 ## P2 private IPC execution record (historical)
 
 ### 1. Phase Objective & Scope

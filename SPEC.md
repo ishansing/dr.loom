@@ -277,6 +277,11 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
 
 ### 1. Phase Objective & Scope
 
+**Current continuation — kernel-observer research only:** owner requested “commit
+and continue”; discovery-scope note committed as `9377331`. Produce primary-source
+readiness findings and an approval-gated development-only proposal, not probe code
+or runtime effects. Earlier implementation records below remain historical scope.
+
 Owner requested “commit and continue”; IPC/owned worker committed as `3ed86ee`
 on clean `feat/p2-isolated-runner`. Implement the first governed synthetic Docker
 create→attach→start→proposal→stop path over existing inventory/preflight/protocol.
@@ -338,6 +343,11 @@ profile/schema, automatic retry/reuse/quiescence or provider change.
 
 ### 2. Environment & Upstream State
 
+Research baseline: recorded Linux7.2.8-9-omarchy, Python3.15.2, Bun1.4.4 and
+rootless Docker29.9.2/API1.56. Prior readable handles belong to the RootlessKit
+namespace keeper only, not a container init. Separate versioned source guarantees
+from untested worker permissions, identity bridging and cgroup removal behavior.
+
 Baseline portable193 tests/2,880 assertions,99.47% functions/96.69% lines; full
 plus mandatory physical preflight194 tests/2,901 assertions,100%/98.48%. Existing
 ext42 GiB workspace is currently mounted rw/nosuid/nodev, rootless Docker29.9.2/
@@ -377,6 +387,10 @@ Lost-reply baseline: native221/3,528 at100% functions/98.59% lines; portable201/
 closes only its response connection after an actual successful stop acknowledgement.
 
 ### 3. Architecture & File Manifest
+
+Current research touches `research/pi/18-p2-kernel-observer-readiness.md` and this
+scope/evidence record only. No application/test/fixture/config/export change;
+installed Python stdlib is a proposal, not a selected application dependency.
 
 `src/runner.ts` remains preflight/native HTTP owner; extend its bounded JSON
 transport for fixed internal POSTs/empty204/304 replies, preserving GET behavior.
@@ -554,6 +568,12 @@ uncertain-stop/post-delta/native-observation facts in existing private result da
 
 ### 4. Test Plan & Coverage Matrix
 
+Research-only validation: cited primary-source/claim review, local Markdown links,
+scope/protected-file checks and whitespace/secret checks. Unit/integration/E2E and
+coverage reruns are N/A for documents; previous221-test native results are historical,
+not new execution evidence. Any future observer seam needs owner confirmation and
+a test-first contract before code or container dispatch.
+
 Acceptance reds precede application/effect logic. Unit/native: exact fixed payload,
 foreign identity/config drift, bounded native POST/empty-response failures and safe
 errors. Actual selected lab: normal native worker, UID/GID/candidate owner and
@@ -613,6 +633,11 @@ an operation that never executed. Repeat the same recovery corpus three times.
 
 ### 5. Security, Observability & Edge Cases
 
+Research has no runtime mutation authority. Proposal must fail inconclusively on
+unbound/ambiguous identities, inaccessible handles, missing/stale cgroups or raced
+observations. No observed-process signals, cgroup writes, credential inspection,
+dependency installs, quiescence records, pending-action completion or fence release.
+
 Never persist/forward raw attach/stderr/daemon body; no credentials or ambient
 client context. Bound requests and output, validate final immutable config and
 fresh authority, independently prove ownership before cleanup. Cancellation is not
@@ -657,6 +682,10 @@ Finally restores only private proxy mode before existing owned cleanup on failur
 
 ### 6. Blast Radius & Rollback Plan
 
+Research rollback is document-only; preserve runtime/store/schema/dependencies,
+all retained lab evidence and historical reviews byte-for-byte. No deployment,
+push, phase advancement, automatic cleanup or host/container state change.
+
 Extend runner transport; add selected-backend supervisor/tests/owned access probe.
 No migration, core authority rewrite, dependency or public CLI/facade change.
 Lab effects are approved offline fixed-profile containers and narrow new directory
@@ -689,6 +718,13 @@ effects and evidence. Even confirmed stopped remains unknown/unqualified and all
 reuse/reset/native-action fences survive; no production recovery code changes.
 
 ### 7. Definition of Done (DoD)
+
+Current research DoD: independently inspect the returned findings and primary
+citations; validate local Markdown links, seven active sections and unchanged
+protected files with Python assertions; run pinned `gitleaks stdin --no-banner
+--redact --log-level error` on changed documents and `git diff --check`. Record
+results and limitations here, then ask the owner about the bounded proposed seam.
+No application gates or physical qualification claimed from research.
 
 Fresh baseline and deterministic reds first. Ordered final gates: `bun run lint`
 → `bun run check` → `bun test --coverage` → with explicit approved lab paths and
@@ -1361,6 +1397,32 @@ cgroup writes, dependency install, daemon change or additional container dispatc
 authorized by these notes. Findings belong in
 `research/pi/18-p2-kernel-observer-readiness.md`; do not treat old research or
 namespace-keeper observations as container/descendant cleanup proof.
+
+**Research return — 2026-10-27:** findings saved in
+`research/pi/18-p2-kernel-observer-readiness.md`. Parent review corrected the keeper
+comm to `exe` (executable basename remains `rootlesskit`) and independently fetched
+the cited revision's Linux pidfd poll, cgroup-v2 documentation, kernfs poll/seek and
+CPython pidfd wrapper. These support distinct thread-group/subtree observations,
+normal events ERR|PRI notifications and stale-handle failure rather than invented
+emptiness. Source review is not installed-worker qualification. Selected Docker
+release source lookup failed; cited Moby master is explicitly non-release evidence.
+Worker PID provenance/namespace bridge, cross-UID access and post-stop FD behavior
+remain blocked/unproven. Recommend owner approval of a development-only observer
+with one separately bounded existing-fixture lifecycle, no observer signals or
+state writes, at most10 seconds of observation and fail-inconclusive acquisition.
+No code, new container dispatch, cleanup authority or G2 change performed.
+
+Research document gates exit0: pinned Gitleaks8.30.1 identity and two-document
+scans;25 local links/anchors; seven active sections; historical review hash;
+tracked changes restricted to SPEC with only the expected new research file;
+`git diff --check`. Runtime/tests/dependencies and retained lab state untouched.
+Application/physical gates and coverage are N/A for this research-only slice;
+no prior test count is presented as freshly executed. Findings/scope remain
+uncommitted pending owner disposition; observer seam and lifecycle approval pending.
+
+**Owner disposition:** “commit” authorizes committing these research/scope
+documents only. Observer implementation and one-container lifecycle remain
+approval-gated; no continuation, push or runtime effect inferred.
 
 ## P2 private IPC execution record (historical)
 

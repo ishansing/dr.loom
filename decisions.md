@@ -1697,3 +1697,47 @@ recovery establish observed stopped without replay while the fault stays armed.
 Snapshot542 labeled containers,389 exited/153 created/0 running; all retained.
 Exact red/green/roots/results in SPEC; no real daemon restart, general quiescence,
 automatic retry/reuse/completion, push or G2 closure inferred.
+
+## [ADR-028] - 2026-10-27 (Test-only kernel observer acquisition)
+
+**Title:** Prove observer identity/access before implementing cleanup polling.
+
+**Status:** Owner approved bounded development-only experiment; acquisition and
+independent cleanup qualification pending. No production authority change.
+
+**Context & Problem Statement:** Research at `bd17c45` separates pidfd termination,
+cgroup emptiness and general quiescence. Keeper handles do not prove worker access.
+Owner answered “continue” to the explicit test-only Python observer/one-owned-
+container proposal with10-second bound and unchanged inventory/reuse authority.
+
+**Options Evaluated:** Implement speculative polling first; guess inspect PID
+provenance or elevate on access failure; or test native identity/access prerequisites
+before any persistent integration. Select the last; no new dependency or API.
+
+**Decision & Rationale:** Installed Python stdlib may connect only the selected
+lab Unix socket, use kernel SO_PEERCRED to identify the exact peer, and compare
+that peer's executable/PID namespace with the controller. This is not proof of
+worker identity or pinned inspect-PID semantics. If this passes, one existing
+synthetic lifecycle may provide a durably bound ownership-checked PID candidate
+for read-only proc namespace access. Any ambiguity/access failure blocks further
+acquisition. Scripts/logs remain private; no speculative persistent observer,
+signals, permission repair, daemon change, host scan or authority/state write.
+
+**Consequences & Tech Debt:** Stop early if blocked; preserve failure/evidence,
+existing owned cleanup and unknown/pending/budget/reuse/reset invariants. Runtime
+integration, independent quiescence and G2 remain unqualified. Scope/commands and
+actual classified results belong in SPEC; do not convert blocked acquisition to
+physical qualification or infer permission to run additional lifecycles.
+
+**Acquisition execution:** socket-peer prerequisite passes for actual `dockerd`
+(same controller PID namespace, readable nonterminal pidfd). One approved existing
+fixture lifecycle then fails candidate acquisition before proc access because the
+temporary Bun harness used `FileSink.end(payload)` instead of write then end.
+Deterministic synthetic echo red reproduces0/18 bytes; corrected shared-sender
+round-trip green and14 Python self-checks pass without another container. Corrected
+private harness strict check passes matching repository flags. Original failed
+script/log/manifest retained. Existing owned cleanup observes stopped, exact-ID
+GET confirms not running/PID0, inventory/action/fences stay unknown/pending and
+budget1. No kernel permission failure established. One lifecycle consumed, no
+repeat: project owner must authorize another bounded lifecycle to test corrected
+acquisition. No persistent code/polling or quiescence/G2 qualification follows.

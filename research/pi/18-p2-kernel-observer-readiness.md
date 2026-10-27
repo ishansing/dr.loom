@@ -2,8 +2,9 @@
 
 Researched **2026-10-27** under SPEC's kernel-observer discovery scope and
 [ADR-027](../../decisions.md#adr-027---2026-10-26-explicit-owned-domain-stop-recovery).
-No probe, container dispatch, process inspection/signaling, cgroup write, package
-install or daemon change ran. This note does not authorize implementation or G2.
+At research completion, no probe, container dispatch, process inspection/signaling,
+cgroup write, package install or daemon change had run. The subsequently approved
+acquisition experiment is recorded below; neither record qualifies G2.
 
 ## Findings
 
@@ -192,3 +193,58 @@ none is invented or claimed run. This note's scope requires document review and
 separately controlled one-container lifecycle. Worker namespace/handle access,
 installed daemon source provenance, atomic restart binding and actual post-stop
 FD behavior remain unresolved; research does not close any of those gates.
+
+## Approved acquisition attempt — 2026-10-27
+
+Owner answered “continue” to the explicit test-only observer/one-owned-container
+proposal after `bd17c45`. This authorized a bounded development experiment, not
+quiescence, reuse, inventory authority or automatic cleanup. Private scripts and
+logs are retained under the evidence key `loom-observer-prerequisite-TPvFnrtG`;
+state key `observer-4n1e93q2`. No application/test integration was added.
+
+### What actually ran
+
+- Python kernel-peer prerequisite: exit0. On the selected rootless lab Unix socket,
+  `SO_PEERCRED` yielded an operator-owned peer, its executable basename was
+  `dockerd`, its pidfd was nonterminal, and its PID namespace identity matched
+  the controller. No HTTP request or container dispatch by this prerequisite.
+  This improves **daemon** evidence, not worker identity or inspect-PID provenance.
+  [unix(7)](https://man7.org/linux/man-pages/man7/unix.7.html) documents these
+  credentials as captured at connect/listen/socketpair time; they are not a
+  permanent identity/namespace guarantee.
+- Exactly one existing descendant-fixture lifecycle used existing governed
+  launch/owned stop, with fresh private state/TMPDIR and narrow new-run ACLs.
+  Heartbeat advanced; the durable full ID passed fresh backend/image/native
+  ownership checks. The Python candidate-access process returned exit2 at
+  **candidate-envelope / invalid-input**, before any worker proc syscall.
+- **Confirmed harness defect, not a kernel permission failure:** temporary Bun
+  code used `FileSink.end(payload)` as though it were Node's Writable end.
+  Installed `bun-types/s3.d.ts` documents `write(chunk)` and `end(error?: Error)`;
+  end does not send the JSON chunk. A deterministic no-container echo reproduction
+  received0 bytes instead of18 and failed its assertion (exit1). The corrected
+  shared sender awaits `write(JSON.stringify(value))` then `end()`; the no-container
+  round-trip self-check passes, as do14 Python validation/parser self-checks.
+- The corrected temporary harness passes strict typechecking with the repository's
+  compiler options. An earlier ad-hoc command without matching exact-optional
+  settings failed on unrelated store typing and unknown inspect-state fields;
+  no store changes were made. Explicit runtime state narrowing and matching options
+  pass. Neither typecheck nor echo green reruns the native worker acquisition.
+- Launcher owned cleanup observed stopped; action remains pending, inventory
+  unresolved, budget1 and successor admission fenced. Reset planning still rejects
+  because kill is not engaged; no kill/reset operation was performed. A later
+  exact-ID ownership-checked GET independently reports not running/not restarting/
+  PID0. No general quiescence claim follows.
+
+### Limit and next owner
+
+The single authorized lifecycle is consumed and was **not repeated**. Worker
+namespace access, cross-UID handles, cgroup FD lifetime/removal and independent
+cleanup polling remain **untested**, not permission-denied or passed. Preserve the
+failed harness snapshot, manifest and logs. No observed-process signals, cgroup
+writes, permission repair, daemon/SDK/provider/dependency change or fence release.
+
+**Next owner: project owner.** Approve one additional existing synthetic lifecycle
+to run the corrected candidate-access prerequisite, or retain the blocked result.
+Do not skip input/identity checks, restart the stopped container or expand authority
+to compensate for the test-harness failure. Persistent observer implementation
+still depends on actual identity/access proof and test-first qualification.

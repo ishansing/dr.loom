@@ -277,10 +277,14 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
 
 ### 1. Phase Objective & Scope
 
-**Current continuation — kernel-observer research only:** owner requested “commit
-and continue”; discovery-scope note committed as `9377331`. Produce primary-source
-readiness findings and an approval-gated development-only proposal, not probe code
-or runtime effects. Earlier implementation records below remain historical scope.
+**Current continuation — approved bounded observer:** after research commit
+`bd17c45`, owner answered “continue” to the explicit one-owned-container/test-only
+Python observer proposal. Approval covers existing synthetic launch/stop paths and
+at most10 seconds of observation, not runtime authority changes. First establish
+the identity/access prerequisite without dispatch: connect only the selected lab
+Unix endpoint, inspect kernel peer credentials and that exact peer's proc namespace
+handles. If acquisition is blocked, stop before spending the one lifecycle or
+writing speculative polling/integration code. Earlier records remain historical.
 
 Owner requested “commit and continue”; IPC/owned worker committed as `3ed86ee`
 on clean `feat/p2-isolated-runner`. Implement the first governed synthetic Docker
@@ -347,6 +351,10 @@ Research baseline: recorded Linux7.2.8-9-omarchy, Python3.15.2, Bun1.4.4 and
 rootless Docker29.9.2/API1.56. Prior readable handles belong to the RootlessKit
 namespace keeper only, not a container init. Separate versioned source guarantees
 from untested worker permissions, identity bridging and cgroup removal behavior.
+Fresh read-only versions still match. Linux unix(7) SO_PEERCRED documents the
+credentials at connect/listen/socketpair time, not proof that the peer is the
+daemon or that inspect PID numbers share the controller namespace. Revalidate
+the executable and namespace identity or fail blocked; never substitute keeper.
 
 Baseline portable193 tests/2,880 assertions,99.47% functions/96.69% lines; full
 plus mandatory physical preflight194 tests/2,901 assertions,100%/98.48%. Existing
@@ -388,9 +396,11 @@ closes only its response connection after an actual successful stop acknowledgem
 
 ### 3. Architecture & File Manifest
 
-Current research touches `research/pi/18-p2-kernel-observer-readiness.md` and this
-scope/evidence record only. No application/test/fixture/config/export change;
-installed Python stdlib is a proposal, not a selected application dependency.
+Current acquisition slice touches `research/pi/18-p2-kernel-observer-readiness.md`,
+`decisions.md` and this scope/evidence record. The temporary assert-based Python
+prerequisite script/evidence stays private under `/tmp/opencode`; no application,
+fixture/config/export/dependency change. Implement a persistent observer only
+after prerequisite identity/access proof, within the approved one-container bound.
 
 `src/runner.ts` remains preflight/native HTTP owner; extend its bounded JSON
 transport for fixed internal POSTs/empty204/304 replies, preserving GET behavior.
@@ -568,11 +578,13 @@ uncertain-stop/post-delta/native-observation facts in existing private result da
 
 ### 4. Test Plan & Coverage Matrix
 
-Research-only validation: cited primary-source/claim review, local Markdown links,
-scope/protected-file checks and whitespace/secret checks. Unit/integration/E2E and
-coverage reruns are N/A for documents; previous221-test native results are historical,
-not new execution evidence. Any future observer seam needs owner confirmation and
-a test-first contract before code or container dispatch.
+Acquisition validation: deterministic synthetic peer-credential and identity-reject
+assertions before the read-only native prerequisite; record the exact command and
+classified failure if blocked. Document links, scope/protected-file, whitespace and
+secret checks remain mandatory. No application/E2E/coverage claim from a blocked
+prerequisite; previous221-test native results are historical. If prerequisites pass,
+specify failing observer acceptance tests and exact ordered physical gates before
+application/test integration, bounded to the approved existing-fixture lifecycle.
 
 Acceptance reds precede application/effect logic. Unit/native: exact fixed payload,
 foreign identity/config drift, bounded native POST/empty-response failures and safe
@@ -637,6 +649,10 @@ Research has no runtime mutation authority. Proposal must fail inconclusively on
 unbound/ambiguous identities, inaccessible handles, missing/stale cgroups or raced
 observations. No observed-process signals, cgroup writes, credential inspection,
 dependency installs, quiescence records, pending-action completion or fence release.
+Native prerequisite may inspect kernel socket UID/PID credentials, not provider
+credentials. Bound socket wait to2 seconds and host command to10 seconds; no HTTP
+request is needed for peer acquisition. No host process scan, permission repair,
+privilege escalation, daemon restart, PID guess or raw proc/exception persistence.
 
 Never persist/forward raw attach/stderr/daemon body; no credentials or ambient
 client context. Bound requests and output, validate final immutable config and
@@ -682,9 +698,10 @@ Finally restores only private proxy mode before existing owned cleanup on failur
 
 ### 6. Blast Radius & Rollback Plan
 
-Research rollback is document-only; preserve runtime/store/schema/dependencies,
-all retained lab evidence and historical reviews byte-for-byte. No deployment,
-push, phase advancement, automatic cleanup or host/container state change.
+Acquisition rollback closes only observer-owned socket/FDs; preserve runtime/store/
+schema/dependencies, lab evidence and historical reviews byte-for-byte. A blocked
+prerequisite creates no container; no deployment, push, phase advancement, automatic
+cleanup, permission or host/container state change. Retain the private probe/log.
 
 Extend runner transport; add selected-backend supervisor/tests/owned access probe.
 No migration, core authority rewrite, dependency or public CLI/facade change.
@@ -719,12 +736,30 @@ reuse/reset/native-action fences survive; no production recovery code changes.
 
 ### 7. Definition of Done (DoD)
 
-Current research DoD: independently inspect the returned findings and primary
-citations; validate local Markdown links, seven active sections and unchanged
-protected files with Python assertions; run pinned `gitleaks stdin --no-banner
---redact --log-level error` on changed documents and `git diff --check`. Record
-results and limitations here, then ask the owner about the bounded proposed seam.
-No application gates or physical qualification claimed from research.
+Current prerequisite DoD: `python3 <private-probe> --self-test` then
+`python3 <private-probe>` under the host10-second tool timeout. Record each exit and
+safe categorical facts, retaining any blocked gate as blocked rather than pass.
+Validate local Markdown links/seven active sections/protected files with Python
+assertions; pinned `gitleaks stdin --no-banner --redact --log-level error` on changed
+documents; `git diff --check`. If blocked, report next owner and do not implement
+speculative polling or claim application/physical qualification.
+
+**One-lifecycle acquisition command:** after the daemon prerequisite passes, run
+`bun run /tmp/opencode/loom-observer-prerequisite-TPvFnrtG/lifecycle.ts` with fresh
+private `LOOM_LAB_STATE`/`TMPDIR` and the selected existing endpoint/mount/image.
+The private harness loads a byte-sliced snapshot of the existing `prepare` and
+heartbeat helpers (asserting exact boundaries, no test registrations), passes the
+existing descendant worker explicitly and calls existing `runSyntheticDomain`.
+After positive heartbeat and durable ID, fresh backend image/`assertDomainOwner`
+checks precede passing one strict ID/PID envelope to the private Python access
+probe. No daemon-wide listing/host PID scan. Candidate proc namespace access is
+only a prerequisite, not yet a trusted worker identity or a cleanup observation.
+On access failure stop acquisition; await existing launcher's owned cleanup even
+when probe/assertions fail, with explicit owned-stop recovery if launch fails.
+Assert pending action/budget1/unresolved successor/reset fences and retain result.
+The observer does not signal anything, and the one lifecycle is not repeated.
+No persistent observer code or mandatory application gates are claimed when this
+temporary native acquisition experiment is blocked before integration.
 
 Fresh baseline and deterministic reds first. Ordered final gates: `bun run lint`
 → `bun run check` → `bun test --coverage` → with explicit approved lab paths and
@@ -1423,6 +1458,81 @@ uncommitted pending owner disposition; observer seam and lifecycle approval pend
 **Owner disposition:** “commit” authorizes committing these research/scope
 documents only. Observer implementation and one-container lifecycle remain
 approval-gated; no continuation, push or runtime effect inferred.
+
+#### Approved observer acquisition evidence — 2026-10-27
+
+Owner subsequently answered “continue” to the bounded test-only observer/one-owned-
+container question. This is the approval event for ADR-028, not production cleanup
+authority. Versions remain Linux7.2.8-9-omarchy/Python3.15.2/Bun1.4.4; approved mount
+independently confirmed ext4/rw/nosuid/nodev before dispatch. No restoration needed.
+
+Private evidence key `loom-observer-prerequisite-TPvFnrtG`, fresh0700 state key
+`observer-4n1e93q2` and private child TMPDIR retain scripts/failed snapshot/manifest/
+logs and all new input/workspace/SQLite/result data. Exact acquisition commands:
+
+- `python3 /tmp/opencode/loom-observer-prerequisite-TPvFnrtG/peer.py --self-test`:
+  initial9 cases exit0; final `python3 -I -B .../peer.py --self-test`:14 cases exit0.
+- `python3 /tmp/opencode/loom-observer-prerequisite-TPvFnrtG/peer.py`: exit0;
+  kernel-selected socket peer verified `dockerd`, pidfd nonterminal and same PID
+  namespace. No HTTP dispatch. Peer only; worker proof does not follow.
+- `bun run /tmp/opencode/loom-observer-prerequisite-TPvFnrtG/lifecycle.ts
+  --self-test`: exit0 snapshot helper-load check before dispatch. The private
+  harness reused the existing prepared fixture/launch/heartbeat/native-owner code.
+- `bun run /tmp/opencode/loom-observer-prerequisite-TPvFnrtG/lifecycle.ts` with
+  the selected endpoint/mount/image and fresh state/TMPDIR: exit2, exactly one
+  lifecycle. Heartbeat and durable identity/owner checks pass; Python returns
+  candidate-envelope/invalid-input before worker proc access. Launcher cleanup
+  observed stopped; pending action, budget1, unknown inventory and successor fence
+  remain intact. Reset planning rejects absent kill; no kill/reset was performed.
+- `bun run /tmp/opencode/loom-observer-prerequisite-TPvFnrtG/stdin-red.ts`: exit1,
+  expected18 bytes/received0. Confirmed own temporary harness API misuse:
+  `FileSink.end(payload)` does not write payload. Installed type declares
+  `end(error?: Error)`, not Node Writable end. No upstream Bun bug claimed.
+- Corrected shared sender writes then ends; `bun run .../lifecycle.ts --self-test`
+  now exercises synthetic Python JSON round-trip and passes exit0, no container.
+  Final Python self-tests also pass14 cases. Both original failed snapshot and
+  corrected scripts retained. No native repeat performed.
+
+Corrected private harness strict check exits0 using `bunx --no-install tsc
+--noEmit --strict --exactOptionalPropertyTypes --noUncheckedIndexedAccess
+--noFallthroughCasesInSwitch --noUnusedLocals --noUnusedParameters
+--forceConsistentCasingInFileNames --verbatimModuleSyntax --erasableSyntaxOnly
+--lib ESNext --target ESNext --module ESNext --moduleResolution Bundler
+--allowImportingTsExtensions --skipLibCheck --types bun
+--typeRoots <repository>/node_modules/@types <private-root>/lifecycle.ts`.
+Earlier ad-hoc flags omitted exact-optional semantics and failed on store typing
+plus unknown native state. Matched repository options and explicit private-harness
+state narrowing resolve that check; no production source change or waiver.
+
+Exact-ID read-only native reinspection confirms the single experiment's container
+owned/not-running/not-restarting/PID0; its inventory remains unresolved. No global
+container cleanup/listing, restart, permissions repair, cgroup writes, observed-
+process signals, dependency/SDK/provider use or authority transition occurred.
+Only existing launch/owned-stop effects and narrow new-run ACL provisioning ran.
+All prior/new data and the one stopped container retained.
+
+**Blocked, not qualified:** the one authorized lifecycle is consumed. Worker
+cross-UID namespace/handle access has NOT been tested; failure was input transport,
+not EACCES. Independent cgroup/pidfd polling, removed-cgroup semantics, quiescence,
+reuse/reset and G2 remain unqualified. No persistent observer/test integration was
+written; full application/coverage/physical corpus reruns are N/A for this temporary
+acquisition attempt and document-only repository diff. The native exit2 remains
+failed evidence. Next owner is project owner: approve at most one additional
+synthetic lifecycle for corrected acquisition, or stop here. No further dispatch,
+commit/push or phase advancement inferred.
+
+Final scoped document/security gates exit0: pinned Gitleaks8.30.1 archive/checksum/
+executable identity plus seven scans (three changed documents and four private
+script artifacts),31 local links/anchors, seven active sections, unique ADRs,
+canonical casing, protected historical review hash and `git diff --check`.
+Tracked diff is only SPEC/decisions/research; no untracked repository artifacts,
+application/tests/fixtures/schema/config/dependency/CI/roadmap/playbook changes.
+Private evidence root remains0700. No dependency audit or fresh application
+coverage implied by these checks. Three-document evidence diff remains uncommitted.
+
+**Owner disposition:** subsequent “commit” authorizes this three-document
+acquisition/failure evidence commit only. An additional synthetic lifecycle,
+continued observer implementation, push and G2 closure remain unauthorized.
 
 ## P2 private IPC execution record (historical)
 

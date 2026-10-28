@@ -1774,3 +1774,24 @@ on-stale inference or claimed atomic identity/ABA guarantee. Owner approval of t
 test contract and a separately bounded physical gate remain pending; no code/G2
 qualification follows from this design. This avoids speculative runtime integration
 while giving the next slice concrete cases and honest failure behavior.
+
+**Synthetic implementation slice — 2026-10-28:** owner requested “commit and
+continue”; test contract committed as `75347b1`. Implement only pure identity
+frames/kernel-snapshot consistency/populated parsing/poll-result classification
+plus self-tests in the research probe. No native syscall/FD/pipe handler, worker
+inspection or Docker dispatch; default CLI returns blocked/native-not-implemented
+without reading stdin. Native provenance remains unresolved. Deterministic inert
+classifier red fails2 tests by inventing terminal/empty; first green15 self-tests
+passes on synthetic data only. This deliberately omits speculative native adapters
+instead of pretending access-only evidence proves identity or handle lifetimes.
+No new dependency or application integration; ordered final gates pending.
+
+**Synthetic final gates:** ordered lint39 files/strict Bun typecheck, separate
+Python syntax/15 self-tests/three native-disabled CLI cases, portable201 tests/
+2,957 assertions, automated synthetic drill and14-package audit pass. Portable
+95.88% function/91.73% line coverage matches baseline; Bun coverage does not
+measure the Python module. Source review keeps validation shared rather than
+serializing already parsed identities through JSON; only stdlib imports, no handle
+access, loose identity flags, cleanup authority, default test exclusions or
+package changes. Raw native/source provenance/FD lifecycle/deadline and physical
+qualification remain deferred, not passed. Exact final evidence/limits in SPEC.

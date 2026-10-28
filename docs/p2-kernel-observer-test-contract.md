@@ -1,6 +1,8 @@
 # P2 — Proposed worker-handle observation test contract
 
-Status: **design only; not implemented, physically qualified or G2 approval**.
+Status: **synthetic-only core locally verified; no native handler, physical
+qualification or G2 approval**. Contract committed as `75347b1`; owner subsequently
+requested “commit and continue” for its synthetic first slice.
 Based on [acquisition evidence](../research/pi/18-p2-kernel-observer-readiness.md)
 and [ADR-028](../decisions.md#adr-028---2026-10-27-test-only-kernel-observer-acquisition).
 The latest lifecycle proved candidate namespace access, not complete worker
@@ -19,7 +21,11 @@ Proposed implementation: `research/pi/probes/p2-observer.py`, installed Python
 stdlib only, with deterministic `--self-test` cases in that same module. A private
 host harness reuses existing prepare/launch/cleanup functions as in the acquisition
 experiment; no worker/observer mount or generic execution interface is introduced.
-The future implementation requires approval of this contract first.
+Current first slice implements only in-memory identity-frame parsing, synthetic
+kernel-snapshot consistency and independent observation classification. Default
+and non-self-test invocations return blocked/native-not-implemented without reading
+stdin or opening handles. Native acquisition, pipe deadlines, FD ownership and
+polling remain unimplemented, not silently supplied by synthetic fixtures.
 
 ## 2. Admission prerequisites — unresolved until evidenced
 
@@ -102,7 +108,19 @@ Exit0 means the observation protocol completed, not worker/task completion;
 blocked/unavailable acquisition or an incomplete observation exits2. Close only
 observer-owned FDs on every exit; preserve all runtime objects and private evidence.
 
-## 5. Test-first matrix and proposed commands — NOT executed
+## 5. Test-first matrix and staged commands
+
+Synthetic acceptance red deliberately invented terminal/empty observations and
+failed2 tests for missing data and terminal+populated. The first implementation
+has15 stdlib self-tests covering frame fragmentation/schema/duplicates/limits/
+EOF/poisoning, timestamp precision, confirmation drift, synthetic kernel tuple/
+namespace/cgroup consistency, populated parsing and independent mask/result cases.
+These are synthetic values, not actual FD/read/deadline/lifecycle qualification.
+Final ordered local gates pass, with portable201 tests/2,957 assertions and unchanged
+95.88% function/91.73% line coverage. That Bun coverage does not measure this Python
+module. Python syntax/self-tests and three native-disabled CLI cases pass separately.
+Exact commands, red/green and limitations are recorded in SPEC; the full matrix
+below remains the target, not a claim that every native case is implemented.
 
 First a no-container red must catch an inert implementation that invents terminal/
 empty. Then stdlib self-tests cover both the real parsing/protocol interface and
@@ -143,5 +161,6 @@ evidence, not only ephemeral `/tmp`; never overwrite prior failures.
 Rollback closes the observer child/FDs or removes its test-only integration, never
 reverts inventory history or deletes evidence. Production quiescence/reconciliation
 is explicitly outside this contract. Next decision: approve this synthetic-test
-implementation contract; resolve release-specific PID/cgroup provenance before
-requesting a bounded physical gate. Design completion is not implementation proof.
+implementation beyond the synthetic core; resolve release-specific PID/cgroup
+provenance before requesting a bounded physical gate. Synthetic completion is
+not native implementation or qualification proof.

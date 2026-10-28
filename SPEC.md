@@ -277,6 +277,14 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
 
 ### 1. Phase Objective & Scope
 
+**Current continuation — synthetic observer core:** owner “commit and continue”
+commits the test contract as `75347b1` and approves its synthetic-only first slice.
+Implement strict identity frames, kernel-snapshot consistency checks and independent
+pidfd/cgroup observation classification in the research probe, with in-memory
+stdlib self-tests. No native handler, process/cgroup access, real polling loop,
+Docker dispatch or permission/authority change. Previous design/acquisition records
+remain historical; unresolved provenance still prevents native qualification.
+
 **Current continuation — observer test-contract design:** corrected acquisition
 evidence committed as `53b2c93` under owner “commit and continue”. Prepare
 `docs/p2-kernel-observer-test-contract.md` only; historical acquisition allowances
@@ -365,6 +373,12 @@ profile/schema, automatic retry/reuse/quiescence or provider change.
 
 ### 2. Environment & Upstream State
 
+Use installed Python3.15.2 stdlib (`json`, `datetime`, `select`, `unittest`), no
+dependency install. Existing pinned kernel/Python semantics in research18 define
+the synthetic poll-mask cases; this slice does not revalidate a live worker or
+claim coverage of OS calls. Existing Bun1.4.4 portable baseline201 tests/2,957
+assertions at95.88% functions/91.73% lines; compare freshly executed portable gates.
+
 Contract baseline is the2026-10-28 recorded candidate-access success, not freshly
 rerun native evidence. Installed Docker release inspect-PID provenance and exact
 runtime cgroup binding remain open prerequisites; prior pinned kernel/Python
@@ -423,6 +437,13 @@ Lost-reply baseline: native221/3,528 at100% functions/98.59% lines; portable201/
 closes only its response connection after an actual successful stop acknowledgement.
 
 ### 3. Architecture & File Manifest
+
+Add `research/pi/probes/p2-observer.py` with pure validation/classification helpers
+and its own `--self-test` entry point, matching existing research-probe placement.
+No-argument/other invocations return a safe native-unqualified classification and
+exit2 without reading stdin or opening handles. Update this scope, the test-contract
+status and ADR-028 staged-implementation evidence. No app/test-fixture/config/
+export/schema/package/CI change; no general filesystem or native observer adapter.
 
 This slice changes this active scope and adds one proposed test contract; append
 the significant staged-verification decision to existing ADR-028. Proposed future
@@ -617,6 +638,15 @@ uncertain-stop/post-delta/native-observation facts in existing private result da
 
 ### 4. Test Plan & Coverage Matrix
 
+Before implementation, deliberately inert classifier must fail a deterministic
+synthetic acceptance check by inventing terminal/empty observations. Then test
+strict UTF8/JSON/duplicate fields, exact identity fields/types/time/order/limits/
+EOF/confirmation changes; proc identity/namespace/membership/restart consistency;
+duplicate/missing/malformed populated data; pidfd IN/HUP versus ERR/NVAL; PRI|ERR
+with fresh data versus missing/stale/error; independent terminal+populated/live+
+empty facts. Native provenance, pipe deadlines, actual FD lifecycle and full OS
+acquisition remain explicitly deferred, not synthetic-test passes.
+
 Design-only checks: review contract against existing caller/config/cleanup code
 and research, validate local links/anchors and seven active sections/unique ADRs,
 scan changed documents with pinned Gitleaks and run `git diff --check`. Future
@@ -697,6 +727,13 @@ an operation that never executed. Repeat the same recovery corpus three times.
 
 ### 5. Security, Observability & Edge Cases
 
+Validation failures contain fixed safe codes only; no raw JSON/proc/exception text.
+All results keep `quiescenceQualified:false`; no stopped/success/reuse authority.
+Require explicit native-disabled default, tested without containers. Python bool
+is not an integer identity; revalidation compares original timestamp text and all
+identity fields, not truncated timestamp conversions. Kernel consistency checks
+are not ownership/provenance proofs. No temp files, signals or runtime state needed.
+
 Proposed experiment must keep identity admission separate from polling. Unknown
 source provenance, changed/restarted identity, incorrect cgroup view or lost
 handle means blocked/inconclusive. Model worker pidfd exit and fresh cgroup
@@ -762,6 +799,12 @@ Finally restores only private proxy mode before existing owned cleanup on failur
 
 ### 6. Blast Radius & Rollback Plan
 
+Synthetic module is research-only, not imported by application code. Rollback
+removes only this new code/docs diff; preserve committed history and all private
+lab evidence/containers unchanged. No native test or image/mount action authorized
+or needed in this slice. No commit/push or phase closure inferred beyond the
+already requested contract commit.
+
 Design rollback is document-only. Preserve all committed/native/private evidence;
 do not close/reopen prior handles, repeat lifecycles, alter runtime/test fixtures,
 repair permissions or touch production/store/dependency/CI files. No push inferred.
@@ -808,6 +851,16 @@ effects and evidence. Even confirmed stopped remains unknown/unqualified and all
 reuse/reset/native-action fences survive; no production recovery code changes.
 
 ### 7. Definition of Done (DoD)
+
+Synthetic red first, then ordered final checks: `bun run lint` → `bun run check` →
+Python syntax compilation via `compile(..., 'exec')` without pycache →
+`python3 -I -B research/pi/probes/p2-observer.py --self-test` → explicit native-
+disabled CLI checks → `bun test --coverage` (portable only) → `bun run drill` →
+`bun audit` → pinned scoped Gitleaks/document/protected-file checks and
+`git diff --check`. Python style/source review and syntax/self-tests are separate
+from Bun lint/typechecking; no Python static typechecker is installed/claimed.
+Native full corpus and worker OS coverage are N/A by synthetic scope and remain
+qualification blockers, not skipped passes. Retain command/exit logs durably.
 
 Current design DoD: inspect full document diff; Python assertions for local
 Markdown links/anchors, seven active sections/unique ADRs and protected-file
@@ -1733,6 +1786,75 @@ not prior evidence relabeled as fresh. Contract/SPEC/ADR notes remain uncommitte
 this test contract and implementing its deterministic synthetic-only first slice.
 No additional lifecycle or native acquisition/polling, provenance waiver, runtime
 authority, push or phase advancement inferred.
+
+#### Synthetic observer core evidence — 2026-10-28
+
+Test contract committed as `75347b1`; new first-slice implementation is only
+`research/pi/probes/p2-observer.py` plus scope/ADR/contract updates. The module
+validates bounded strict identity frames, poisons its decoder after malformed/
+extra/changed input, preserves timestamp precision and compares synthetic kernel
+identity/namespace/membership tuples. Shared validation avoids duplicate guards
+or JSON reserialization. Populated parsing and pidfd/event-mask classification
+keep terminal/populated, live/empty and unavailable results independent; all
+results keep quiescenceQualified=false and expose no stopped/reuse verdict.
+
+No native handler exists: default/non-self-test invocations return exit2 with
+blocked/native-not-implemented, without stdin/OS handle access. Synthetic snapshot
+consistency is NOT ownership, native provenance or atomic/ABA-resistant binding.
+No worker FD acquisition, raw proc parser, timed pipe I/O, real polling loop,
+cgroup lifecycle, Docker dispatch or runtime/store/authority integration is claimed.
+These remain prerequisites for a separate native implementation/qualification.
+
+Acceptance red deliberately returned terminal/empty for every input and failed
+2 deterministic tests on missing events and terminal+populated. Original red
+source/log/command/hash retained under durable0700 key
+`observer-synthetic-mvnh683t`. First green and final revision snapshots/logs are
+preserved separately, not overwritten. Final evidence is under its `final/`
+directory, with fresh private TMPDIR key `loom-observer-synthetic-cxvzhtc8`.
+
+All eight ordered final command groups exit0, exact argv/exits/log names/source
+SHA256 retained in durable `final/gates.json`:
+
+1. `bun --no-env-file run lint`:39 files, no fixes. Biome does not check Python;
+   its source/style review and syntax/self-tests are separately scoped.
+2. `bun --no-env-file run check`: strict existing application/test typecheck.
+   No Python static typechecker installed or claimed.
+3. `python3 -I -B -c <compile-source-without-pycache>`: Python syntax passes.
+4. `python3 -I -B research/pi/probes/p2-observer.py --self-test`:15 tests pass,
+   including fragmented/two-max-frame input, unknown/duplicate/type/EOF errors,
+   timestamp precision, poisoned decoder, identity drift, kernel tuple/namespace/
+   membership consistency, malformed populated, poll-mask errors and repopulation.
+   Scripted values only; no actual FD/syscall/lifecycle qualification.
+5. Private no-native entry assertions: empty args, `--native`, and extra args
+   all exit2 with the same bounded safe classification, no input exposure. Group
+   exits0; individual exit2 is required refusal, not a native success.
+6. `bun --no-env-file test --coverage`:201 tests/2,957 assertions,0 failures;
+   95.88% functions/91.73% lines equals recorded portable baseline. Production
+   source and test coverage unchanged; Bun coverage does not measure Python.
+7. `bun --no-env-file run drill`: synthetic automated fixture only, verified task
+   completion false; no human demonstration or approval substituted.
+8. `bun --no-env-file audit`:14 packages, no reported vulnerabilities. No upgrade,
+   new dependency, complete security/license claim or provider/SDK use.
+
+No pre-existing/native-lab data or containers touched; no image/mount operation,
+process signals, cgroup writes, host scan or additional lifecycle. Existing app/
+tests/fixtures/schema/profile/config/CI/roadmap/playbook/review are unchanged.
+Native corpus and independent quiescence/G2 remain blocked by the declared scope
+and unresolved provenance, not counted as skipped passes. Final scoped checks
+exit0: pinned Gitleaks8.30.1 archive/checksums/executable identity and four task-file
+scans,31 local links/anchors, seven active sections/unique ADRs/canonical casing,
+protected review hash, expected three-document/new-probe-only diff and
+`git diff --check`. AST/source review confirms only stdlib imports (select used
+for constants), no native handle/I/O code, pycache, accidental debug output or
+test exclusions; the sole intentional CLI print is bounded safe refusal JSON.
+Final source exactly matches the durable tested/hash-recorded copy. Full task
+diff inspected; no authority/state/dependency expansion. New Python code and
+three-document update remain uncommitted. No push or phase advancement authorized.
+
+**Owner continuation:** “commit and continue” authorizes committing this verified
+synthetic core and investigating the selected backend's installed version/build
+provenance read-only. No native observer implementation, worker-handle acquisition,
+additional lifecycle, runtime upgrade, push or phase advancement inferred.
 
 ## P2 private IPC execution record (historical)
 

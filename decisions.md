@@ -1741,3 +1741,22 @@ GET confirms not running/PID0, inventory/action/fences stay unknown/pending and
 budget1. No kernel permission failure established. One lifecycle consumed, no
 repeat: project owner must authorize another bounded lifecycle to test corrected
 acquisition. No persistent code/polling or quiescence/G2 qualification follows.
+
+**Corrected continuation — 2026-10-28:** owner requested “continue” after
+`e48f31b` and the additional-lifecycle proposal. At sync old temporary scripts/
+logs are unavailable; prior durable observer state/image still exist, mount absent.
+Under existing approval, same-image loop setup succeeds and automount is
+independently verified ext4/rw/nosuid/nodev. Reconstructed scripts are a new revision,
+not recovered original evidence; retain copies/hashes/check manifests durably under
+new private lab storage as well as temporary execution storage.
+
+Fresh sender red/green,14 Python checks, matching strict typecheck and daemon-peer
+prerequisite pass. Exactly one additional lifecycle returns candidate-access-only:
+envelope accepted, mapped candidate UID/stat checks and distinct PID-namespace link
+access succeed. Existing owned cleanup observes stopped, heartbeat stays unchanged;
+pending action, budget1, unresolved inventory/successor/reset restrictions remain.
+Fresh exact-ID ownership-checked GET confirms not running/not restarting/PID0.
+No worker pidfd or cgroup acquisition/polling ran; full worker identity/provenance,
+handle lifetime, independent quiescence and G2 remain unqualified. Do not repeat
+this lifecycle or expand authority; next work must specify identity/cgroup binding
+and handle-lifetime tests. Exact roots/commands/results are recorded in SPEC.

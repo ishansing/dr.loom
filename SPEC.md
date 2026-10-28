@@ -286,6 +286,16 @@ Unix endpoint, inspect kernel peer credentials and that exact peer's proc namesp
 handles. If acquisition is blocked, stop before spending the one lifecycle or
 writing speculative polling/integration code. Earlier records remain historical.
 
+**2026-10-28 continuation after `e48f31b`:** owner requested “continue” after the
+explicit corrected-acquisition/additional-lifecycle proposal. Authorize at most
+one additional existing synthetic lifecycle, not retries or authority changes.
+At sync, `/tmp/opencode` is empty and the old private harness/logs are unavailable;
+prior durable observer state and approved image exist, but the workspace is
+unmounted. Reconstruct a new harness revision and independently validate it;
+never present reconstruction as recovery of original bytes or old checks as fresh.
+Existing approval permits remounting the same image; no formatting/permission
+repair or ordinary-directory fallback. Stop on any unresolved prerequisite.
+
 Owner requested “commit and continue”; IPC/owned worker committed as `3ed86ee`
 on clean `feat/p2-isolated-runner`. Implement the first governed synthetic Docker
 create→attach→start→proposal→stop path over existing inventory/preflight/protocol.
@@ -355,6 +365,9 @@ Fresh read-only versions still match. Linux unix(7) SO_PEERCRED documents the
 credentials at connect/listen/socketpair time, not proof that the peer is the
 daemon or that inspect PID numbers share the controller namespace. Revalidate
 the executable and namespace identity or fail blocked; never substitute keeper.
+Fresh2026-10-28 versions remain unchanged. Revalidate native mount/backend/image;
+temporary scanner is also absent and must be restored at its previously pinned
+8.30.1 release/hashes outside Loom before document security gates can pass.
 
 Baseline portable193 tests/2,880 assertions,99.47% functions/96.69% lines; full
 plus mandatory physical preflight194 tests/2,901 assertions,100%/98.48%. Existing
@@ -401,6 +414,11 @@ Current acquisition slice touches `research/pi/18-p2-kernel-observer-readiness.m
 prerequisite script/evidence stays private under `/tmp/opencode`; no application,
 fixture/config/export/dependency change. Implement a persistent observer only
 after prerequisite identity/access proof, within the approved one-container bound.
+This continuation uses new private key `loom-observer-repeat-34scy6go` and durable
+lab evidence key `observer-tools-2rju6xlt`. Keep new scripts/check manifests/results
+in that new0700 durable evidence directory as well as temporary execution storage.
+No new application/test/fixture/config/export/dependency integration is planned
+before acquisition proof. Prior missing temporary artifacts remain unavailable.
 
 `src/runner.ts` remains preflight/native HTTP owner; extend its bounded JSON
 transport for fixed internal POSTs/empty204/304 replies, preserving GET behavior.
@@ -578,6 +596,13 @@ uncertain-stop/post-delta/native-observation facts in existing private result da
 
 ### 4. Test Plan & Coverage Matrix
 
+2026-10-28 reconstruction: first assert a deliberately wrong `FileSink.end(chunk)`
+sender fails an echo check without containers; then prove corrected write/end
+round-trip, Python candidate/peer/parser self-checks and strict harness typecheck.
+Run daemon prerequisite fresh before spending the single additional lifecycle.
+An input/permission/identity failure remains blocked, not passed. No automatic
+retry, worker-pidfd/cgroup polling or application coverage claim from access-only.
+
 Acquisition validation: deterministic synthetic peer-credential and identity-reject
 assertions before the read-only native prerequisite; record the exact command and
 classified failure if blocked. Document links, scope/protected-file, whitespace and
@@ -645,6 +670,12 @@ an operation that never executed. Repeat the same recovery corpus three times.
 
 ### 5. Security, Observability & Edge Cases
 
+Reconstructed access script may read only the selected socket peer and one exact
+ownership-checked PID candidate, bounded by2-second child timeout. Numeric PID
+candidate access is not identity proof. No signals, namespace entry, proc scans,
+permission changes or cgroup writes. Copy only newly generated synthetic scripts/
+logs/manifests into new private durable evidence; no credentials/cache inspection.
+
 Research has no runtime mutation authority. Proposal must fail inconclusively on
 unbound/ambiguous identities, inaccessible handles, missing/stale cgroups or raced
 observations. No observed-process signals, cgroup writes, credential inspection,
@@ -698,6 +729,11 @@ Finally restores only private proxy mode before existing owned cleanup on failur
 
 ### 6. Blast Radius & Rollback Plan
 
+2026-10-28: same approved image/mount restoration only. Preserve old evidence and
+both prior stopped containers; never restart them. New lifecycle uses fresh state/
+workspace and existing owned cleanup; retain its stopped container and uncertainty.
+No additional lifecycle after this one, even on failure, without owner direction.
+
 Acquisition rollback closes only observer-owned socket/FDs; preserve runtime/store/
 schema/dependencies, lab evidence and historical reviews byte-for-byte. A blocked
 prerequisite creates no container; no deployment, push, phase advancement, automatic
@@ -735,6 +771,15 @@ effects and evidence. Even confirmed stopped remains unknown/unqualified and all
 reuse/reset/native-action fences survive; no production recovery code changes.
 
 ### 7. Definition of Done (DoD)
+
+For the reconstructed revision run, in order: private sender red → corrected
+sender/Python self-checks → strict harness typecheck matching repository options →
+`python3 -I -B <new-private-root>/peer.py` → with explicit selected lab paths and
+fresh0700 state/TMPDIR, `bun run <new-private-root>/lifecycle.ts` once → exact-ID
+ownership-checked stopped-state GET → scoped document/secret/protected-file checks.
+Retain actual commands/exits/hashes and logs durably. Document-only repository
+changes require no new full application/physical corpus, coverage or package audit;
+native acquisition itself must still be recorded honestly as failed/blocked if so.
 
 Current prerequisite DoD: `python3 <private-probe> --self-test` then
 `python3 <private-probe>` under the host10-second tool timeout. Record each exit and
@@ -1533,6 +1578,88 @@ coverage implied by these checks. Three-document evidence diff remains uncommitt
 **Owner disposition:** subsequent “commit” authorizes this three-document
 acquisition/failure evidence commit only. An additional synthetic lifecycle,
 continued observer implementation, push and G2 closure remain unauthorized.
+
+#### Corrected observer acquisition repeat — 2026-10-28
+
+Owner now requested “continue” after `e48f31b` and the explicit one-additional-
+lifecycle proposal. One additional bounded existing-fixture lifecycle authorized
+and consumed; no automatic/native retry or production authority expansion.
+Sync starts clean at `e48f31b` on `feat/p2-isolated-runner`; an upstream tracking
+association is present, but this task performs no push, PR or publication.
+
+Fresh read-only environment Linux7.2.8-9-omarchy/Python3.15.2/Bun1.4.4 unchanged.
+`/tmp/opencode` has no entries: old temporary scripts/logs cannot be reverified or
+claimed retained now. Prior durable observer state and operator-owned regular2GiB
+image still exist; mount absent and `losetup -j <approved-image>` finds no mapping.
+Previously approved `udisksctl loop-setup --file <approved-image>
+--no-user-interaction` exits0, maps `/dev/loop0` and automounts it. `findmnt --json
+--target <approved-mount> --output TARGET,SOURCE,FSTYPE,OPTIONS` independently
+confirms same target, ext4/rw/nosuid/nodev. No format/delete/permission repair,
+ordinary-directory fallback or daemon change.
+
+New reconstructed temporary key `loom-observer-repeat-34scy6go`, durable lab
+evidence key `observer-tools-2rju6xlt`, fresh0700 initially-empty state key
+`observer-repeat-ljmjpqbg` and private child TMPDIR retain the new revision.
+Before execution, copy newly written scripts and SHA256s to durable0700 storage;
+retain full command/exit/log manifests there as well as under the temporary root.
+Original missing artifacts are not reconstructed byte-identical evidence.
+Existing runner/source/fixture helper bytes checked against HEAD before dispatch.
+
+Exact commands at `/tmp/opencode/loom-observer-repeat-34scy6go/`:
+
+1. `bun --no-env-file run <root>/stdin-red.ts`: exit1 as intended, expected18/
+   received0 bytes from deliberately wrong FileSink end(chunk).
+2. `bun --no-env-file run <root>/lifecycle.ts --self-test`: exit0; snapshot helpers
+   load without registration/dispatch; corrected shared write/end JSON round-trip.
+3. `python3 -I -B <root>/peer.py --self-test`: exit0,14 identity/parser cases.
+4. `bunx --no-install tsc` with the strict repository-matching flags recorded in
+   the prior acquisition section and new `<root>/lifecycle.ts`: exit0. Full exact
+   argv retained in durable `checks.json`, no install/flag relaxation.
+5. `python3 -I -B <root>/peer.py`: exit0; selected socket peer executable dockerd,
+   nonterminal pidfd, same controller PID namespace, no HTTP dispatch.
+6. With explicit selected lab endpoint/mount/image, fresh private state/TMPDIR and
+   minimal environment: `bun --no-env-file run <root>/lifecycle.ts`: **exit0**,
+   exactly one lifecycle. Candidate envelope accepted; mappedUID165531 matches,
+   anchored candidate stat/starttime readable/rechecked, PID namespace accessible
+   and distinct from controller. Actual result is `candidate-access-only`.
+7. Existing launcher owned cleanup observes stopped; five100ms unchanged heartbeat
+   samples, pending native action, budget1, unknown inventory, successor fenced.
+   Reset planning rejects absent kill; no kill/reset operation is performed.
+8. `bun --no-env-file run <root>/verify-stopped.ts`: exit0, read-only fresh backend/
+   image/exact-ID ownership proof and native not-running/not-restarting/PID0;
+   unchanged inventory/action/budget. Command/script hash/log retained durably.
+
+Native result is a genuine improvement over the prior input failure, not full
+observer qualification. Only daemon-peer pidfd acquired; no worker pidfd/cgroup
+directory/events acquisition or poll. Worker PID provenance/race-resistant binding,
+handle lifetime/removal semantics and all-descendant quiescence remain open. No
+inventory/reuse/reset/task-completion/lease authority transition, runtime service,
+persistent observer integration, SDK/provider/dependency change, host scan,
+observed-process signal or cgroup write. Prior and new data/stopped containers
+are preserved; at most the existing owned fixture launch/stop and new-run ACL
+provisioning occurred. No further lifecycle inferred; next work needs the exact
+worker identity/cgroup-binding and handle-lifetime test contract.
+
+Temporary scanner was absent too; restore the same external Gitleaks8.30.1 release
+after verifying the previously pinned archive/checksums SHA256s, then compare the
+executable bytes to its archive member. No runtime/package upgrade or missing-
+scanner pass. Final strict check of both reconstructed lifecycle and read-only
+verification harnesses also exits0; exact argv/log retained in durable
+`final-strict.json`/log. Final scoped checks exit0: pinned scanner identity, seven
+secret scans (three changed docs/four private scripts),31 local links/anchors,
+seven active sections, unique ADRs/canonical casing/historical review hash, exact
+durable script-copy equality and0700-root/0600-file modes, document-only tracked
+diff/no untracked or staged repository changes, and `git diff --check`.
+Durable `document-gates.json` records these results. Full application/coverage/
+physical corpus and dependency audit are N/A for this temporary acquisition
+experiment and document-only repository diff, not claimed freshly passed.
+Three-document evidence diff remains uncommitted; no further lifecycle, push,
+observer authority or G2 closure inferred.
+
+**Owner continuation:** “commit and continue” authorizes committing the corrected
+acquisition evidence and preparing the next worker-identity/cgroup/handle-lifetime
+test contract. No additional lifecycle, production observer authority, push or
+phase advancement inferred from this design continuation.
 
 ## P2 private IPC execution record (historical)
 

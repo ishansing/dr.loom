@@ -248,3 +248,52 @@ to run the corrected candidate-access prerequisite, or retain the blocked result
 Do not skip input/identity checks, restart the stopped container or expand authority
 to compensate for the test-harness failure. Persistent observer implementation
 still depends on actual identity/access proof and test-first qualification.
+
+## Corrected acquisition repeat — 2026-10-28
+
+Owner requested “continue” after `e48f31b` and the one-additional-lifecycle proposal.
+Exactly one additional existing synthetic lifecycle ran; no automatic retry.
+
+**Changed session conditions:** `/tmp/opencode` was empty at sync. Prior temporary
+scripts/logs are unavailable; their bytes were not recovered or reverified. Prior
+durable observer state and the approved image still exist. The mount was absent;
+approved same-image `udisksctl loop-setup` succeeded and automounted it. Independent
+`findmnt` confirms ext4/rw/nosuid/nodev at the approved target. No format, permission
+repair, replacement image or ordinary-directory fallback. Runtime versions remain
+Linux7.2.8-9-omarchy/Python3.15.2/Bun1.4.4.
+
+**New revision, fresh checks:** reconstructed scripts execute under temporary key
+`loom-observer-repeat-34scy6go`; copies, hashes, full commands/exits and logs are
+retained in new0700 durable lab evidence key `observer-tools-2rju6xlt`. Fresh state
+key is `observer-repeat-ljmjpqbg`. This is not the lost original harness artifact.
+
+- Deliberately wrong sender red: exit1,0/18 bytes. Corrected shared write/end sender
+  round-trip: exit0, before dispatch. Python candidate/peer/stat self-checks:14 pass.
+  Harness strict typecheck matching repository options: exit0.
+- Fresh daemon-peer prerequisite: exit0; actual peer executable is `dockerd`, its
+  pidfd nonterminal and its PID namespace matches the controller. Not keeper proof.
+- Corrected one-lifecycle acquisition: **exit0, candidate-access-only**. The exact
+  durable ID passes fresh backend/image/native ownership checks before supplying
+  the live inspect-PID candidate. JSON envelope accepted, candidate proc directory
+  UID matches mapped165531, stat starttime can be read/rechecked, and its PID-
+  namespace link is accessible and distinct from the controller's namespace.
+  Observer performs no HTTP requests, signals or state writes.
+- Existing launcher owned cleanup observes stopped. Five100ms heartbeat samples
+  remain unchanged. Budget1, pending action, unknown inventory and successor fence
+  remain intact; reset planning still rejects absent kill. Exact-ID, freshly
+  ownership-checked GET confirms not running/not restarting/PID0 after cleanup.
+
+**What this does not prove:** candidate access is not a complete identity protocol.
+Pinned installed daemon inspect-PID provenance, race/ABA-resistant worker binding,
+worker pidfd access/termination, cgroup membership/directory/events acquisition,
+post-removal behavior and independent all-descendant quiescence remain unqualified.
+Only the **daemon peer** pidfd was opened; no worker pidfd or cgroup poll ran.
+Do not convert accessible namespace links, heartbeat silence or stopped metadata
+into quiescence/completion/reuse/reset permission. No persistent observer, runtime
+integration, SDK/provider/dependency change, privilege escalation or G2 closure.
+
+The approved additional lifecycle is consumed and its stopped container/evidence
+are retained. Next work needs an exact worker identity/cgroup binding and handle-
+lifetime test contract before further physical qualification, not another blind
+repetition of this access-only check. No further lifecycle or phase advancement
+is inferred from this result.

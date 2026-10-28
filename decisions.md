@@ -1760,3 +1760,17 @@ No worker pidfd or cgroup acquisition/polling ran; full worker identity/provenan
 handle lifetime, independent quiescence and G2 remain unqualified. Do not repeat
 this lifecycle or expand authority; next work must specify identity/cgroup binding
 and handle-lifetime tests. Exact roots/commands/results are recorded in SPEC.
+
+**Test-contract continuation — 2026-10-28:** owner requested “commit and continue”;
+corrected candidate-access evidence committed as `53b2c93`. Prepare the proposed
+`docs/p2-kernel-observer-test-contract.md` without another lifecycle or implementation.
+Use full existing `assertDomainContainer` for future snapshots, not a parallel
+partial owner/config validator. Proposed research-only Python module has one
+bounded host-confirmed acquisition/observation interface, distinct pidfd/cgroup
+facts, no DB/stop authority and a deadline covering pipe waits as well as polling.
+Release-specific inspect-PID provenance and exact cgroup mapping remain admission
+blockers; synthetic tests may not waive them. No master-source substitution, empty
+on-stale inference or claimed atomic identity/ABA guarantee. Owner approval of the
+test contract and a separately bounded physical gate remain pending; no code/G2
+qualification follows from this design. This avoids speculative runtime integration
+while giving the next slice concrete cases and honest failure behavior.

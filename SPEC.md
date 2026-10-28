@@ -277,6 +277,14 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
 
 ### 1. Phase Objective & Scope
 
+**Current continuation — observer test-contract design:** corrected acquisition
+evidence committed as `53b2c93` under owner “commit and continue”. Prepare
+`docs/p2-kernel-observer-test-contract.md` only; historical acquisition allowances
+below are consumed. Define read-only worker identity/cgroup binding and retained-
+handle observations without granting quiescence, new execution or runtime authority.
+No implementation, container dispatch, process/cgroup inspection or phase change
+is performed by this design slice.
+
 **Current continuation — approved bounded observer:** after research commit
 `bd17c45`, owner answered “continue” to the explicit one-owned-container/test-only
 Python observer proposal. Approval covers existing synthetic launch/stop paths and
@@ -357,6 +365,13 @@ profile/schema, automatic retry/reuse/quiescence or provider change.
 
 ### 2. Environment & Upstream State
 
+Contract baseline is the2026-10-28 recorded candidate-access success, not freshly
+rerun native evidence. Installed Docker release inspect-PID provenance and exact
+runtime cgroup binding remain open prerequisites; prior pinned kernel/Python
+research describes handle semantics, not a completed worker identity protocol.
+Reuse full `assertDomainContainer` (including restart/private namespace settings)
+for future native snapshots rather than duplicating or weakening its checks.
+
 Research baseline: recorded Linux7.2.8-9-omarchy, Python3.15.2, Bun1.4.4 and
 rootless Docker29.9.2/API1.56. Prior readable handles belong to the RootlessKit
 namespace keeper only, not a container init. Separate versioned source guarantees
@@ -408,6 +423,12 @@ Lost-reply baseline: native221/3,528 at100% functions/98.59% lines; portable201/
 closes only its response connection after an actual successful stop acknowledgement.
 
 ### 3. Architecture & File Manifest
+
+This slice changes this active scope and adds one proposed test contract; append
+the significant staged-verification decision to existing ADR-028. Proposed future
+implementation belongs with existing research probes, not `src/`, SQLite, CLI,
+package scripts or public exports. Native fixture transport remains host-only;
+the module never receives DB write/stop authority or worker-selected cgroup paths.
 
 Current acquisition slice touches `research/pi/18-p2-kernel-observer-readiness.md`,
 `decisions.md` and this scope/evidence record. The temporary assert-based Python
@@ -596,6 +617,12 @@ uncertain-stop/post-delta/native-observation facts in existing private result da
 
 ### 4. Test Plan & Coverage Matrix
 
+Design-only checks: review contract against existing caller/config/cleanup code
+and research, validate local links/anchors and seven active sections/unique ADRs,
+scan changed documents with pinned Gitleaks and run `git diff --check`. Future
+acceptance commands/cases in the contract are explicitly unexecuted. No new
+application/coverage/physical test pass or implicit lifecycle authorization.
+
 2026-10-28 reconstruction: first assert a deliberately wrong `FileSink.end(chunk)`
 sender fails an echo check without containers; then prove corrected write/end
 round-trip, Python candidate/peer/parser self-checks and strict harness typecheck.
@@ -670,6 +697,12 @@ an operation that never executed. Repeat the same recovery corpus three times.
 
 ### 5. Security, Observability & Edge Cases
 
+Proposed experiment must keep identity admission separate from polling. Unknown
+source provenance, changed/restarted identity, incorrect cgroup view or lost
+handle means blocked/inconclusive. Model worker pidfd exit and fresh cgroup
+populated observations independently, never as a cleanup/reuse permit. All waits,
+including controller confirmation/pipe reads, require the same monotonic bound.
+
 Reconstructed access script may read only the selected socket peer and one exact
 ownership-checked PID candidate, bounded by2-second child timeout. Numeric PID
 candidate access is not identity proof. No signals, namespace entry, proc scans,
@@ -729,6 +762,10 @@ Finally restores only private proxy mode before existing owned cleanup on failur
 
 ### 6. Blast Radius & Rollback Plan
 
+Design rollback is document-only. Preserve all committed/native/private evidence;
+do not close/reopen prior handles, repeat lifecycles, alter runtime/test fixtures,
+repair permissions or touch production/store/dependency/CI files. No push inferred.
+
 2026-10-28: same approved image/mount restoration only. Preserve old evidence and
 both prior stopped containers; never restart them. New lifecycle uses fresh state/
 workspace and existing owned cleanup; retain its stopped container and uncertainty.
@@ -771,6 +808,12 @@ effects and evidence. Even confirmed stopped remains unknown/unqualified and all
 reuse/reset/native-action fences survive; no production recovery code changes.
 
 ### 7. Definition of Done (DoD)
+
+Current design DoD: inspect full document diff; Python assertions for local
+Markdown links/anchors, seven active sections/unique ADRs and protected-file
+identity; pinned `gitleaks stdin --no-banner --redact --log-level error` per changed
+document; `git diff --check`. Record actual results below. Future observer commands
+are proposed only and cannot satisfy this slice's or any later code/physical gates.
 
 For the reconstructed revision run, in order: private sender red → corrected
 sender/Python self-checks → strict harness typecheck matching repository options →
@@ -1660,6 +1703,36 @@ observer authority or G2 closure inferred.
 acquisition evidence and preparing the next worker-identity/cgroup/handle-lifetime
 test contract. No additional lifecycle, production observer authority, push or
 phase advancement inferred from this design continuation.
+
+#### Worker-handle test-contract design evidence — 2026-10-28
+
+Prepared `docs/p2-kernel-observer-test-contract.md` after `53b2c93`. Reviewed
+existing full `assertDomainContainer`, owned-stop/unqualified inventory handling,
+research handle semantics and CI commands. Future module belongs in existing
+research probes with stdlib self-tests, not production/store/public exports.
+Contract defines strict host-only identity frames, full-config validation reuse,
+held-handle revalidation, one monotonic deadline including pipe reads, separate
+thread-group/cgroup facts and blocked stale/missing/provenance outcomes. No claimed
+atomic binding, cgroup-name heuristic, new authority or guessed PID translation.
+
+Installed-release inspect-PID provenance and exact runtime/cgroup-view mapping
+remain prerequisites before native polling. Candidate access success does not
+waive them. Future test cases/commands are specified but not run; no implementation
+or additional lifecycle performed. Observer implementation-contract approval and
+separate bounded physical qualification remain pending; G2 unchanged.
+
+Actual document gates exit0: pinned Gitleaks8.30.1 archive/checksum/executable
+identity and three changed-document scans;31 local links/anchors; seven active
+sections/unique ADRs/canonical casing; protected review hash; application/tests/
+fixtures/dependencies/CI/roadmap/playbook/prior research unchanged; expected two
+tracked document changes/one new contract only; `git diff --check`. Full document
+diff inspected. Application/E2E/coverage/dependency gates are N/A for design only,
+not prior evidence relabeled as fresh. Contract/SPEC/ADR notes remain uncommitted.
+
+**Owner continuation:** subsequent “commit and continue” authorizes committing
+this test contract and implementing its deterministic synthetic-only first slice.
+No additional lifecycle or native acquisition/polling, provenance waiver, runtime
+authority, push or phase advancement inferred.
 
 ## P2 private IPC execution record (historical)
 

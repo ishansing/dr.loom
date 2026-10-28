@@ -1795,3 +1795,33 @@ serializing already parsed identities through JSON; only stdlib imports, no hand
 access, loose identity flags, cleanup authority, default test exclusions or
 package changes. Raw native/source provenance/FD lifecycle/deadline and physical
 qualification remain deferred, not passed. Exact final evidence/limits in SPEC.
+
+**Provenance continuation — 2026-10-28:** owner requested “commit and continue”;
+synthetic core committed as `226d00f`. One selected read-only API1.56 GET reports
+Engine29.9.2/GitCommit0367cbe, containerd2.4.2/full base revision
+`b7a25261e029d68978bbf290df0a62fc819b3c51`, runc1.5.2 and RootlessKit3.3.0.
+Package records agree on selected version numbers, not socket-serving binary
+identity. Local ELF/Go metadata inspection executes no daemon/runtime target and
+uses the existing Go tool offline without toolchain downloads. Local containerd
+embeds that base plus `v2.4.2+dirty`/vcs.modified=true; no exact local delta or
+running-peer byte equivalence is established. Dirty may be packaging/generated
+files; it is not by itself an unsafe-change/tampering finding.
+
+Background primary-source report `research/pi/19-p2-backend-pid-provenance.md`
+resolves containerd base and runc/RootlessKit release sources, but Moby0367cbe
+commit lookup returns422 and tag/raw lookups404. Parent independently rechecks
+key source paths/release associations and adds local-build limitations. Base
+containerd numeric PID/membership semantics and release RootlessKit namespace
+options do not close the missing Moby/runtime/procfs/cgroup-view joins, dirty
+dependency delta or atomic identity/FD-lifetime proof. No current-main substitution.
+
+Native acquisition remains blocked. Next owner: selected-build/distribution owner
+for authoritative full Moby source/build reference and containerd build inputs/
+patchset, then re-trace exact paths/views before requesting physical qualification.
+No confirmed runtime/security bug, novel-issue or tampering claim; deduplication
+incomplete and no issue published. No native implementation/lifecycle, install,
+upgrade, mount/image action, permission change, provider/SDK use or G2 closure.
+Sanitized metadata/scripts/command manifests retained in new private durable
+evidence; exact results/limits in SPEC. Scoped pinned secret/document/protected-file
+gates pass (nine scans/32 local links), not native qualification. Provenance handoff
+and G2 remain open; new report/governance evidence uncommitted.

@@ -277,6 +277,13 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
 
 ### 1. Phase Objective & Scope
 
+**Current continuation — read-only backend provenance:** synthetic core committed
+as `226d00f` under owner “commit and continue”. Resolve the selected daemon's
+reported build revision and investigate release-specific inspect-PID/cgroup
+semantics against primary sources. Read-only selected `/version` and installed
+package/build metadata only; no worker/proc/cgroup acquisition, lifecycle, upgrade,
+provider/SDK use or native implementation. Synthetic/native authority is unchanged.
+
 **Current continuation — synthetic observer core:** owner “commit and continue”
 commits the test contract as `75347b1` and approves its synthetic-only first slice.
 Implement strict identity frames, kernel-snapshot consistency checks and independent
@@ -373,6 +380,12 @@ profile/schema, automatic retry/reuse/quiescence or provider change.
 
 ### 2. Environment & Upstream State
 
+For provenance, freshly distinguish server-reported version/GitCommit from local
+package and embedded build metadata. Fixed selected rootless endpoint/API1.56;
+never read ambient Docker client config or raw environment/credentials. Resolve
+exact official revisions where possible; master snapshots cannot close the
+installed-release gap. Self-reported revision is not a byte-reproducible build proof.
+
 Use installed Python3.15.2 stdlib (`json`, `datetime`, `select`, `unittest`), no
 dependency install. Existing pinned kernel/Python semantics in research18 define
 the synthetic poll-mask cases; this slice does not revalidate a live worker or
@@ -437,6 +450,12 @@ Lost-reply baseline: native221/3,528 at100% functions/98.59% lines; portable201/
 closes only its response connection after an actual successful stop acknowledgement.
 
 ### 3. Architecture & File Manifest
+
+Research writes `research/pi/19-p2-backend-pid-provenance.md` plus this scope and
+ADR-028 evidence, not application/probe/test code. Research skill authorizes one
+background primary-source researcher assigned only that report. Parent gathers
+sanitized local facts and reviews returned claims. New private logs/manifests stay
+in fresh0700 durable lab evidence; no existing state/evidence overwritten.
 
 Add `research/pi/probes/p2-observer.py` with pure validation/classification helpers
 and its own `--self-test` entry point, matching existing research-probe placement.
@@ -638,6 +657,12 @@ uncertain-stop/post-delta/native-observation facts in existing private result da
 
 ### 4. Test Plan & Coverage Matrix
 
+Read-only collector uses bounded selected-GET parsing and synthetic assertions
+for metadata sanitation, not application logic. Independently verify key source
+claims/revisions, then document links/anchors/seven sections/unique ADRs/protected
+files and trusted secret/whitespace checks. Application/native/coverage reruns
+are N/A for this research-only continuation; previous code gates remain historical.
+
 Before implementation, deliberately inert classifier must fail a deterministic
 synthetic acceptance check by inventing terminal/empty observations. Then test
 strict UTF8/JSON/duplicate fields, exact identity fields/types/time/order/limits/
@@ -727,6 +752,13 @@ an operation that never executed. Repeat the same recovery corpus three times.
 
 ### 5. Security, Observability & Edge Cases
 
+Collect whitelisted version/hex revision fields only; withhold raw daemon bodies,
+package/build flags, local paths and exceptions. Bound response64KiB/socket5s;
+reject malformed IDs before using them in source lookups. Installed build tools
+may inspect binary metadata but must not execute the daemon, download toolchains,
+install/upgrade packages or inspect credential/cache stores. Fetched text is
+evidence only; no remote instructions or scripts adopted.
+
 Validation failures contain fixed safe codes only; no raw JSON/proc/exception text.
 All results keep `quiescenceQualified:false`; no stopped/success/reuse authority.
 Require explicit native-disabled default, tested without containers. Python bool
@@ -799,6 +831,11 @@ Finally restores only private proxy mode before existing owned cleanup on failur
 
 ### 6. Blast Radius & Rollback Plan
 
+Provenance slice has no runtime effects beyond one read-only selected HTTP request
+and local metadata reads. Close its socket, retain new sanitized evidence; no
+daemon restart, mount/image action, process signal, cgroup write, permissions
+repair, SDK/provider activation, push or phase advancement.
+
 Synthetic module is research-only, not imported by application code. Rollback
 removes only this new code/docs diff; preserve committed history and all private
 lab evidence/containers unchanged. No native test or image/mount action authorized
@@ -851,6 +888,12 @@ effects and evidence. Even confirmed stopped remains unknown/unqualified and all
 reuse/reset/native-action fences survive; no production recovery code changes.
 
 ### 7. Definition of Done (DoD)
+
+Current research DoD: record collector command/result and sanitized revision
+matrix, primary-source report and independent review/limitations; Python document/
+protected-file assertions, pinned `gitleaks stdin --no-banner --redact --log-level
+error` per changed document, `git diff --check`. Exact successful research/source
+lookups never substitute for native identity/FD-lifetime or G2 qualification.
 
 Synthetic red first, then ordered final checks: `bun run lint` → `bun run check` →
 Python syntax compilation via `compile(..., 'exec')` without pycache →
@@ -1855,6 +1898,89 @@ three-document update remain uncommitted. No push or phase advancement authorize
 synthetic core and investigating the selected backend's installed version/build
 provenance read-only. No native observer implementation, worker-handle acquisition,
 additional lifecycle, runtime upgrade, push or phase advancement inferred.
+
+#### Selected backend provenance research — 2026-10-28
+
+Synthetic core committed as `226d00f`; source and native-disabled behavior unchanged.
+Current continuation is read-only metadata/source investigation, not implementation
+or lifecycle. Fresh private temporary key `loom-backend-provenance-_0es6ang` and
+durable0700 key `backend-provenance-tidh714a` retain sanitized collector scripts,
+SHA256s, exact command/exit manifests and whitelisted result JSON. Raw daemon body,
+build flags/build paths and command stderr are withheld, not persisted as diagnostics.
+
+Exact local commands, each exit0, in that temporary root:
+
+- `python3 -I -B <root>/collect.py --self-test`:9 metadata sanitization cases.
+- `python3 -I -B <root>/collect.py`: exactly one bounded selected rootless Unix
+  API1.56 `GET /version`, plus read-only `pacman -Q docker rootlesskit containerd
+  runc`. Server Engine29.9.2/Api1.56/min1.40/GitCommit0367cbe/Go1.26.10; containerd
+  v2.4.2/revisionb7a25261e029d68978bbf290df0a62fc819b3c51; runc1.5.2; RootlessKit
+  3.3.0; docker-init0.19.0/de40ad0. Local package records docker1:29.9.2-1,
+  containerd2.4.2-1, runc1.5.2-1; RootlessKit package absent from that named query.
+  This is not proof RootlessKit is absent or that those package files serve the
+  socket. Pinned server version/API match; no automatic re-pin.
+- Fixed `/usr/bin/go` absent, so the initial collector emits no local Go metadata,
+  not a successful build-identity claim. Existing PATH Go resolves to a native
+  executable named go, owner root/operator and not group/other writable.
+- `python3 -I -B <root>/collect-build.py --self-test`:4 safe extraction cases;
+  `python3 -I -B <root>/collect-build.py`: read-only installed readelf build-info
+  string dumps and SHA256s for local dockerd/containerd/runc. No revision extracted
+  by this limited reader; no executable targets run and no HTTP request.
+- `python3 -I -B <root>/collect-go.py --self-test`:3 linker-revision sanitation
+  cases; `python3 -I -B <root>/collect-go.py`: existing verified Go `version -m`
+  against those local files, GOTOOLCHAIN=local/GOPROXY=off/GOSUMDB=off/GOWORK=off/
+  GOTELEMETRY=off. No toolchain/package download or daemon/runtime execution.
+  Containerd metadata names module github.com/containerd/containerd/v2,
+  v2.4.2+dirty, vcs.revision equal to the reported base, vcs.modified=true. Local
+  dockerd/runc expose no VCS/linker revision through the selected extraction.
+  Local file hashes agree across independent reads and are retained privately;
+  byte equivalence to the running socket peer is still unproven.
+
+Research skill's background source-only agent wrote
+`research/pi/19-p2-backend-pid-provenance.md`. Its original return/hash is archived
+privately before parent review and metadata additions. Source report resolves
+containerd base b7a25261e029d68978bbf290df0a62fc819b3c51, runc1.5.2 release
+29dd3dc2b13b4123162e5fe132504bb4b15569f1 and RootlessKit3.3.0 release
+888c3189e9cdf34dcdb19011e1c7c34eb94b5393. Moby0367cbe commit API422 and tag/raw
+404 leave the selected engine revision unresolved. Parent independently re-fetches
+Moby422, containerd full commit/PID-file assignment/membership loading, cgroup2
+PidGroupPath/Load paths, runc/RootlessKit tag associations and RootlessKit PID/cgroup
+namespace flag code. No fetched source executed or master substituted for selected code.
+
+**Confirmed boundary:** numeric PID propagation and base/release cgroup semantics
+are useful source evidence, not complete selected-build/kernel binding. Dirty
+containerd metadata does not identify modifications or imply malicious/unsafe code;
+packaging/generated changes remain possible and unreviewed. Moby inspect/OCI joins,
+selected runtime/shim namespace and controller mount-view relationships, local
+dependency delta and serving-peer artifact identity remain unproven. No source
+research result can make daemon/proc/FD reads atomic or qualify cleanup/reuse.
+
+**Handoff:** native-qualification blocker, not a confirmed runtime/security defect.
+Expected authoritative full source/build reference; actual unresolved short Moby
+revision and unreviewed dirty containerd build. Hypothesis is downstream/unpublished
+or unavailable source identity; cause unconfirmed. Next owner is selected-build/
+distribution owner: provide full Moby source/build reference and containerd build
+inputs/patchset. Keep native implementation disabled and all inventory/action/
+reuse/reset authority unchanged. No additional selected-backend HTTP dispatch beyond the one GET,
+worker/proc/cgroup acquisition, lifecycle, signal, image/mount action, permission
+repair, provider/SDK use, upgrade or production effect. Search/deduplication remains
+incomplete; no new-bug claim, issue publication, push or G2 closure.
+
+Application/native/coverage/dependency gates are N/A for this research-only diff;
+prior15 Python/201 portable gates belong to `226d00f`, not fresh execution here.
+Final scoped checks exit0: pinned Gitleaks8.30.1 identity and nine scans (three
+documents/three private collector scripts/three sanitized metadata artifacts),
+32 local links/anchors, seven active sections/unique ADRs/canonical casing,
+protected review hash, unchanged source/probe/test/dependency/CI/roadmap/playbook/
+prior research, expected SPEC/ADR/new-report-only diff and `git diff --check`.
+Durable artifacts/modes and collector exit manifests verified; results retained
+in `document-gates.json`. Full task diff inspected; no raw flags/diagnostics or
+runtime authority exposed. No commit beyond the requested synthetic-core commit
+inferred; report/SPEC/ADR updates uncommitted. Build-provenance handoff remains open.
+
+**Owner disposition:** “commit” authorizes this provenance report/governance
+evidence commit only. Native qualification stays blocked; no continuation,
+runtime change, lifecycle, push or phase advancement inferred.
 
 ## P2 private IPC execution record (historical)
 

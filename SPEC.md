@@ -277,6 +277,14 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
 
 ### 1. Phase Objective & Scope
 
+**Current continuation — selected artifact/distribution provenance:** owner
+requested “continue” after `6a7d44a`. Continue read-only: compare an anchored
+executable FD for the selected socket's reported daemon peer with the local
+packaged binary, and inspect exact-version official packaging records. This is
+diagnostic artifact evidence, not an atomic socket/handler identity or native
+worker admission proof. No worker/cgroup access, native implementation, lifecycle,
+source execution, package installation, credential/cache inspection or runtime change.
+
 **Current continuation — read-only backend provenance:** synthetic core committed
 as `226d00f` under owner “commit and continue”. Resolve the selected daemon's
 reported build revision and investigate release-specific inspect-PID/cgroup
@@ -380,6 +388,13 @@ profile/schema, automatic retry/reuse/quiescence or provider change.
 
 ### 2. Environment & Upstream State
 
+Use existing operator-owned rootless socket and installed stdlib pidfd/proc
+facilities for its daemon peer only. Revalidate peer UID, PID/starttime, executable
+FD identity and nonterminal pidfd around hashing; block races/missing access.
+Python does not expose SO_PEERPIDFD in this build; do not guess a socket option
+number or claim atomic peer-pidfd transfer. Package references must match observed
+docker1:29.9.2-1/containerd2.4.2-1; current main alone is insufficient.
+
 For provenance, freshly distinguish server-reported version/GitCommit from local
 package and embedded build metadata. Fixed selected rootless endpoint/API1.56;
 never read ambient Docker client config or raw environment/credentials. Resolve
@@ -450,6 +465,12 @@ Lost-reply baseline: native221/3,528 at100% functions/98.59% lines; portable201/
 closes only its response connection after an actual successful stop acknowledgement.
 
 ### 3. Architecture & File Manifest
+
+New report `research/pi/20-p2-distribution-build-provenance.md`, this scope and
+ADR-028 only. Background researcher owns only that report's official packaging
+legwork; parent owns daemon-only local artifact comparison and evidence review.
+Private assert-checked collector/filtered hashes/command manifests stay in fresh
+0700 durable lab storage. Existing research19 and synthetic core remain unchanged.
 
 Research writes `research/pi/19-p2-backend-pid-provenance.md` plus this scope and
 ADR-028 evidence, not application/probe/test code. Research skill authorizes one
@@ -657,6 +678,12 @@ uncertain-stop/post-delta/native-observation facts in existing private result da
 
 ### 4. Test Plan & Coverage Matrix
 
+Before daemon reads, self-check proc-stat/credential parsing and FD hashing with
+synthetic inputs. At most two selected socket connections, no HTTP request or worker lookup;
+hash at most256MiB per executable within a bounded host command. Record exact
+commands/exits and limitations. Verify returned pinned package/source references,
+then scoped document/secret/protected-file checks. App/native/coverage gates N/A.
+
 Read-only collector uses bounded selected-GET parsing and synthetic assertions
 for metadata sanitation, not application logic. Independently verify key source
 claims/revisions, then document links/anchors/seven sections/unique ADRs/protected
@@ -752,6 +779,13 @@ an operation that never executed. Repeat the same recovery corpus three times.
 
 ### 5. Security, Observability & Edge Cases
 
+Read no proc environ/cmdline, provider data or cache. Only kernel-reported peer PID
+is eligible; no scans, signals, privilege/permission changes or name adoption.
+Open the daemon proc directory and executable FD, never execute target bytes.
+Close only collector-owned FDs/socket. Whitelist basename/hash/boolean facts;
+withhold paths/raw proc records. Any artifact/source match cannot relax fences,
+waive dirty-build review or enable native observation.
+
 Collect whitelisted version/hex revision fields only; withhold raw daemon bodies,
 package/build flags, local paths and exceptions. Bound response64KiB/socket5s;
 reject malformed IDs before using them in source lookups. Installed build tools
@@ -831,6 +865,11 @@ Finally restores only private proxy mode before existing owned cleanup on failur
 
 ### 6. Blast Radius & Rollback Plan
 
+Read-only selected daemon and source HTTP metadata only; no Docker RPC/dispatch,
+image/mount action, package install, build, lifecycle or source execution. Preserve
+all prior/new evidence. Missing/anti-bot/rate-limited source records remain blocked
+without bypasses or current-main substitution; next owner remains build/distributor.
+
 Provenance slice has no runtime effects beyond one read-only selected HTTP request
 and local metadata reads. Close its socket, retain new sanitized evidence; no
 daemon restart, mount/image action, process signal, cgroup write, permissions
@@ -888,6 +927,21 @@ effects and evidence. Even confirmed stopped remains unknown/unqualified and all
 reuse/reset/native-action fences survive; no production recovery code changes.
 
 ### 7. Definition of Done (DoD)
+
+Current continuation DoD: private collector `--self-test` then daemon-only hash
+comparison under a host deadline; exact-version official packaging report with
+independent review. Python local-link/seven-section/ADR/protected-file assertions,
+pinned `gitleaks stdin --no-banner --redact --log-level error` per task document/
+private artifact, `git diff --check`. No source/byte hash alone is native identity,
+quiescence, runtime qualification or G2 proof. No additional lifecycle authorized.
+
+The first comparison finds different peer/package hashes. A second read-only
+connection may inspect only the same hash-checked peer executable FD using the
+existing verified Go tool's offline `version -m`; pass that read-only FD to the
+metadata reader, never execute target bytes. Whitelist public module/version/VCS
+fields and withhold raw flags/paths. Preserve the first script/hash/result before
+this diagnostic extension. A metadata gap is not permission for another retry,
+artifact download, credential/cache inspection or runtime change.
 
 Current research DoD: record collector command/result and sanitized revision
 matrix, primary-source report and independent review/limitations; Python document/
@@ -1981,6 +2035,100 @@ inferred; report/SPEC/ADR updates uncommitted. Build-provenance handoff remains 
 **Owner disposition:** “commit” authorizes this provenance report/governance
 evidence commit only. Native qualification stays blocked; no continuation,
 runtime change, lifecycle, push or phase advancement inferred.
+
+#### Selected executable/distribution follow-up — 2026-10-28
+
+Owner requested “continue” after `6a7d44a`; this is diagnostic artifact/source
+investigation only. Private temporary key `loom-peer-artifact-m59uv9fd` and new
+0700 durable key `peer-artifact-9aws8gnf` retain original/extended collector
+snapshots, SHA256s, command/exits and filtered results; no prior evidence replaced.
+
+`python3 -I -B <root>/compare.py --self-test` exits0 for synthetic peer credentials,
+proc comm/starttime parsing, pidfd-info identity and hash size/deadline guards.
+`python3 -I -B <root>/compare.py` exits0 for a diagnostic comparison only: selected
+socket peer credentials checked, daemon pidfd/proc directory anchored, same PID
+namespace/starttime/pidfd identity and executable object rechecked. No atomic
+socket/handler binding claimed; Python SO_PEERPIDFD constant is absent and no
+option number guessed. No raw proc records/paths or launch arguments retained.
+
+Reported peer executable basename dockerd, not deleted, SHA256
+`3a6132d4d99c1437e3422599f802207a3def9ba4de00ec1004a8e40d2740b9b0` differs
+from `/usr/bin/dockerd` SHA256
+`32023e4076bc3f3ca84fcab975687bda3c2983a48bfae1c7009feda208022608`; distinct
+file objects. Read-only `pacman -Qqo /usr/bin/dockerd` identifies the local file's
+owner as docker, not the reported peer's installation source. This is not tampering
+evidence; a separate rootless distribution is possible but not identified here.
+Do not promote system-package build recipes as selected-peer equivalence.
+
+Preserving the first script/result, extend a new private revision with four
+sanitization cases for embedded module/VCS/linker fields; its self-check exits0.
+`python3 -I -B <root>/compare.py --build-metadata` exits0 on a second read-only
+socket connection. Require the same peer hash, retain its read-only executable FD,
+and pass only that FD to the existing verified native Go tool's offline version-m
+reader (GOTOOLCHAIN=local/GOPROXY=off/GOSUMDB=off/GOWORK=off/GOTELEMETRY=off),
+then recheck process/executable identity. Reader metadataExit0 exposes only module
+github.com/moby/moby/v2, with no whitelisted module version/VCS/linker revision.
+No target bytes executed or raw flags retained; the metadata reader fetched no
+source or toolchain.
+Same diagnostic peer/package hash difference is observed in both samples.
+
+Exactly two daemon-only socket connections, zero HTTP/Docker RPC requests, no
+worker/cgroup access, signals, lifecycle, image/mount action, permissions or runtime
+state changes. All FDs/socket belong to the collector and close on exit. This
+narrows the selected-build handoff but does not authorize worker acquisition or
+prove source/identity/cleanup. Synthetic observer/native-disabled code is unchanged.
+
+Background research20 investigates official exact-version Arch packaging only.
+Its first returned draft encounters Anubis; parent's ordinary independent fetch
+of containerd2.4.2-1 PKGBUILD subsequently returns actual recipe text, not a challenge.
+No challenge solved/bypassed or current-main recipe substituted. Researcher is
+rechecking accessible pinned refs and preserving earlier fetch-time limitations;
+do not record the initial challenge as permanent unavailability. Independent
+official docker/containerd JSON versions/build dates match installed package
+records; base containerd Makefile uses .m for linker dirty suffix, which is not
+equivalent to embedded module +dirty.
+
+Final research20 corrects the lookup gap: official Docker packaging tag is
+`1-29.9.2-1`; its peeled packaging commit is
+73f823426870d8b4b6a98016b4e296f695583737. Containerd2.4.2-1 packaging commit is
+813bc2edfa15d4677616b162ab60254786452bfc. Immutable recipes now return actual text
+through ordinary requests; earlier challenge/invalid colon-ref requests remain
+historical limits, not permanent source inaccessibility. Docker recipe selects
+Moby `docker-v29.9.2`, not `v29.9.2`: annotated tag resolves to full release commit
+0367cbeb49b9d98cb0b4f51e95f7b54b4803e76c, matching server prefix0367cbe. GitHub
+API reports tag signature verified; no local signature/source-artifact validation
+claimed. Parent independently verifies these tag/commit associations, pinned
+recipe content/checksum declarations and containerd Makefile distinction.
+
+Containerd prepare() intentionally edits tracked containerd.service paths, a
+concrete intended build-tree modification compatible with dirty metadata, not an
+exhaustive explanation/proof of actual build delta. Docker package builds a
+dynamic daemon; recipe equivalence to a different rootless peer artifact is not
+established. No package/source artifacts fetched or recipe commands executed.
+Researcher's returned report/hash archived privately before parent review footer.
+
+**Narrowed handoff:** full Moby release and exact Arch recipe references now
+resolve; those lookup blockers are closed only at source-reference level. Different
+reported peer bytes, actual dependency/shim/runtime identities, build inputs/delta,
+now-pinned Moby inspect/OCI path trace and kernel-view/atomic/lifetime joins remain
+unproven. Next owner is selected artifact/build owner plus parent source tracing;
+do not replace the running daemon with a package or promote tag-prefix agreement
+to selected-build/worker/quiescence authority. Native mode remains absent and G2
+open. No worker/cgroup experiment, lifecycle, credential/cache inspection or runtime
+change occurred. App/native/coverage/dependency gates N/A; no fresh15/201 code-gate
+claim. Final scoped checks exit0: pinned Gitleaks8.30.1 archive/checksum/executable
+identity and seven scans (three task documents/two collector revisions/two filtered
+results),31 local links/anchors, seven active sections/unique ADRs/canonical casing,
+protected review hash, unchanged app/probe/tests/dependencies/CI/roadmap/playbook/
+prior research, expected SPEC/ADR/new-report-only diff and `git diff --check`.
+Both archived collector hashes/exit manifests/results and0700/0600 evidence modes
+verify; scoped results retained in durable document-gates.json. Full task diff
+reviewed. New report/SPEC/ADR uncommitted; no package upgrade, fetched-source
+execution, commit/push or phase advancement inferred. Native qualification open.
+
+**Owner disposition:** “commit” authorizes this artifact/distribution-provenance
+report and governance evidence commit only. No further investigation, lifecycle,
+native implementation, push or phase advancement inferred; qualification remains open.
 
 ## P2 private IPC execution record (historical)
 

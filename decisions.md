@@ -1825,3 +1825,52 @@ Sanitized metadata/scripts/command manifests retained in new private durable
 evidence; exact results/limits in SPEC. Scoped pinned secret/document/protected-file
 gates pass (nine scans/32 local links), not native qualification. Provenance handoff
 and G2 remain open; new report/governance evidence uncommitted.
+
+**Selected artifact continuation — 2026-10-28:** owner requested “continue” after
+provenance evidence commit `6a7d44a`. Two daemon-only read-only diagnostic socket
+connections, no HTTP dispatch, compare a rechecked reported peer's anchored
+executable FD with Docker-package-owned `/usr/bin/dockerd`. Peer SHA256
+`3a6132d4d99c1437e3422599f802207a3def9ba4de00ec1004a8e40d2740b9b0` differs
+from local package SHA256
+`32023e4076bc3f3ca84fcab975687bda3c2983a48bfae1c7009feda208022608`, with distinct
+file objects in both samples. Credential/proc/starttime/pidfd/executable rechecks
+are diagnostic only; no SO_PEERPIDFD transfer or atomic socket/handler binding
+claimed, and no guessed option number introduced. Matching package version is
+therefore insufficient to assert the selected peer is that package artifact.
+
+Second sample whitelists offline existing-Go build metadata through the same
+hash-checked read-only executable FD, passed only to the metadata reader. Module
+github.com/moby/moby/v2 is exposed, but no whitelisted full source/VCS/linker
+revision or module version; no target execution, raw flags or launch data read.
+This narrows the artifact handoff, not ownership, native readiness or source proof.
+Do not replace/restart the daemon or substitute package recipes for this artifact.
+Packaging source research/review remains in progress in research20; no worker/
+cgroup access, lifecycle, credentials/cache, package install, SDK/provider use,
+native mode, task-completion/reuse/reset authority or G2 change performed.
+
+**Source-reference correction:** ordinary rechecks now resolve actual exact-version
+Arch recipes; no Anubis challenge solved/bypassed. Docker's official packaging tag
+is `1-29.9.2-1`, not the invalid colon-bearing Git ref candidate. Pinned packaging
+commits are Docker73f823426870d8b4b6a98016b4e296f695583737 and
+containerd813bc2edfa15d4677616b162ab60254786452bfc. Docker recipe names Moby's
+`docker-v29.9.2` tag, resolving full release commit
+`0367cbeb49b9d98cb0b4f51e95f7b54b4803e76c` and matching reported prefix0367cbe.
+Earlier422/404/challenge observations remain historical lookup limitations, not
+current source nonexistence or permanent unavailability. Parent independently
+verifies tag/commit associations and immutable recipe content.
+
+Containerd recipe concretely rewrites paths in tracked containerd.service before
+build. This intended edit is compatible with modified-tree metadata, but no
+selected build-tree delta or reproducibility proof is obtained. Recipe checksums
+are declarations only, not verified source/package artifact digests. Exact Arch
+recipes still cannot qualify the different reported peer executable or identify
+its actual runtime/shim/dependency binaries. No substitute daemon, downgrade or
+upgrade authorized. Research20 records the narrowed next-owner handoff: selected
+artifact source/build inputs and actual dependency identities, plus a separate
+trace of now-resolved Moby state/PID/cgroup semantics. Native/G2 remain unqualified.
+
+**Follow-up document gates:** pinned scanner identity/seven task/private-artifact
+scans,31 local links/anchors, protected identities, seven active sections/unique
+ADRs/canonical casing and whitespace checks pass. Original and extended diagnostic
+scripts/results/exit manifests retained separately and verified. No fresh app/native
+or coverage claim from research. New report/SPEC/ADR evidence remains uncommitted.

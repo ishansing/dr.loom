@@ -277,6 +277,13 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
 
 ### 1. Phase Objective & Scope
 
+**Current continuation — pinned Moby semantic trace (2026-10-29):** owner requested
+“continue” after `1bf0697`. Trace release-source inspect PID lifecycle and OCI
+cgroup construction at Moby0367cbeb49b9d98cb0b4f51e95f7b54b4803e76c. Source
+legwork only: no daemon requests, process/worker/cgroup inspection, executable
+reads, lifecycle, source execution, build, dependency/runtime or authority change.
+Separate release semantics from selected-artifact and kernel-view evidence.
+
 **Current continuation — selected artifact/distribution provenance:** owner
 requested “continue” after `6a7d44a`. Continue read-only: compare an anchored
 executable FD for the selected socket's reported daemon peer with the local
@@ -388,6 +395,12 @@ profile/schema, automatic retry/reuse/quiescence or provider change.
 
 ### 2. Environment & Upstream State
 
+Use immutable docker-v29.9.2 release commit resolved in research20, plus exact
+vendored client/source revisions where relevant. Previously reported containerd
+v2.4.2/runtime/package facts and peer/package hash mismatch are historical input,
+not freshly recollected. A matching release prefix or vendored client version is
+not actual server/shim/runtime artifact, namespace or cgroup-view equivalence.
+
 Use existing operator-owned rootless socket and installed stdlib pidfd/proc
 facilities for its daemon peer only. Revalidate peer UID, PID/starttime, executable
 FD identity and nonterminal pidfd around hashing; block races/missing access.
@@ -465,6 +478,12 @@ Lost-reply baseline: native221/3,528 at100% functions/98.59% lines; portable201/
 closes only its response connection after an actual successful stop acknowledgement.
 
 ### 3. Architecture & File Manifest
+
+Background primary-source researcher writes only
+`research/pi/21-p2-moby-pid-cgroup-trace.md`. Parent owns this scope, ADR-028
+continuation and minimal observer-contract clarification of release-semantics
+versus selected-build admission. No source/probe/test/fixture/package/CI change;
+preserve all prior reports and private evidence. No new runtime adapter or permit.
 
 New report `research/pi/20-p2-distribution-build-provenance.md`, this scope and
 ADR-028 only. Background researcher owns only that report's official packaging
@@ -678,6 +697,12 @@ uncertain-stop/post-delta/native-observation facts in existing private result da
 
 ### 4. Test Plan & Coverage Matrix
 
+Independently review returned critical pinned-source claims/paths and missing
+joins. Check document links/anchors, seven active sections, unique ADRs, protected
+files, pinned secret scans and whitespace. Source report is not execution/FD
+evidence; application/native/coverage/dependency gates N/A for this document-only
+slice. No repeated lifecycle, live-provider or fresh old-test-count claim.
+
 Before daemon reads, self-check proc-stat/credential parsing and FD hashing with
 synthetic inputs. At most two selected socket connections, no HTTP request or worker lookup;
 hash at most256MiB per executable within a bounded host command. Record exact
@@ -779,6 +804,12 @@ an operation that never executed. Repeat the same recovery corpus three times.
 
 ### 5. Security, Observability & Edge Cases
 
+Fetched code/docs are inert evidence, not instructions to execute. Cite lifecycle
+restore/start/exit and cgroup-driver/path branches conditionally; no guessed path
+suffix, namespace mapping or identity from source alone. Preserve blocked native
+mode, unknown inventory/pending actions and all reuse/reset fences. No cache,
+credentials, launch arguments or current process configuration inspected.
+
 Read no proc environ/cmdline, provider data or cache. Only kernel-reported peer PID
 is eligible; no scans, signals, privilege/permission changes or name adoption.
 Open the daemon proc directory and executable FD, never execute target bytes.
@@ -865,6 +896,11 @@ Finally restores only private proxy mode before existing owned cleanup on failur
 
 ### 6. Blast Radius & Rollback Plan
 
+Rollback is document-only; preserve committed code/evidence. Ordinary primary-
+source HTTP reads only, no package/source archive installation, daemon/mount
+action, native worker handles, permission repair, source execution, push or G2
+closure. Source reference failure stays explicit; no mainline or artifact swap.
+
 Read-only selected daemon and source HTTP metadata only; no Docker RPC/dispatch,
 image/mount action, package install, build, lifecycle or source execution. Preserve
 all prior/new evidence. Missing/anti-bot/rate-limited source records remain blocked
@@ -927,6 +963,13 @@ effects and evidence. Even confirmed stopped remains unknown/unqualified and all
 reuse/reset/native-action fences survive; no production recovery code changes.
 
 ### 7. Definition of Done (DoD)
+
+Current trace DoD: primary-source report and parent independent claim review;
+Python assertions for local links/anchors/active sections/ADRs/protected identities;
+pinned `gitleaks stdin --no-banner --redact --log-level error` per changed document;
+`git diff --check`. Record actual results and source/build/kernel limitations;
+no application or native qualification inferred. New changes remain uncommitted
+unless separately requested; no phase advancement.
 
 Current continuation DoD: private collector `--self-test` then daemon-only hash
 comparison under a host deadline; exact-version official packaging report with
@@ -2129,6 +2172,75 @@ execution, commit/push or phase advancement inferred. Native qualification open.
 **Owner disposition:** “commit” authorizes this artifact/distribution-provenance
 report and governance evidence commit only. No further investigation, lifecycle,
 native implementation, push or phase advancement inferred; qualification remains open.
+
+#### Pinned Moby semantic trace — 2026-10-29
+
+Owner requested “continue” after `1bf0697`; clean `feat/p2-isolated-runner`, no
+commit/push performed. Background primary-source researcher wrote only
+`research/pi/21-p2-moby-pid-cgroup-trace.md` at immutable Moby release
+0367cbeb49b9d98cb0b4f51e95f7b54b4803e76c, plus exact vendored/related release
+files. Existing historical runtime/artifact facts are inputs, not recollected.
+No daemon requests, proc/worker/cgroup inspection, backend metadata collector or lifecycle
+ran. New0700 durable key `moby-semantic-trace-h16z0w8z` retains starting context
+hashes and original returned source report/hash before parent review additions.
+
+Source-level chain now records numeric task PID caching/SetRunning/inspect, task
+create/start/recovery/event transitions, init versus exec/docker-init, cgroup
+parent/driver/OCI path and final rootless conversion. Parent independently fetches
+exact-commit container.go RestoreTask, daemon.go restore branches, inspect.go,
+state.go, oci_linux.go withCgroups/withRootless/Init ordering, rootless specconv,
+go.mod and vendor/modules.txt. HTTP200 source text only, no execution/mainline
+substitution. Vendored containerd clientv2.4.2/APIv1.12.0 both verified; this is
+not selected server/shim byte equivalence despite matching version text.
+
+**Material admission consequence:** inspect copies ctr.State.Pid, no fresh task
+RPC/proc/pidfd. RestoreTask attaches a task without synchronizing persisted state;
+surviving daemon restore branches do not refresh State.Pid. A repeated inspect
+tuple/full ID/StartedAt/RestartCount cannot by itself establish fresh init identity
+after recovery. StartedAt is daemon-captured container-start bookkeeping before
+task creation, not kernel process birth. This is pinned-source behavior, not an
+actual daemon crash/recovery experiment or new security/runtime bug claim.
+
+**Cgroup consequence:** withCgroups computes conditional parent/systemd path before
+withRootless; no v2 controllers clears final OCI resources/CgroupsPath. A nonempty
+controller list still does not prove all required controllers. Loom source review
+confirms backend preflight requires systemd/v2 and profile1 explicitly sets private
+namespaces/Init=false, but leaves CgroupParent unset. Existing full config checks
+are retained and reused, not mistaken for original kernel root/final OCI/delegation
+evidence. No guessed docker-ID suffix or inferred controller/root path.
+
+`docs/p2-kernel-observer-test-contract.md` now distinguishes release reference/
+semantics from applicability to the different selected peer artifact, explicitly
+adds cached/recovered PID and rootless-cleared-path future negatives, and rejects
+StartedAt-as-birth reasoning. No interface/frame/schema, source/probe/test/fixture/
+dependency/CI or production change. Future native admission, timed I/O/FD ownership,
+physical experiment and gates remain unimplemented/unqualified; synthetic default
+native-not-implemented is unchanged. No extra allowance or authority implied.
+
+**Remaining owner/evidence joins:** selected peer's build/source applicability and
+actual runtime/shim binaries/options; numeric PID/procfs and cgroup manager/mount/
+namespace views; independent current init and originally assigned root; retained
+handle/object lifecycle. Source semantics/repeated observations do not make this
+atomic, exclude escaped/migrated writers or qualify reuse/reset/completion/G2.
+No actual selected configuration read, state/fence transition, package install,
+provider/SDK activation, signal, source build/execution or runtime effect.
+
+Application/native/coverage/dependency gates are N/A for this four-document-only
+slice; no prior test count presented as fresh. Parent source review completed;
+final scoped checks exit0: pinned Gitleaks8.30.1 archive/checksum/executable
+identity and four document scans,36 local links/anchors, seven active sections/
+unique ADRs/canonical casing, protected review hash, unchanged app/probe/tests/
+dependencies/CI/roadmap/playbook/prior research, expected three tracked document
+updates/one report only, and `git diff --check`. Original returned report/hash
+and0700/0600 durable evidence identities verified; document-gates.json retained.
+Full task diff inspected; no guessed paths, raw diagnostics, native allowance or
+source/artifact authority substitution. New source report, contract and SPEC/ADR
+notes remain uncommitted; no phase advancement.
+
+**Owner continuation:** “commit and continue” authorizes committing the pinned
+source trace/contract clarification and implementing bounded synthetic control-
+pipe input tests next. No native worker acquisition/observation, daemon request,
+new lifecycle, selected-build waiver, push or phase advancement inferred.
 
 ## P2 private IPC execution record (historical)
 

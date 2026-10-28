@@ -1874,3 +1874,36 @@ scans,31 local links/anchors, protected identities, seven active sections/unique
 ADRs/canonical casing and whitespace checks pass. Original and extended diagnostic
 scripts/results/exit manifests retained separately and verified. No fresh app/native
 or coverage claim from research. New report/SPEC/ADR evidence remains uncommitted.
+
+**Pinned Moby trace continuation — 2026-10-29:** owner requested “continue” after
+`1bf0697`. Source-only research at resolved Moby release
+0367cbeb49b9d98cb0b4f51e95f7b54b4803e76c may close release-semantic gaps, not
+the different peer's build/runtime or kernel-view joins. No new runtime requests,
+proc/worker/cgroup inspection, native implementation or lifecycle. Parent contract
+review separates existing systemd/cgroup-v2 preflight and Init=false/private-
+namespace config validation from proof of the originally assigned kernel cgroup
+root; payload leaves CgroupParent unset. Reuse existing validators, do not turn
+them into a parallel pathname guess or source-proof flag. Research21 and final
+source/document review pending; all native/reuse/reset/G2 authority unchanged.
+
+**Pinned-source results:** research21 traces the exact Moby release's task PID
+cache → SetRunning → inspect copy, daemon restore/events, Init=false distinction,
+OCI cgroup parent/driver construction and subsequent rootless mutation. Parent
+independently re-fetches critical state/restore/inspect/cgroup/source-version paths.
+RestoreTask attaches without synchronizing persisted State.Pid; surviving restore
+branches do not refresh it from task.Pid. Repeated inspect lifecycle tuples alone
+therefore do not establish fresh init identity. StartedAt is container-start
+bookkeeping, not kernel birth time. This is source behavior, not an observed
+selected-daemon recovery bug or claim that every recovery changes the PID.
+
+Rootless conversion can clear resources/CgroupsPath for no delegated controllers
+after preliminary path creation. Existing systemd/v2/namespace/HostConfig checks
+do not attest final OCI assignment or actual controller enforcement. Contract
+adds these source-derived future admission negatives without changing frame
+schema, code or authority. Vendored client v2.4.2/APIv1.12.0 is verified separately
+from reported server/base and selected artifact equivalence. Release-semantic
+gaps close only at source level; selected bytes/build inputs, actual runtime/shim
+and namespace/mount views, independent init/root identity and FD lifetime remain
+open. No fetched-source/daemon/worker execution, lifecycle or native-mode change.
+Pinned document/secret/protected-file gates pass (four scans/36 local links);
+no app/native/coverage pass implied. Source report/governance/contract uncommitted.

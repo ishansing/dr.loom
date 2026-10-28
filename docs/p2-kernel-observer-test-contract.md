@@ -34,6 +34,10 @@ domain/full native ID and performs fresh backend/image checks. Use existing
 `assertDomainContainer` for complete native config/ownership validation, including
 restart disabled, private namespaces and auto-removal disabled. Repeat after
 handle acquisition. Do not replace it with partial hand-written checks.
+Existing backend preflight requires systemd/cgroup-v2; profile1 sets `Init:false`
+and private cgroup/PID namespaces but does not set `CgroupParent`. Neither those
+config checks nor private namespace creation establishes the original domain's
+kernel cgroup root or the controller's mount/view. That remains a separate join.
 
 Before opening worker handles, establish these relationships:
 
@@ -41,8 +45,19 @@ Before opening worker handles, establish these relationships:
   namespace agree with the controller's procfs view. Keeper identity is insufficient.
 - **Release-specific inspect-PID provenance:** establish that the selected native
   `State.Pid` denotes the init thread-group leader in that procfs view. Installed
-  Docker source provenance remains unresolved; master source and matching PID
-  numbers are not substitutes. A caller-supplied `verified: true` is not evidence.
+  Moby's release reference now resolves to
+  `0367cbeb49b9d98cb0b4f51e95f7b54b4803e76c` (see
+  [distribution/source evidence](../research/pi/20-p2-distribution-build-provenance.md)).
+  Release semantics and applicability to the different selected peer artifact
+  must still be checked separately; master source and matching PID numbers are
+  not substitutes. A caller-supplied `verified: true` is not evidence.
+  [Pinned source trace](../research/pi/21-p2-moby-pid-cgroup-trace.md) confirms
+  inspect copies cached `State.Pid`; `RestoreTask` attaches without synchronizing
+  that state. Repeated inspect/full ID/StartedAt/RestartCount agreement is not
+  fresh init identity after daemon recovery. StartedAt is container-start bookkeeping
+  captured by the daemon, not kernel birth time; establish current init identity
+  independently before selecting a proc entry or handle. This is not a claim that recovery always
+  changes the PID or that the selected build has been exercised.
 - The candidate's anchored proc directory has the expected mapped UID/TGID,
   correctly parsed starttime, expected namespace relationships and NSpid levels.
   Select no process by worker text, PID arithmetic, name search or broad proc scan.
@@ -50,6 +65,11 @@ Before opening worker handles, establish these relationships:
   native ID to the proc membership and controller-visible cgroup-v2 mount/view.
   A Docker-looking suffix, namespace-relative `/`, or shared daemon/ancestor group
   is insufficient. This mapping/topology still needs selected-revision evidence.
+  At the traced release, rootless conversion can clear OCI CgroupsPath/resources
+  for an empty controller list after preliminary path construction. Systemd/v2
+  and configured HostConfig limits alone do not attest the final effective OCI
+  path, required delegation or enforcement. Check original assignment/final
+  runtime input and controller mount/view separately; no guessed fallback path.
 
 If either provenance relationship is unavailable, stop **blocked before polling**.
 Candidate namespace accessibility does not waive either prerequisite.
@@ -134,6 +154,10 @@ versus failing reread; pidfd IN/HUP versus ERR/NVAL; live+empty and terminal+pop
 repopulation/coalescing; timeout during confirmation and repeated notifications;
 FD closure after partial acquisition. Do not induce real host PID reuse, migration
 or cgroup deletion to manufacture negatives.
+Admission negatives must also include recovered persisted PID despite unchanged
+inspect lifecycle fields, treating StartedAt as kernel birth time, and rootless
+conversion clearing an otherwise configured cgroup path/resources. These are
+source-derived future cases, not tests executed by the synthetic-only core.
 
 Proposed implementation gates: repository `bun run lint` and `bun run check`;
 syntax compilation without pycache output; `python3 -I -B

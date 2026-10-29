@@ -1907,3 +1907,29 @@ and namespace/mount views, independent init/root identity and FD lifetime remain
 open. No fetched-source/daemon/worker execution, lifecycle or native-mode change.
 Pinned document/secret/protected-file gates pass (four scans/36 local links);
 no app/native/coverage pass implied. Source report/governance/contract uncommitted.
+
+**Synthetic control-input continuation — 2026-10-29:** owner requested “commit
+and continue”; source trace/contract clarification committed as `a9b35da`. Continue
+at the existing host-only identity-protocol seam, not a new native observer.
+`IdentityFrames.read_from` borrows a caller-owned stable nonblocking FIFO; it never
+opens/closes/duplicates it or changes shared file-description flags. Read bounded
+control bytes through standard poll/read, share one finite non-extendable absolute
+deadline, return acquire before EOF, require EOF after confirm and poison on error.
+Single-byte reads deliberately preserve the acquisition/confirmation handoff with
+only two8KiB frames; no buffer/adapter hierarchy or new dependency needed.
+
+Acceptance red uses a real self-owned pipe against an inert reader (16 tests,
+one intended None-versus-frame failure), then green. Current28 stdlib self-tests
+cover owned-pipe and scripted OS/clock cases including absent EOF, error masks,
+EAGAIN/EINTR, late input, bounded repeats, size limits and borrowed-FD preservation.
+One self-owned memfd is a rejected nonpipe fixture, not a worker or filesystem
+probe. Native CLI still refuses without touching stdin; no backend request,
+worker/cgroup handle, new lifecycle, selected-build waiver or state authority.
+Full observer orchestration/acquisition/FD lifetime stays unqualified. Fresh
+ordered gates pass: lint/TS check, Python syntax/28 self-tests, three native-disabled
+CLI refusals with unread input, portable201 tests/2,957 assertions at unchanged
+95.88%/91.73% coverage, drill and14-package audit. Python is not covered by Bun's
+lint/typecheck/coverage. Final source/hash/command/exit logs are separate from red
+under private key `observer-control-final-i803842o`. Owner again requested “commit
+and continue”; scoped document/secret checks precede commit. Native authority and
+all unresolved-domain fences remain unchanged.

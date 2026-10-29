@@ -1,12 +1,18 @@
 """Synthetic observer checks only; native worker acquisition is not qualified."""
 
 from copy import deepcopy
+from contextlib import contextmanager
 from datetime import datetime
 import json
+import math
+import os
 import re
 import select
+import stat
 import sys
+import time
 import unittest
+from unittest.mock import Mock, patch
 
 
 class Blocked(ValueError):
@@ -70,6 +76,7 @@ class IdentityFrames:
         self._count = 0
         self._first = None
         self._failed = False
+        self._read_deadline = None
 
     def feed(self, chunk):
         if self._failed:
@@ -103,6 +110,73 @@ class IdentityFrames:
         if self._failed or self._count != 2 or self._buffer:
             self._failed = True
             raise Blocked("frame-eof")
+
+    def read_from(self, fd, deadline):
+        """Borrow a stable nonblocking pipe; caller retains ownership until return."""
+        if self._failed:
+            raise Blocked("frame-poisoned")
+        try:
+            if self._count == 2:
+                raise Blocked("frame-extra")
+            if type(deadline) is not float or not math.isfinite(deadline):
+                raise Blocked("control-deadline")
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise Blocked("control-timeout")
+            if remaining > 10 or (self._read_deadline is not None and deadline != self._read_deadline):
+                raise Blocked("control-deadline")
+            self._read_deadline = deadline
+            if (not _integer(fd, 0, 2**31 - 1) or os.get_blocking(fd)
+                    or not stat.S_ISFIFO(os.fstat(fd).st_mode)):
+                raise Blocked("control-fd")
+            poll = select.poll()
+            poll.register(fd, select.POLLIN | select.POLLHUP)
+            line = bytearray()
+            frame = None
+            while True:
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    raise Blocked("control-timeout")
+                try:
+                    events = poll.poll(min(100, math.ceil(remaining * 1000)))
+                except InterruptedError:
+                    continue
+                if time.monotonic() >= deadline:
+                    raise Blocked("control-timeout")
+                if not events:
+                    continue
+                if (len(events) != 1 or events[0][0] != fd or not events[0][1]
+                        or not _valid_mask(events[0][1], select.POLLIN | select.POLLHUP)):
+                    raise Blocked("control-poll")
+                try:
+                    # Do not consume confirmation bytes before the acquisition handshake.
+                    chunk = os.read(fd, 1)
+                except (BlockingIOError, InterruptedError):
+                    continue
+                if time.monotonic() >= deadline:
+                    raise Blocked("control-timeout")
+                if not chunk:
+                    if frame is None:
+                        raise Blocked("control-eof")
+                    self.finish()
+                    return frame
+                if frame is not None:
+                    raise Blocked("frame-extra")
+                line.extend(chunk)
+                if chunk == b"\n":
+                    frame = self.feed(bytes(line))[0]
+                    if time.monotonic() >= deadline:
+                        raise Blocked("control-timeout")
+                    if self._count == 1:
+                        return frame
+                elif len(line) >= 8192:
+                    raise Blocked("frame-bounds")
+        except Blocked:
+            self._failed = True
+            raise
+        except OSError:
+            self._failed = True
+            raise Blocked("control-unavailable") from None
 
 
 def _pair(value):
@@ -208,6 +282,242 @@ class ObserverTests(unittest.TestCase):
 
     def frame(self, **changes):
         return (json.dumps(dict(self.identity, **changes)) + "\n").encode()
+
+    @contextmanager
+    def control_pipe(self):
+        read_fd, write_fd = os.pipe2(os.O_NONBLOCK | os.O_CLOEXEC)
+        with (
+            os.fdopen(read_fd, "rb", buffering=0) as reader,
+            os.fdopen(write_fd, "wb", buffering=0) as writer,
+        ):
+            yield reader.fileno(), writer
+
+    @contextmanager
+    def control_clock(self):
+        now, waits = [100.0], []
+        kernel_poll = select.poll()
+
+        def poll(milliseconds):
+            waits.append(milliseconds)
+            events = kernel_poll.poll(0)
+            if not events:
+                now[0] += milliseconds / 1000
+            return events
+
+        scripted = Mock()
+        scripted.register.side_effect = kernel_poll.register
+        scripted.poll.side_effect = poll
+        with (
+            patch.object(time, "monotonic", side_effect=lambda: now[0]),
+            patch.object(select, "poll", return_value=scripted),
+        ):
+            yield now, waits
+
+    def test_control_read_returns_acquire_without_waiting_for_eof(self):
+        with self.control_pipe() as (fd, writer):
+            writer.write(self.frame())
+            self.assertEqual(IdentityFrames().read_from(fd, time.monotonic() + 1), self.identity)
+            self.assertFalse(os.get_blocking(fd))
+            os.fstat(fd)
+
+    def test_control_confirm_requires_eof_and_keeps_borrowed_pipe_open(self):
+        with self.control_pipe() as (fd, writer):
+            writer.write(self.frame() + self.frame(type="confirm"))
+            writer.close()
+            parser, deadline = IdentityFrames(), time.monotonic() + 1
+            self.assertEqual(parser.read_from(fd, deadline), self.identity)
+            self.assertEqual(parser.read_from(fd, deadline)["type"], "confirm")
+            parser.finish()
+            self.assertFalse(os.get_blocking(fd))
+            os.fstat(fd)
+            with self.assertRaises(Blocked):
+                parser.read_from(fd, deadline)
+            os.fstat(fd)
+
+    def test_control_missing_frame_or_confirm_eof_times_out(self):
+        for data in [b"", self.frame() + self.frame(type="confirm")]:
+            with self.subTest(data=data[:20]), self.control_pipe() as (fd, writer), self.control_clock() as (now, waits):
+                writer.write(data)
+                parser, deadline = IdentityFrames(), 100.25
+                with self.assertRaisesRegex(Blocked, "control-timeout"):
+                    parser.read_from(fd, deadline)
+                    parser.read_from(fd, deadline)
+                self.assertGreaterEqual(now[0], deadline)
+                self.assertTrue(waits and all(0 < wait <= 100 for wait in waits))
+                with self.assertRaises(Blocked):
+                    parser.feed(self.frame())
+                self.assertFalse(os.get_blocking(fd))
+                os.fstat(fd)
+
+    def test_control_eof_truncation_extra_and_changed_input_poison_decoder(self):
+        both = self.frame() + self.frame(type="confirm")
+        for data in [b"", self.frame()[:-1], self.frame(), both + b"x", both + b"\n",
+                     self.frame() + self.frame(type="confirm", pid=124), b"PRIVATE-SENTINEL\n"]:
+            with self.subTest(data=data[:20]), self.control_pipe() as (fd, writer):
+                writer.write(data)
+                writer.close()
+                parser, deadline = IdentityFrames(), time.monotonic() + 1
+                with self.assertRaises(Blocked) as caught:
+                    parser.read_from(fd, deadline)
+                    parser.read_from(fd, deadline)
+                self.assertNotIn("PRIVATE-SENTINEL", str(caught.exception))
+                with self.assertRaises(Blocked):
+                    parser.feed(self.frame())
+                os.fstat(fd)
+
+    def test_control_deadline_is_finite_shared_and_cannot_be_extended(self):
+        with self.control_pipe() as (fd, writer), self.control_clock():
+            for deadline in [0.0, 111.0, float("nan"), float("inf"), True, 101]:
+                with self.subTest(deadline=deadline), self.assertRaises(Blocked):
+                    IdentityFrames().read_from(fd, deadline)
+            writer.write(self.frame() + self.frame(type="confirm"))
+            parser = IdentityFrames()
+            parser.read_from(fd, 101.0)
+            with self.assertRaisesRegex(Blocked, "control-deadline"):
+                parser.read_from(fd, 102.0)
+            with self.assertRaises(Blocked):
+                parser.feed(self.frame(type="confirm"))
+            os.fstat(fd)
+
+    def test_control_refuses_blocking_invalid_and_nonpipe_descriptors(self):
+        with self.control_pipe() as (fd, _):
+            os.set_blocking(fd, True)
+            with self.assertRaisesRegex(Blocked, "control-fd"):
+                IdentityFrames().read_from(fd, time.monotonic() + 1)
+            self.assertTrue(os.get_blocking(fd))
+            for invalid in [-1, True, "0", 2**31]:
+                with self.subTest(invalid=invalid), self.assertRaises(Blocked):
+                    IdentityFrames().read_from(invalid, time.monotonic() + 1)
+        own_file = os.memfd_create("synthetic-control-negative", os.MFD_CLOEXEC)
+        try:
+            os.set_blocking(own_file, False)
+            with self.assertRaisesRegex(Blocked, "control-fd"):
+                IdentityFrames().read_from(own_file, time.monotonic() + 1)
+            os.fstat(own_file)
+        finally:
+            os.close(own_file)
+
+    def test_control_retries_transient_os_reads(self):
+        original_read = os.read
+        errors = [BlockingIOError("PRIVATE-SENTINEL"), InterruptedError("PRIVATE-SENTINEL")]
+
+        def read(fd, size):
+            if errors:
+                raise errors.pop()
+            return original_read(fd, size)
+
+        with self.control_pipe() as (fd, writer), self.control_clock():
+            writer.write(self.frame())
+            with patch.object(os, "read", side_effect=read):
+                self.assertEqual(IdentityFrames().read_from(fd, 101.0), self.identity)
+            os.fstat(fd)
+
+    def test_control_late_readiness_does_not_consume_bytes(self):
+        with self.control_pipe() as (fd, writer):
+            writer.write(self.frame())
+            now, fake = [100.0], Mock()
+
+            def poll(_milliseconds):
+                now[0] = 101.0
+                return [(fd, select.POLLIN)]
+
+            fake.poll.side_effect = poll
+            parser = IdentityFrames()
+            with patch.object(time, "monotonic", side_effect=lambda: now[0]), patch.object(select, "poll", return_value=fake):
+                with self.assertRaisesRegex(Blocked, "control-timeout"):
+                    parser.read_from(fd, 101.0)
+            self.assertEqual(os.read(fd, len(self.frame())), self.frame())
+            with self.assertRaises(Blocked):
+                parser.feed(self.frame())
+
+    def test_control_late_byte_is_not_accepted(self):
+        with self.control_pipe() as (fd, writer), self.control_clock() as (now, _):
+            writer.write(self.frame())
+            original_read = os.read
+
+            def read(source, size):
+                result = original_read(source, size)
+                now[0] = 101.0
+                return result
+
+            parser = IdentityFrames()
+            with patch.object(os, "read", side_effect=read):
+                with self.assertRaisesRegex(Blocked, "control-timeout"):
+                    parser.read_from(fd, 101.0)
+            with self.assertRaises(Blocked):
+                parser.feed(self.frame())
+
+    def test_control_repeated_readiness_or_poll_interruptions_cannot_extend_wait(self):
+        for interrupted in [False, True]:
+            with self.subTest(interrupted=interrupted), self.control_pipe() as (fd, _):
+                now, waits, fake = [100.0], [], Mock()
+
+                def poll(milliseconds):
+                    waits.append(milliseconds)
+                    now[0] += 0.06
+                    if interrupted:
+                        raise InterruptedError("PRIVATE-SENTINEL")
+                    return [(fd, select.POLLIN)]
+
+                fake.poll.side_effect = poll
+                with (
+                    patch.object(time, "monotonic", side_effect=lambda: now[0]),
+                    patch.object(select, "poll", return_value=fake),
+                    patch.object(os, "read", side_effect=BlockingIOError("PRIVATE-SENTINEL")),
+                ):
+                    with self.assertRaisesRegex(Blocked, "control-timeout"):
+                        IdentityFrames().read_from(fd, 100.2)
+                self.assertGreaterEqual(now[0], 100.2)
+                self.assertTrue(waits and all(0 < wait <= 100 for wait in waits))
+                os.fstat(fd)
+
+    def test_control_poll_errors_are_safe_and_poison_decoder(self):
+        with self.control_pipe() as (fd, _):
+            for events in [[(fd, select.POLLERR)], [(fd, select.POLLNVAL)],
+                           [(fd, 0)], [(fd, 1 << 30)], [(fd + 1, select.POLLIN)],
+                           [(fd, select.POLLIN), (fd, select.POLLHUP)]]:
+                with self.subTest(events=events):
+                    fake, parser = Mock(), IdentityFrames()
+                    fake.poll.return_value = events
+                    with patch.object(select, "poll", return_value=fake):
+                        with self.assertRaisesRegex(Blocked, "control-poll"):
+                            parser.read_from(fd, time.monotonic() + 1)
+                    with self.assertRaises(Blocked):
+                        parser.feed(self.frame())
+                    os.fstat(fd)
+
+    def test_control_os_failures_withhold_diagnostics_and_preserve_fd(self):
+        with self.control_pipe() as (fd, writer):
+            writer.write(self.frame())
+            for operation in ["register", "poll", "read"]:
+                with self.subTest(operation=operation):
+                    parser, fake = IdentityFrames(), Mock()
+                    fake.poll.return_value = [(fd, select.POLLIN)]
+                    if operation != "read":
+                        getattr(fake, operation).side_effect = OSError("PRIVATE-SENTINEL")
+                    read_effect = OSError("PRIVATE-SENTINEL") if operation == "read" else None
+                    with (
+                        patch.object(select, "poll", return_value=fake),
+                        patch.object(os, "read", side_effect=read_effect),
+                    ):
+                        with self.assertRaisesRegex(Blocked, "control-unavailable") as caught:
+                            parser.read_from(fd, time.monotonic() + 1)
+                    self.assertNotIn("PRIVATE-SENTINEL", str(caught.exception))
+                    with self.assertRaises(Blocked):
+                        parser.feed(self.frame())
+                    os.fstat(fd)
+
+    def test_control_oversized_unterminated_frame_is_bounded(self):
+        with self.control_pipe() as (fd, _), self.control_clock():
+            fake = Mock()
+            fake.poll.return_value = [(fd, select.POLLIN)]
+            with (
+                patch.object(select, "poll", return_value=fake),
+                patch.object(os, "read", side_effect=[b"x"] * 8192 + [AssertionError("Control input exceeded8KiB")]),
+            ):
+                with self.assertRaisesRegex(Blocked, "frame-bounds"):
+                    IdentityFrames().read_from(fd, 101.0)
+            os.fstat(fd)
 
     def test_valid_identity_frames_preserve_precision(self):
         self.assertEqual(parse_frame(self.frame(), "acquire"), self.identity)

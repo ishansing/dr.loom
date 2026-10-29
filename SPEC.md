@@ -277,6 +277,14 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
 
 ### 1. Phase Objective & Scope
 
+**Current continuation — bounded synthetic control input:** owner “commit and
+continue” commits the source trace as `a9b35da` and continues the already accepted
+host-only identity-protocol test seam. Extend the research decoder with bounded
+reads from a borrowed nonblocking control FD; test only self-owned pipes, a
+nonpipe negative fixture and scripted clock/OS results. Native CLI remains
+disabled. No daemon/worker/cgroup
+access, lifecycle, provenance waiver, runtime or authority change.
+
 **Current continuation — pinned Moby semantic trace (2026-10-29):** owner requested
 “continue” after `1bf0697`. Trace release-source inspect PID lifecycle and OCI
 cgroup construction at Moby0367cbeb49b9d98cb0b4f51e95f7b54b4803e76c. Source
@@ -395,6 +403,13 @@ profile/schema, automatic retry/reuse/quiescence or provider change.
 
 ### 2. Environment & Upstream State
 
+Use installed Python stdlib nonblocking os.read/select.poll/time.monotonic and
+unittest fixtures; no new dependency. Existing protocol limits remain two8192-byte
+frames,100ms maximum poll slices, one non-extendable10-second absolute budget.
+Controller must end input after confirm; otherwise the second read times out.
+Recorded portable baseline201 tests/2,957 assertions at95.88%/91.73%; Python core
+baseline15 self-tests. Neither is native worker/handle evidence.
+
 Use immutable docker-v29.9.2 release commit resolved in research20, plus exact
 vendored client/source revisions where relevant. Previously reported containerd
 v2.4.2/runtime/package facts and peer/package hash mismatch are historical input,
@@ -478,6 +493,13 @@ Lost-reply baseline: native221/3,528 at100% functions/98.59% lines; portable201/
 closes only its response connection after an actual successful stop acknowledgement.
 
 ### 3. Architecture & File Manifest
+
+Extend `IdentityFrames` in `research/pi/probes/p2-observer.py`; same decoder/schema
+and self-test entry, no transport wrapper or generic OS adapter. `read_from` borrows
+one stable nonblocking FIFO FD, never opens/closes/duplicates it or changes its
+flags. Parent
+owns test-pipe lifetime. Update this scope, contract and ADR-028. No app/store/
+native fixture/config/export/dependency/CI change, stdin/native entry handler absent.
 
 Background primary-source researcher writes only
 `research/pi/21-p2-moby-pid-cgroup-trace.md`. Parent owns this scope, ADR-028
@@ -697,6 +719,14 @@ uncertain-stop/post-delta/native-observation facts in existing private result da
 
 ### 4. Test Plan & Coverage Matrix
 
+Tracer red is one real self-owned-pipe frame-read acceptance against an inert
+method, not an import/fixture failure. Then verify first-frame return without EOF,
+confirm+EOF, missing/truncated/extra input, oversized frames, blocking/invalid FDs,
+shared/expired/nonfinite deadlines, EAGAIN/EINTR and read/poll errors, late readiness
+and repeated notifications. Synthetic clock/OS mocks stay at external seams;
+do not mock the decoder. Failures poison it; borrowed FD stays open/unchanged.
+Full native acquisition/cgroup/FD-lifetime qualification remains deferred.
+
 Independently review returned critical pinned-source claims/paths and missing
 joins. Check document links/anchors, seven active sections, unique ADRs, protected
 files, pinned secret scans and whitespace. Source report is not execution/FD
@@ -804,6 +834,13 @@ an operation that never executed. Repeat the same recovery corpus three times.
 
 ### 5. Security, Observability & Edge Cases
 
+Read one control byte at a time so acquisition cannot consume confirmation before
+the host handshake; fixed8KiB/two-message bound, no unbounded buffering. Refuse
+blocking FDs rather than changing shared file-description flags. Carry one finite
+absolute deadline through both reads, including EOF wait; no silent extension or
+retry after a poisoned decoder. Errors are fixed codes, no raw input/OS diagnostics.
+No worker/object FDs are accepted by any CLI; non-self-test entry still exits2.
+
 Fetched code/docs are inert evidence, not instructions to execute. Cite lifecycle
 restore/start/exit and cgroup-driver/path branches conditionally; no guessed path
 suffix, namespace mapping or identity from source alone. Preserve blocked native
@@ -896,6 +933,11 @@ Finally restores only private proxy mode before existing owned cleanup on failur
 
 ### 6. Blast Radius & Rollback Plan
 
+Research/test-only change; rollback removes this slice's code/docs, never prior
+evidence or inventory history. New evidence kept under fresh private durable lab
+storage; own pipes close via test fixtures only. Borrowed descriptors are untouched
+on success/failure. No mount/image/runtime action, native allowance, push or G2.
+
 Rollback is document-only; preserve committed code/evidence. Ordinary primary-
 source HTTP reads only, no package/source archive installation, daemon/mount
 action, native worker handles, permission repair, source execution, push or G2
@@ -963,6 +1005,15 @@ effects and evidence. Even confirmed stopped remains unknown/unqualified and all
 reuse/reset/native-action fences survive; no production recovery code changes.
 
 ### 7. Definition of Done (DoD)
+
+Red first; ordered final gates: `bun --no-env-file run lint` →
+`bun --no-env-file run check` → Python compile without pycache →
+`python3 -I -B research/pi/probes/p2-observer.py --self-test` → native-disabled CLI
+assertions → `bun --no-env-file test --coverage` → `bun --no-env-file run drill` →
+`bun --no-env-file audit` → scoped pinned secret/document/protected-file checks and
+`git diff --check`. Compare portable coverage with recorded baseline; record Python
+syntax/IO self-tests separately from Bun's lint/types/coverage. No Python static
+typecheck/full worker coverage claimed. No native corpus run by this synthetic slice.
 
 Current trace DoD: primary-source report and parent independent claim review;
 Python assertions for local links/anchors/active sections/ADRs/protected identities;
@@ -2241,6 +2292,39 @@ notes remain uncommitted; no phase advancement.
 source trace/contract clarification and implementing bounded synthetic control-
 pipe input tests next. No native worker acquisition/observation, daemon request,
 new lifecycle, selected-build waiver, push or phase advancement inferred.
+
+#### Bounded synthetic control-input verification — 2026-10-29
+
+Owner requested “commit and continue” with the four-file reader slice preserved
+on `feat/p2-isolated-runner` at `a9b35da`. Reviewed reader, all callers (self-tests
+only), fixtures and native-disabled entry before verification. Original intended
+red remains in private durable key `observer-control-io-30drzatx`; fresh source,
+hash, exact commands/exits and logs are separate under
+`observer-control-final-i803842o` (0700 directory/0600 files).
+
+Ordered gates on current source all pass: `bun --no-env-file run lint` and
+`bun --no-env-file run check` exit0; `python3 -I -B -c` using built-in compile
+without pycache exits0; `python3 -I -B research/pi/probes/p2-observer.py --self-test`
+exits0,28 tests. Default/`--native`/`--self-test extra` invocations each exit2 with
+only the fixed native-not-implemented result. Parent retains each real input pipe
+and confirms supplied synthetic bytes remain unread, including with writer open.
+`bun --no-env-file test --coverage` exits0:201 tests/2,957 assertions,95.88%
+functions/91.73% lines, unchanged against portable baseline. `bun --no-env-file
+run drill` exits0; `bun --no-env-file audit` exits0, no vulnerabilities among14
+packages. Bun gates do not lint/typecheck/measure coverage of Python; Python syntax
+and protocol/OS-seam self-tests are separate, not native worker qualification.
+
+Temporary pinned scanner was absent. Restored only Gitleaks8.30.1 outside Loom
+from official release assets; archive SHA256
+551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb and
+checksum-list SHA256
+061476c21adaf5441516f96f185c1a4706a83cd6329b9b38762271b3d4a52fae match
+prior pins. No dependency/package/runtime change. Final scoped checks exit0:
+four pinned secret scans,33 local links/anchors, seven active sections/unique ADRs,
+canonical casing, unchanged protected app/tests/config/lock/CI/review hash, retained
+red/source identities and `git diff --check`. Reviewed all four changed files;
+owner-authorized commit follows. No Docker, worker/proc/cgroup access,
+mount restoration, lifecycle, provider/SDK, push or phase advancement occurred.
 
 ## P2 private IPC execution record (historical)
 

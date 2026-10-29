@@ -21,11 +21,14 @@ Proposed implementation: `research/pi/probes/p2-observer.py`, installed Python
 stdlib only, with deterministic `--self-test` cases in that same module. A private
 host harness reuses existing prepare/launch/cleanup functions as in the acquisition
 experiment; no worker/observer mount or generic execution interface is introduced.
-Current first slice implements only in-memory identity-frame parsing, synthetic
-kernel-snapshot consistency and independent observation classification. Default
-and non-self-test invocations return blocked/native-not-implemented without reading
-stdin or opening handles. Native acquisition, pipe deadlines, FD ownership and
-polling remain unimplemented, not silently supplied by synthetic fixtures.
+The module implements identity-frame parsing, synthetic kernel-snapshot consistency,
+independent observation classification and a separately tested control-pipe reader.
+`IdentityFrames.read_from(fd, deadline)` borrows a stable nonblocking FIFO descriptor;
+its caller keeps it open/unchanged for the call. It never opens, duplicates, closes
+or changes the descriptor's flags. Blocking/invalid/nonpipe input is refused.
+Default/non-self-test invocations still return blocked/native-not-implemented
+without reading stdin or opening handles. Native acquisition, worker FD ownership,
+cgroup/pidfd polling and complete observer orchestration remain unimplemented.
 
 ## 2. Admission prerequisites — unresolved until evidenced
 
@@ -105,6 +108,16 @@ and observation together; maximum poll slice100ms. Parent also enforces a host
 deadline and may terminate only its own observer child. Neither observer nor its
 failure handling may delay or bypass existing independently owned cleanup.
 
+The input reader binds both reads to the same finite absolute deadline, refusing
+extensions or more than10 seconds initially. Acquire returns at its newline without
+waiting for EOF; confirm returns only after EOF, rejecting trailing bytes. The host
+must write then end its input after confirm, not leave the pipe open. Reading one
+byte at a time avoids consuming confirmation before the acquisition handshake;
+the control protocol is capped at two8KiB frames. Missing/late input, EOF, errors
+or oversize poison the decoder. This input-only primitive does not establish the
+missing native acquisition/observation lifetime bound; future orchestration must
+share the same deadline. Tests use real self-owned pipes and scripted OS/time only.
+
 ## 4. Separate facts, no cleanup verdict
 
 After confirmation, observe only the retained handles while the existing launcher
@@ -132,17 +145,22 @@ observer-owned FDs on every exit; preserve all runtime objects and private evide
 
 Synthetic acceptance red deliberately invented terminal/empty observations and
 failed2 tests for missing data and terminal+populated. The first implementation
-has15 stdlib self-tests covering frame fragmentation/schema/duplicates/limits/
+had15 stdlib self-tests covering frame fragmentation/schema/duplicates/limits/
 EOF/poisoning, timestamp precision, confirmation drift, synthetic kernel tuple/
 namespace/cgroup consistency, populated parsing and independent mask/result cases.
 These are synthetic values, not actual FD/read/deadline/lifecycle qualification.
-Final ordered local gates pass, with portable201 tests/2,957 assertions and unchanged
+The next control-input red catches an inert reader returning no frame. Current
+28 self-tests add real self-owned-pipe acquire/confirm/EOF, missing/truncated/extra
+input, borrowed-FD preservation, blocking/nonpipe refusal, shared/expired/extended
+deadlines, EAGAIN/EINTR, late data/readiness, poll/read errors and repeated wakeups.
+Clock/OS scripting stays private to tests; no decoder mocks or worker handles.
+Fresh control-input ordered local gates pass, with portable201 tests/2,957 assertions and unchanged
 95.88% function/91.73% line coverage. That Bun coverage does not measure this Python
 module. Python syntax/self-tests and three native-disabled CLI cases pass separately.
 Exact commands, red/green and limitations are recorded in SPEC; the full matrix
 below remains the target, not a claim that every native case is implemented.
 
-First a no-container red must catch an inert implementation that invents terminal/
+First a no-container red catches an inert implementation that invents terminal/
 empty. Then stdlib self-tests cover both the real parsing/protocol interface and
 scripted OS results; keep fake FD/syscall behavior private to those tests.
 

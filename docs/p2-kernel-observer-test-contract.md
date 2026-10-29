@@ -23,9 +23,22 @@ host harness reuses existing prepare/launch/cleanup functions as in the acquisit
 experiment; no worker/observer mount or generic execution interface is introduced.
 The module implements identity-frame parsing, synthetic kernel-snapshot consistency,
 independent observation classification and a separately tested control-pipe reader.
-`IdentityFrames.read_from(fd, deadline)` borrows a stable nonblocking FIFO descriptor;
-its caller keeps it open/unchanged for the call. It never opens, duplicates, closes
-or changes the descriptor's flags. Blocking/invalid/nonpipe input is refused.
+`IdentityFrames.read_from(fd, deadline)` borrows a stable nonblocking FIFO or
+connected AF_UNIX/SOCK_STREAM descriptor. Its trusted caller keeps the descriptor
+and process-wide socket default-timeout configuration unchanged during the call.
+It never creates an endpoint, duplicates/closes the FD or changes its flags.
+Blocking/invalid descriptors and sockets of other families/kinds or without a
+peer are refused.
+Socket metadata uses a temporary fileno view, always detached in finally. Refuse
+non-None socket default timeout before wrapping, since construction could otherwise
+change shared FD flags; never reset that default on the caller's behalf.
+**Historical sender blocker:** after `1162e0d`, a private Bun1.4.4 FileSink
+round-trip fails with `control-fd` before acquire. Two self-owned-child diagnostics
+show Bun.spawn's `stdin: "pipe"` is AF_UNIX/SOCK_STREAM, not a FIFO. The fixture
+successfully sets it nonblocking; descriptor kind, not that flag, causes refusal.
+No reader guard was relaxed during that investigation. Owner subsequently approved
+narrow Unix stream support, not arbitrary sockets or a bridge. The existing bounded
+poll/read/deadline/EOF path is reused without socket send/receive/connect/listen.
 Default/non-self-test invocations still return blocked/native-not-implemented
 without reading stdin or opening handles. Native acquisition, worker FD ownership,
 cgroup/pidfd polling and complete observer orchestration remain unimplemented.
@@ -177,6 +190,17 @@ versus failing reread; pidfd IN/HUP versus ERR/NVAL; live+empty and terminal+pop
 repopulation/coalescing; timeout during confirmation and repeated notifications;
 FD closure after partial acquisition. Do not induce real host PID reuse, migration
 or cgroup deletion to manufacture negatives.
+Original FileSink qualification remains failed evidence: that source never reaches
+confirmation or its subsequent missing-EOF scenario. Approved support adds a real
+socketpair red/green and35 self-tests covering half-close EOF, withheld EOF/trailing/
+truncated frames, descriptor identity/status/inheritability, unsupported/blocking/
+unconnected sockets, non-None default timeout and metadata failures. New FileSink
+qualification uses unchanged copies of the failed sender/driver with the new reader
+snapshot; record actual success/withheld-EOF results separately in SPEC.
+Fresh qualification now passes both cases: awaited write/end delivers confirm+EOF
+with child exit0; withholding EOF yields control-timeout/exit2, not success. Both
+use only synthetic child state and keep quiescenceQualified=false. The original
+failed source/evidence remains intact, separate from this new source snapshot.
 Admission negatives must also include recovered persisted PID despite unchanged
 inspect lifecycle fields, treating StartedAt as kernel birth time, and rootless
 conversion clearing an otherwise configured cgroup path/resources. These are

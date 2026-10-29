@@ -277,6 +277,19 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
 
 ### 1. Phase Objective & Scope
 
+**Approved Unix stream support:** owner answered “do what you recommend” to narrow
+nonblocking AF_UNIX/SOCK_STREAM admission alongside FIFOs. Implement at the existing
+synthetic read_from seam; reject datagram/seqpacket/Internet/unconnected sockets
+and blocking descriptors. Retain deadlines/EOF/poisoning and disabled native CLI.
+No dialing/listening, pipe bridge, worker/daemon access or native lifecycle.
+
+**Synthetic sender continuation:** owner “commit and continue” commits boundary
+coverage as `1162e0d`. Qualify the existing contract's FileSink write/end path
+against the reader using only a private Bun parent and self-owned Python child.
+Test fragmented acquire, host confirmation after the synthetic acquire reply,
+EOF after confirm, and missing EOF timing out. Native CLI remains disabled;
+this is control transport evidence, not worker acquisition or a native lifecycle.
+
 **Post-commit synthetic boundary checks:** owner “commit and continue” commits
 the verified reader as `665e5ce`. Continue only at its existing `read_from` test
 seam: qualify two exactly8192-byte frames and expiration between acquire/confirm.
@@ -409,6 +422,19 @@ profile/schema, automatic retry/reuse/quiescence or provider change.
 
 ### 2. Environment & Upstream State
 
+Installed Python socket.py delegates fileno construction to _socket without dup.
+Release CPythonv3.15.2 socketmodule.c detects family/type from that descriptor;
+init_sockobject can set nonblocking mode if a default socket timeout is configured.
+Refuse non-None default timeout before wrapping, never reset global defaults or
+FD flags; caller keeps descriptor and socket-default configuration stable during
+the call. Detach the temporary view in finally, never close it. Source semantics
+are revision evidence, not a reproducible-build claim for the installed binary.
+
+Installed FileSink declaration (`node_modules/bun-types/s3.d.ts`) returns byte
+count/promise from write/flush/end; end accepts an optional Error, not a payload.
+Use installed Bun/Python, explicit child environment, isolated Python import and
+only synthetic frames. No packages, SDK, daemon, credentials or runtime changes.
+
 Use installed Python stdlib nonblocking os.read/select.poll/time.monotonic and
 unittest fixtures; no new dependency. Existing protocol limits remain two8192-byte
 frames,100ms maximum poll slices, one non-extendable10-second absolute budget.
@@ -499,6 +525,19 @@ Lost-reply baseline: native221/3,528 at100% functions/98.59% lines; portable201/
 closes only its response connection after an actual successful stop acknowledgement.
 
 ### 3. Architecture & File Manifest
+
+Extend only `research/pi/probes/p2-observer.py` admission and its inline self-tests;
+reuse existing poll/read/frame machinery. Temporary socket view uses explicit
+fileno (no new endpoint/dup), detects actual family/type and requires a peer, then
+detaches on acceptance/refusal/errors. Update SPEC/ADR-028/contract. Reuse a new
+copy of the retained Bun sender fixture with a new source snapshot; preserve all
+original failed evidence. No app/store/schema/export/dependency/config/CI changes.
+
+No repository code changes for sender qualification: a private assert-based Bun
+fixture plus isolated Python driver import the hash-recorded reader. Driver owns
+its stdin flags, while read_from still borrows without flag changes. Keep fixture,
+source copy/hash, command/exit logs in a new0700 durable lab directory/0600 files.
+Only SPEC, ADR-028 and observer-contract evidence notes may change.
 
 Extend `IdentityFrames` in `research/pi/probes/p2-observer.py`; same decoder/schema
 and self-test entry, no transport wrapper or generic OS adapter. `read_from` borrows
@@ -725,6 +764,21 @@ uncertain-stop/post-delta/native-observation facts in existing private result da
 
 ### 4. Test Plan & Coverage Matrix
 
+First reproduce one real socketpair round-trip failure against FIFO-only reader,
+then allow only the approved transport. Test half-close EOF, confirmation without
+EOF, trailing bytes, failure poisoning and descriptor status/inheritability
+preservation; refuse blocking, datagram/seqpacket, AF_INET and unconnected sockets.
+Test non-None default timeout and metadata errors without altering caller-owned
+FDs. No connect/bind/listen calls, even in negative fixtures. Rerun copied Bun
+FileSink success and withheld-EOF cases plus all ordered gates below.
+
+Assert fragmented acquire returns before parent ends stdin, then write confirm
+and await end() with no argument. Verify fixed synthetic replies and child exit0.
+Second child receives confirm but no EOF; assert control-timeout/exit2 rather
+than success. Bound child output and host wall time; terminate only that owned
+fixture child on harness failure. Existing30 self-tests/portable gates are prior
+evidence, not freshly claimed by this three-document/private-fixture slice.
+
 Use existing self-owned-pipe/clock fixtures for maximum-frame round trip and a
 deadline expiring during the host handshake. Check the latter leaves confirmation
 bytes unread and poisons further use. These qualify existing behavior, not a new
@@ -846,6 +900,18 @@ an operation that never executed. Repeat the same recovery corpus three times.
 
 ### 5. Security, Observability & Edge Cases
 
+Only trusted caller-selected connected local stream FDs are eligible; type
+admission is not peer authentication or worker provenance. Temporary view never
+owns cleanup, and getpeername output is discarded (never logged). No timeout
+default reset, duplicate, open/connect/listen, close, flag change or socket I/O
+method is used by reader; actual bounded I/O stays os.read/poll. Check exact FD
+flags/identity across success and errors. Errors remain fixed safe classifications.
+
+Driver uses only its own stdin/stdio and pure decoder; no proc/cgroup/worker FDs,
+real observer-acquired response, cleanup signal or permission fallback. Parent
+selects an explicit Python executable and empty child environment, limits stdout/
+stderr, and uses fixed safe failure codes. Never echo raw input/OS diagnostics.
+
 Read one control byte at a time so acquisition cannot consume confirmation before
 the host handshake; fixed8KiB/two-message bound, no unbounded buffering. Refuse
 blocking FDs rather than changing shared file-description flags. Carry one finite
@@ -945,6 +1011,17 @@ Finally restores only private proxy mode before existing owned cleanup on failur
 
 ### 6. Blast Radius & Rollback Plan
 
+Rollback is the observer probe and new notes only; preserve existing uncommitted
+sender-blocker notes, failed fixtures/evidence and immutable runtime inventory.
+Record starting diff under new0700 private key `observer-unix-stream-5fx3qz_8`.
+Self-tests own endpoint lifetime; native CLI/stdin remains untouched. No provider,
+container/mount/runtime effects, privilege fallback, commit/push or G2 approval.
+
+Sender fixture has no authority over runtime objects; rollback closes/reaps only
+the owned child and leaves evidence intact. No app/schema/probe/test/dependency/
+CI change, mount/container/provider effects, push or phase advancement. Native
+prerequisites and previously consumed lifecycle allowances remain unchanged.
+
 Research/test-only change; rollback removes this slice's code/docs, never prior
 evidence or inventory history. New evidence kept under fresh private durable lab
 storage; own pipes close via test fixtures only. Borrowed descriptors are untouched
@@ -1017,6 +1094,21 @@ effects and evidence. Even confirmed stopped remains unknown/unqualified and all
 reuse/reset/native-action fences survive; no production recovery code changes.
 
 ### 7. Definition of Done (DoD)
+
+Unix-stream slice: deterministic red; lint → strict TS check → Python compile
+without pycache → expanded isolated self-tests → three native-disabled CLI/unread
+stdin cases → copied FileSink success/withheld-EOF qualification → portable Bun
+coverage → drill → audit → pinned secret/document/protected-file checks and
+`git diff --check`. Exact no-env Bun commands below remain applicable. Compare
+portable95.88% functions/91.73% lines; Python is measured separately, not by Bun.
+Retain source/fixture hashes, commands/exits/logs; leave approved changes uncommitted.
+
+Sender slice: `bun --no-env-file <private-fixture>/sender.ts` exits0
+with both assert-based cases and bounded capture; separately compile the private
+Python driver without pycache. Hash source/fixture and retain command/exits/logs;
+run pinned secret scans, links/governance/protected-file assertions and
+`git diff --check`. No new application behavior; Bun app/type/coverage/drill/audit
+reruns N/A for the documentation/private-fixture-only delta, not new passes.
 
 Red first; ordered final gates: `bun --no-env-file run lint` →
 `bun --no-env-file run check` → Python compile without pycache →
@@ -2368,6 +2460,132 @@ from `665e5ce`. No daemon request, process/worker/cgroup inspection, mount/conta
 lifecycle, provider/SDK activation, push or G2 closure. Leave these new changes
 uncommitted. Selected-artifact/independent-init/original-root/retained-handle joins
 remain the next native prerequisites, not facts established by more synthetic tests.
+
+#### Synthetic FileSink sender — blocked transport join, 2026-10-29
+
+Owner “commit and continue” commits verified boundary tests as `1162e0d`; clean
+branch before this three-document/private-fixture continuation. New0700 durable
+key `observer-sender-w3nxszo3` retains reader source snapshot/hash, initial context,
+assert-based Bun sender/Python driver, commands/exits/logs and diagnostic revisions
+as0600 files. No repository application/probe/test/config/dependency edits.
+
+**Expected:** fragmented acquire is accepted before EOF; host writes confirmation
+after the synthetic acquire reply, then awaits FileSink.end() without payload;
+confirm+EOF exits0. A second case deliberately leaves input open and should produce
+control-timeout/exit2. These are synthetic-only replies, not acquired worker handles.
+
+**Actual:** private driver syntax compile without pycache exits0. Running
+`bun --no-env-file <private-fixture>/sender.ts` exits1 on its first acquire assertion:
+reader returns fixed `control-fd` instead of the expected synthetic acquire reply.
+No confirmation/EOF success or second missing-EOF case ran. Preserve the failure;
+do not call it a passing integration or attribute it to FileSink.end(payload),
+which this sender does not use. Parent bounds stdout/stderr and its own child's
+wall time, and closes/reaps only that fixture child on failure.
+
+**Confirmed cause:** minimized self-owned-child descriptor diagnostic, two fresh
+samples, reports valid=true, FIFO=false, socket=true, family=AF_UNIX,
+kind=SOCK_STREAM, blockingBefore=true, blockingAfter=false. Driver owns stdin and
+sets it nonblocking successfully. The reader rejects S_ISFIFO=false at admission;
+no raw frame, OS exception or worker identity is exposed. Initial diagnostic had
+an incorrect already-nonblocking expectation; original failed assertion/source/
+log are separately retained before corrected and refined diagnostic passes.
+Only the diagnostic wraps its own input to report family/type and detaches it;
+the repository's reader still never opens/closes/duplicates or changes FD flags.
+
+**Version/API evidence:** installed Bun1.4.4 (38afee6c8) and recorded Python3.15.2;
+FileSink declaration in installed bun-types/s3.d.ts has write/flush/end return
+counts/promises and end(Error?), not end(payload). Current official
+[spawn docs](https://bun.sh/docs/runtime/child-process) describe stdin:"pipe"
+as a FileSink, not a kernel FIFO promise; they are not selected-release source
+proof. A limited official GitHub issue/PR search for socketpair/stdin returned
+related discussions, including shell-specific pipe work, but no reviewed fix
+for this installed transport/reader contract. No assertion of a new upstream bug,
+full deduplication, source-byte equivalence or authorization to upgrade.
+
+**Disposition:** stop at the descriptor contract. Existing FIFO implementation
+and30 self-tests are unchanged, not rerun or recast as FileSink success. Supporting
+only qualified AF_UNIX/SOCK_STREAM or retaining FIFO-only with an explicitly
+chosen inherited-pipe sender is the next owner decision; no automatic broad socket
+admission or custom bridge. Successful round-trip and withheld-EOF case remain
+required and blocked. This is independent of native daemon/build/init/root/handle
+prerequisites, and grants no additional lifecycle or G2/reuse/reset/completion.
+
+New SPEC/ADR/contract notes remain uncommitted. App lint/types/test/coverage/drill/
+dependency audit reruns N/A for this documentation/private-fixture-only delta;
+prior `1162e0d` evidence stays historical. Final scoped checks exit0: three pinned
+document scans and19 private-artifact scans,33 local links/anchors, seven active
+sections/unique ADRs/canonical casing, protected review hash, unchanged production/
+probe/test/config/lock/CI files, durable0700/0600 modes and original/refined evidence
+hashes, both private Python drivers compile, and `git diff --check`. Original sender
+rerun reproduces exit1/control-fd; that remains a required failed check, not a pass.
+Reviewed the complete three-document diff. No provider/SDK, daemon/runtime request,
+worker/proc/cgroup access, mount/container action, source execution from upstream,
+install, push or publication.
+
+#### Approved Unix stream control input — 2026-10-29
+
+Owner answered “do what you recommend” to the explicit choice of nonblocking
+AF_UNIX/SOCK_STREAM support alongside FIFOs, preserving FD ownership/deadlines and
+the disabled native CLI. Starting branch `feat/p2-isolated-runner`, HEAD `1162e0d`,
+three uncommitted sender-blocker documents preserved. New private0700 key
+`observer-unix-stream-5fx3qz_8` retains starting diff/hashes, intended red source/
+log/hash, final source snapshot and exact command/exit logs as0600 files.
+
+Reader admission changes only: require a nonblocking FD; accept FIFO or inspect
+an existing socket through an autodetected fileno view. Only AF_UNIX/SOCK_STREAM
+with a peer is accepted; detach in finally on success/refusal/metadata errors.
+No endpoint creation/dup/close/configuration or socket send/receive/connect/listen.
+Reuse the existing byte-bound poll/os.read/frame path, same absolute deadline,
+acquire-before-EOF and confirm-requires-EOF. No socket authentication or native
+identity/acquisition guarantee is inferred from descriptor-kind admission.
+
+Installed Python socket.py shim and release socketmodule.c at
+[5e58eaad7c58df58dfa8ea549c87996e01dd1077](https://github.com/python/cpython/blob/5e58eaad7c58df58dfa8ea549c87996e01dd1077/Modules/socketmodule.c)
+reviewed for constructor existing-FD detection, default-timeout initialization
+and detach behavior. Source excerpts/digests retained, no fetched code executed.
+Because a configured default timeout can cause constructor flag writes and failure
+closure, refuse non-None socket default timeout before creating the view. Caller
+keeps descriptor and process-wide default-timeout configuration stable during the
+synchronous call; no concurrent-mutation guarantee or default reset is introduced.
+No selected-build equivalence follows from upstream source review.
+
+**Test-first:** one real self-owned Unix socketpair regression joins the existing
+30 tests;31-test red has exactly one intended control-fd error against FIFO-only
+logic, no import/fixture failure. Narrow admission turns it green.35 final tests
+cover acquire/confirm/half-close, withheld EOF/trailing/truncated data, poisoning,
+exact fstat/status/inheritability preservation on success/refusal/errors, rejected
+blocking/datagram/seqpacket/AF_INET/unconnected sockets, non-None default timeout
+and metadata exceptions. Negative fixtures are owned/unbound; no bind/listen/dial,
+daemon/worker/cgroup FDs or runtime cleanup. OS metadata mocks stay at that seam.
+
+**Final ordered gates:** no-env Bun lint and strict TS check exit0; isolated Python
+built-in compile without pycache exit0; Python --self-test exit0,35 tests. Default,
+--native and --self-test extra still exit2 with fixed native-not-implemented JSON
+and unread supplied stdin while writer stays open. Copies of the exact original
+FileSink sender/driver (hash-identical, not repaired) with the new reader snapshot
+exit0: fragmented acquire returns before EOF; write then await end() yields confirm
+and child exit0; confirm without end produces control-timeout and child exit2.
+All responses explicitly synthetic and quiescenceQualified=false. Original failed
+sender evidence remains unchanged, not overwritten or retroactively relabeled.
+
+`bun --no-env-file test --coverage` exit0:201 tests/2,957 assertions,95.88% function/
+91.73% line coverage, unchanged portable baseline. `bun --no-env-file run drill`
+exit0; `bun --no-env-file audit` exit0, no vulnerabilities among14 packages. Bun
+lint/types/coverage do not measure this Python module; its syntax/self-tests and
+separate Bun/Python transport assertions are the actual probe evidence. Final
+scoped gates exit0: four pinned document/probe secret scans and19 private-artifact
+scans,33 local links/anchors, seven active sections/unique ADRs/canonical casing,
+protected review hash, unchanged app/tests/config/lock/CI, red/final source hashes,
+unchanged original sender/driver copies, private0700/0600 modes and
+`git diff --check`. Native-entry AST is identical to `1162e0d`; read_from call
+inspection confirms fileno-only socket views and no prohibited effect calls.
+Full four-file diff reviewed; no full native observer proof inferred.
+
+Changes remain limited to probe/self-tests, contract and SPEC/ADR notes. No app/
+store/schema/public exports/dependency/config/CI or native CLI changes. Preserve
+all earlier notes/evidence, unresolved inventory/pending actions and reset/reuse
+fences. No container/mount/runtime operation, provider/SDK, privilege fallback,
+commit/push/publication or G2 closure. Leave changes uncommitted for owner review.
 
 ## P2 private IPC execution record (historical)
 

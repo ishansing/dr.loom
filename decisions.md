@@ -1943,3 +1943,64 @@ CLI refusals, portable201/2,957 and unchanged95.88%/91.73% coverage, lint/TS che
 Python syntax, drill and audit. Private key `observer-control-boundaries-4ryjmont`
 retains fresh source/hash/command/exit logs. Leave continuation uncommitted; native
 provenance/identity/root/handle evidence and G2 remain open.
+
+**Synthetic sender transport blocker — 2026-10-29:** owner “commit and continue”
+commits boundary coverage as `1162e0d`. Private assert-based FileSink qualification
+uses fragmented acquire, write/flush then awaited end() without payload, an empty
+child environment and isolated Python driver importing the unchanged reader.
+It fails `control-fd` before accepting acquire. Two self-owned-child diagnostics
+confirm valid AF_UNIX/SOCK_STREAM stdin, initially blocking and successfully made
+nonblocking by its owner; S_ISFIFO is false. FIFO-only admission is the confirmed
+local mismatch, not an invalid FD, failed flag change or OS read error.
+
+Do not reinterpret Bun's abstract "pipe" option as S_IFIFO or declare an upstream
+bug. Installed FileSink declarations and current official spawn docs describe the
+write/flush/end API, not a FIFO guarantee. Limited official issue/PR lookup finds
+related socketpair/pipe discussions but no verified selected-release fix for this
+contract mismatch. No upgrade, descriptor-whitelist broadening, ownership wrapper
+or pipe bridge is authorized by these results. The passing FIFO core is unchanged;
+successful sender/confirm/EOF and its negative EOF case remain unqualified.
+
+Private0700 key `observer-sender-w3nxszo3` retains original source/driver/sender
+hashes, exact failing command/exit/log and diagnostic revisions/results (0600).
+The initial diagnostic incorrectly expected stdin already nonblocking; preserve
+its failed assertion separately. Corrected/refined diagnostics pass twice and
+show the owner flag change works. No worker/proc/cgroup access, daemon request,
+native CLI/implementation, lifecycle, provider/SDK or authority/fence change.
+Next owner: choose bounded AF_UNIX/SOCK_STREAM qualification or retain FIFO-only
+and explicitly select an inherited-pipe launch strategy. New notes uncommitted;
+G2 open. Native provenance/identity/root/handle blockers remain separate.
+
+**Approved narrow Unix stream input — 2026-10-29:** owner chose “do what you
+recommend” after comparing direct support with anonymous/named pipes and bridges.
+Extend only synthetic read_from admission to connected nonblocking AF_UNIX/
+SOCK_STREAM alongside FIFOs. No arbitrary sockets, dialing/listening or native
+handler/worker authority. Reuse the byte-bounded decoder/poll/read/deadline/EOF path.
+
+Use socket.socket(fileno=fd) only as an autodetected metadata view and detach in
+finally on admission/refusal/errors; never fromfd/dup, close or configure the FD.
+Installed Python shim and CPython3.15.2 source at
+5e58eaad7c58df58dfa8ea549c87996e01dd1077 confirm the existing-FD branch and detach
+behavior. Constructor init can change flags (and close on initialization failure)
+when a default timeout is configured. Refuse non-None default timeout before
+wrapping; caller must keep descriptor/default configuration stable during the
+synchronous call. Do not reset global defaults. This is source/API reasoning plus
+local fixture tests, not a build-equivalence or concurrent mutation guarantee.
+
+Real socketpair red:31 tests, one intended control-fd error against unchanged
+FIFO-only reader. Narrow guard turns it green; current35 tests add real transport
+failure/half-close checks, rejected datagram/seqpacket/AF_INET/unconnected/blocking
+sockets, default-timeout refusal and metadata failures with exact borrowed-FD
+state preserved. Negative sockets are self-owned, unbound and never dial/listen.
+Preserve prior blocker notes and original failed sender; new private key
+`observer-unix-stream-5fx3qz_8` retains starting diff, red bytes/hash/log and new
+source/unchanged sender-driver copies. Fresh ordered gates pass: lint/strict TS
+check, isolated Python syntax/35 self-tests, three CLI refusals with unread input,
+unchanged Bun FileSink sender/driver against new source (write/end exit0 and missing
+EOF timeout/exit2), portable201 tests/2,957 assertions at unchanged95.88% functions/
+91.73% lines, human-flow drill and14-package audit. Python tests are separate from
+Bun lint/types/coverage. Scoped secret/document/protected checks pass: four changed
+files/19 private artifacts,33 local links, governance/review/source/fixture identities
+and whitespace. Native-entry AST unchanged; no prohibited reader effect calls.
+No production module/schema/dependency/CLI or provider/runtime effects; changes
+uncommitted, native qualification/G2 still open.

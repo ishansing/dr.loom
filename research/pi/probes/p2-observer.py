@@ -3,11 +3,13 @@
 from copy import deepcopy
 from contextlib import contextmanager
 from datetime import datetime
+import fcntl
 import json
 import math
 import os
 import re
 import select
+import socket
 import stat
 import sys
 import time
@@ -112,7 +114,7 @@ class IdentityFrames:
             raise Blocked("frame-eof")
 
     def read_from(self, fd, deadline):
-        """Borrow a stable nonblocking pipe; caller retains ownership until return."""
+        """Borrow stable nonblocking FIFO/Unix stream input; caller retains ownership."""
         if self._failed:
             raise Blocked("frame-poisoned")
         try:
@@ -126,8 +128,21 @@ class IdentityFrames:
             if remaining > 10 or (self._read_deadline is not None and deadline != self._read_deadline):
                 raise Blocked("control-deadline")
             self._read_deadline = deadline
-            if (not _integer(fd, 0, 2**31 - 1) or os.get_blocking(fd)
-                    or not stat.S_ISFIFO(os.fstat(fd).st_mode)):
+            if not _integer(fd, 0, 2**31 - 1) or os.get_blocking(fd):
+                raise Blocked("control-fd")
+            mode = os.fstat(fd).st_mode
+            if stat.S_ISSOCK(mode):
+                # A configured default timeout can make socket construction change FD flags.
+                if socket.getdefaulttimeout() is not None:
+                    raise Blocked("control-fd")
+                view = socket.socket(fileno=fd)
+                try:
+                    if view.family != socket.AF_UNIX or view.type != socket.SOCK_STREAM:
+                        raise Blocked("control-fd")
+                    view.getpeername()
+                finally:
+                    view.detach()
+            elif not stat.S_ISFIFO(mode):
                 raise Blocked("control-fd")
             poll = select.poll()
             poll.register(fd, select.POLLIN | select.POLLHUP)
@@ -312,6 +327,99 @@ class ObserverTests(unittest.TestCase):
             patch.object(select, "poll", return_value=scripted),
         ):
             yield now, waits
+
+    @contextmanager
+    def control_socket(self, kind=socket.SOCK_STREAM):
+        reader, writer = socket.socketpair(socket.AF_UNIX, kind)
+        with reader, writer:
+            reader.setblocking(False)
+            writer.setblocking(False)
+            yield reader.fileno(), writer
+
+    def control_fd_state(self, fd):
+        return (os.fstat(fd), fcntl.fcntl(fd, fcntl.F_GETFL), fcntl.fcntl(fd, fcntl.F_GETFD))
+
+    def test_control_unix_stream_round_trip_preserves_borrowed_fd(self):
+        with self.control_socket() as (fd, writer):
+            status = self.control_fd_state(fd)
+            parser, deadline = IdentityFrames(), time.monotonic() + 1
+            writer.sendall(self.frame())
+            self.assertEqual(parser.read_from(fd, deadline), self.identity)
+            writer.sendall(self.frame(type="confirm"))
+            writer.shutdown(socket.SHUT_WR)
+            self.assertEqual(parser.read_from(fd, deadline), dict(self.identity, type="confirm"))
+            parser.finish()
+            self.assertEqual(self.control_fd_state(fd), status)
+
+    def test_control_unix_stream_failures_poison_without_taking_fd(self):
+        for scenario, reason in [("missing-eof", "control-timeout"),
+                                 ("trailing", "frame-extra"), ("truncated", "control-eof")]:
+            with self.subTest(scenario=scenario), self.control_socket() as (fd, writer), self.control_clock():
+                status, parser = self.control_fd_state(fd), IdentityFrames()
+                writer.sendall(self.frame())
+                self.assertEqual(parser.read_from(fd, 100.25), self.identity)
+                confirm = self.frame(type="confirm")
+                writer.sendall(confirm[:-1] if scenario == "truncated" else confirm)
+                if scenario == "trailing":
+                    writer.sendall(b"x")
+                if scenario != "missing-eof":
+                    writer.shutdown(socket.SHUT_WR)
+                with self.assertRaisesRegex(Blocked, reason):
+                    parser.read_from(fd, 100.25)
+                with self.assertRaises(Blocked):
+                    parser.read_from(fd, 100.5)
+                self.assertEqual(self.control_fd_state(fd), status)
+
+    def test_control_socket_refuses_blocking_other_kinds_and_internet(self):
+        for kind in [socket.SOCK_STREAM, socket.SOCK_DGRAM, socket.SOCK_SEQPACKET]:
+            with self.subTest(kind=kind), self.control_socket(kind) as (fd, _):
+                if kind == socket.SOCK_STREAM:
+                    os.set_blocking(fd, True)
+                status, parser = self.control_fd_state(fd), IdentityFrames()
+                with self.assertRaisesRegex(Blocked, "control-fd"):
+                    parser.read_from(fd, time.monotonic() + 1)
+                with self.assertRaises(Blocked):
+                    parser.feed(self.frame())
+                self.assertEqual(self.control_fd_state(fd), status)
+        for family in [socket.AF_UNIX, socket.AF_INET]:
+            with self.subTest(family=family), socket.socket(family, socket.SOCK_STREAM) as own_socket:
+                own_socket.setblocking(False)
+                fd = own_socket.fileno()
+                status, parser = self.control_fd_state(fd), IdentityFrames()
+                with self.assertRaises(Blocked):
+                    parser.read_from(fd, time.monotonic() + 1)
+                with self.assertRaises(Blocked):
+                    parser.feed(self.frame())
+                self.assertEqual(self.control_fd_state(fd), status)
+
+    def test_control_socket_refuses_default_timeout_before_wrapping(self):
+        with self.control_socket() as (fd, _):
+            status, original = self.control_fd_state(fd), socket.getdefaulttimeout()
+            try:
+                for timeout in [0.0, 0.5]:
+                    socket.setdefaulttimeout(timeout)
+                    parser = IdentityFrames()
+                    with patch.object(socket, "socket", side_effect=AssertionError("must not wrap")):
+                        with self.assertRaisesRegex(Blocked, "control-fd"):
+                            parser.read_from(fd, time.monotonic() + 1)
+                    with self.assertRaises(Blocked):
+                        parser.feed(self.frame())
+                    self.assertEqual(self.control_fd_state(fd), status)
+            finally:
+                socket.setdefaulttimeout(original)
+
+    def test_control_socket_metadata_failures_preserve_fd_and_hide_diagnostics(self):
+        with self.control_socket() as (fd, _):
+            status = self.control_fd_state(fd)
+            for target, name in [(socket, "socket"), (socket.socket, "getpeername")]:
+                parser = IdentityFrames()
+                with patch.object(target, name, side_effect=OSError("PRIVATE-SENTINEL")):
+                    with self.assertRaisesRegex(Blocked, "control-unavailable") as caught:
+                        parser.read_from(fd, time.monotonic() + 1)
+                self.assertNotIn("PRIVATE-SENTINEL", str(caught.exception))
+                with self.assertRaises(Blocked):
+                    parser.feed(self.frame())
+                self.assertEqual(self.control_fd_state(fd), status)
 
     def test_control_read_returns_acquire_without_waiting_for_eof(self):
         with self.control_pipe() as (fd, writer):

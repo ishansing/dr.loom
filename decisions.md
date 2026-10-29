@@ -1933,3 +1933,13 @@ lint/typecheck/coverage. Final source/hash/command/exit logs are separate from r
 under private key `observer-control-final-i803842o`. Owner again requested “commit
 and continue”; scoped document/secret checks precede commit. Native authority and
 all unresolved-domain fences remain unchanged.
+
+**Post-commit boundary coverage:** reader committed as `665e5ce`. Owner's
+continuation stays at the same synthetic read_from seam: two maximum-size frames
+over an owned pipe and a handshake that consumes the remaining deadline. Reuse
+the implementation; these are qualification tests, not new runtime behavior or
+native orchestration. Final ordered rerun passes:30 Python tests, three unread-input
+CLI refusals, portable201/2,957 and unchanged95.88%/91.73% coverage, lint/TS check,
+Python syntax, drill and audit. Private key `observer-control-boundaries-4ryjmont`
+retains fresh source/hash/command/exit logs. Leave continuation uncommitted; native
+provenance/identity/root/handle evidence and G2 remain open.

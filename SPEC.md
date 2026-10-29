@@ -277,6 +277,12 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
 
 ### 1. Phase Objective & Scope
 
+**Post-commit synthetic boundary checks:** owner “commit and continue” commits
+the verified reader as `665e5ce`. Continue only at its existing `read_from` test
+seam: qualify two exactly8192-byte frames and expiration between acquire/confirm.
+No new behavior is requested; retain implementation unchanged if it already
+satisfies these cases. No native input handler, worker access or lifecycle.
+
 **Current continuation — bounded synthetic control input:** owner “commit and
 continue” commits the source trace as `a9b35da` and continues the already accepted
 host-only identity-protocol test seam. Extend the research decoder with bounded
@@ -718,6 +724,12 @@ fresh GET inspection should be needed, no second stop/create/start. Persist boun
 uncertain-stop/post-delta/native-observation facts in existing private result data.
 
 ### 4. Test Plan & Coverage Matrix
+
+Use existing self-owned-pipe/clock fixtures for maximum-frame round trip and a
+deadline expiring during the host handshake. Check the latter leaves confirmation
+bytes unread and poisons further use. These qualify existing behavior, not a new
+implementation red/green; any discovered bug needs a deterministic red before fix.
+Repeat the same ordered gates and baseline comparison below on final bytes.
 
 Tracer red is one real self-owned-pipe frame-read acceptance against an inert
 method, not an import/fixture failure. Then verify first-frame return without EOF,
@@ -2325,6 +2337,37 @@ canonical casing, unchanged protected app/tests/config/lock/CI/review hash, reta
 red/source identities and `git diff --check`. Reviewed all four changed files;
 owner-authorized commit follows. No Docker, worker/proc/cgroup access,
 mount restoration, lifecycle, provider/SDK, push or phase advancement occurred.
+
+#### Post-commit synthetic boundary coverage — 2026-10-29
+
+Verified reader slice committed as `665e5ce` under owner “commit and continue”.
+Continuation adds only two tests at the already accepted read_from seam: deliver
+two exactly8192-byte frames through a real self-owned pipe with acquire returning
+before writer closure; expire the shared deadline during the handshake and prove
+confirmation remains unread, further calls are poisoned and borrowed FD survives.
+Both pass against the existing reader. No implementation change, new abstraction,
+interface, dependency or manufactured red is needed to qualify existing behavior.
+
+Fresh final source/hash and exact command/exit/log evidence is retained separately
+under private key `observer-control-boundaries-4ryjmont`. All seven ordered command
+groups exit0: no-env Bun lint, strict TS check, isolated Python built-in compile
+without pycache,30 Python self-tests, portable201 tests/2,957 assertions with
+unchanged95.88% function/91.73% line coverage, human-flow drill and dependency audit.
+Three CLI refusal cases again exit2 with fixed native-not-implemented output and
+supplied stdin untouched, writer still open. Source hash matches current bytes.
+Python syntax/self-tests remain separate from Bun lint/types/coverage. Final scoped
+checks exit0: four pinned secret scans,33 local links/anchors, seven active sections,
+unique ADRs/canonical casing, protected review hash, unchanged app/test/config/lock/
+CI identities, fresh source/evidence modes and `git diff --check`. AST comparison
+with `665e5ce` confirms all non-test Python code unchanged. No native qualification
+inferred; full continuation diff reviewed.
+
+Continuation changes only this record/scope, ADR-028, observer contract and two
+self-tests; production functions and even the reader implementation are unchanged
+from `665e5ce`. No daemon request, process/worker/cgroup inspection, mount/container
+lifecycle, provider/SDK activation, push or G2 closure. Leave these new changes
+uncommitted. Selected-artifact/independent-init/original-root/retained-handle joins
+remain the next native prerequisites, not facts established by more synthetic tests.
 
 ## P2 private IPC execution record (historical)
 

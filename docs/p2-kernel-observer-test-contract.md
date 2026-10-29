@@ -154,6 +154,11 @@ The next control-input red catches an inert reader returning no frame. Current
 input, borrowed-FD preservation, blocking/nonpipe refusal, shared/expired/extended
 deadlines, EAGAIN/EINTR, late data/readiness, poll/read errors and repeated wakeups.
 Clock/OS scripting stays private to tests; no decoder mocks or worker handles.
+After reader commit `665e5ce`, two further cases qualify the existing implementation:
+real-pipe delivery of two exactly8192-byte frames across the handshake, and timeout
+before any confirmation read when the shared deadline expires between calls.
+The latter also checks poisoning and borrowed-FD preservation. These bring the
+suite to30 tests without changing reader logic; final rerun is recorded in SPEC.
 Fresh control-input ordered local gates pass, with portable201 tests/2,957 assertions and unchanged
 95.88% function/91.73% line coverage. That Bun coverage does not measure this Python
 module. Python syntax/self-tests and three native-disabled CLI cases pass separately.

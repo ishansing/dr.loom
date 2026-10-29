@@ -349,6 +349,20 @@ class ObserverTests(unittest.TestCase):
                 self.assertFalse(os.get_blocking(fd))
                 os.fstat(fd)
 
+    def test_control_two_maximum_frames_preserve_handshake_and_eof(self):
+        with self.control_pipe() as (fd, writer):
+            parser, deadline = IdentityFrames(), time.monotonic() + 2
+            for kind in ["acquire", "confirm"]:
+                line = self.frame(type=kind)[:-1]
+                padded = line + b" " * (8191 - len(line)) + b"\n"
+                self.assertEqual(writer.write(padded), 8192)
+                if kind == "confirm":
+                    writer.close()
+                self.assertEqual(parser.read_from(fd, deadline), dict(self.identity, type=kind))
+            parser.finish()
+            self.assertFalse(os.get_blocking(fd))
+            os.fstat(fd)
+
     def test_control_eof_truncation_extra_and_changed_input_poison_decoder(self):
         both = self.frame() + self.frame(type="confirm")
         for data in [b"", self.frame()[:-1], self.frame(), both + b"x", both + b"\n",
@@ -377,6 +391,23 @@ class ObserverTests(unittest.TestCase):
                 parser.read_from(fd, 102.0)
             with self.assertRaises(Blocked):
                 parser.feed(self.frame(type="confirm"))
+            os.fstat(fd)
+
+    def test_control_expired_handshake_does_not_consume_confirmation(self):
+        with self.control_pipe() as (fd, writer), self.control_clock() as (now, _):
+            parser = IdentityFrames()
+            writer.write(self.frame())
+            self.assertEqual(parser.read_from(fd, 101.0), self.identity)
+            now[0] = 101.0
+            confirmation = self.frame(type="confirm")
+            writer.write(confirmation)
+            writer.close()
+            with self.assertRaisesRegex(Blocked, "control-timeout"):
+                parser.read_from(fd, 101.0)
+            self.assertEqual(os.read(fd, len(confirmation) + 1), confirmation)
+            with self.assertRaises(Blocked):
+                parser.read_from(fd, 102.0)
+            self.assertFalse(os.get_blocking(fd))
             os.fstat(fd)
 
     def test_control_refuses_blocking_invalid_and_nonpipe_descriptors(self):

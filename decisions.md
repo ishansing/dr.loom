@@ -2062,3 +2062,47 @@ scans,39 local links/anchors, seven active sections/unique ADRs, protected sourc
 review hash, exact collection/self-test/result identities and whitespace. Initial
 empty-HOME assertion stays failed/preserved; explicit-off future guard is separate.
 Full report/governance/contract diff reviewed; leave new changes uncommitted.
+
+**Publisher-metadata continuation — 2026-10-30:** owner “commit and continue”
+commits verified research22 as `c57fc78`. Source-only first-party metadata legwork
+for the exact static Docker/extras29.9.2 filenames/architecture and G0-recorded
+archive hashes, never an archive GET/body or extraction. Research-skill delegate
+writes only research23; parent independently reviews critical claims and owns
+governance/security gates. No daemon/runtime/process/proc/cgroup/worker access or
+Go execution, cache/credential read, install, native allowance or phase change.
+
+Preserve trust layers: publisher HTTP record, advertised SHA256, verified signature,
+source/build reproducibility, archive-member/current-file binding and active-runtime
+identity are different evidence. A source archive, OCI image attestation, ETag or
+matching version cannot stand in for these static bundles. Parent checks G0 and
+research22 hashes agree and protected sources/old review remain unchanged; private
+key `static-publisher-metadata-hcsusr6a` retains input/HEAD hashes. New source report,
+independent metadata review and final scoped gates pending. No archive download,
+runtime effects, push/publication or G2 closure authorized; new notes uncommitted.
+
+**Publisher result and independent review:** research23 inspects exact publisher
+index/archive HEADs, eight checksum/signature candidates, official install Markdown,
+exact Moby release metadata and packaging tag discovery. No checked publisher
+record authenticates either historical archive hash. Availability,32-hex ETags,
+source/OCI metadata and empty release assets cannot substitute for archive SHA256,
+signature/build or current member binding.404 candidates are tested guesses, not a
+universal assertion that Docker never publishes checksums elsewhere.
+
+Researcher reports21 requests; oversized rendered documentation was consumed before
+its post-read cap rejection. Preserve that collection-limit exception and do not
+claim it met the bounded-reader policy. Parent archives original return/hash and
+independently performs15 metadata requests with an assert-tested hard body reader
+(256KiB+1 ceiling, text/JSON identity encoding, no redirects, archive HEAD only).
+Critical availability/HEAD/candidate/release/Markdown results corroborate. Parent
+also reads the previously header-blocked tags first page safely (100 records,
+no29.9.2 match); this closes that page-read gap, not all tags/source provenance.
+
+No archive bodies or runtime access; mutable source/metadata is fetch-date evidence,
+not historical notarization or reproducibility. Next owner remains selected-build/
+distribution owner for authenticated exact-file publication and build evidence;
+member comparison/download would need separate scope. No custom upload or trust-
+policy weakening supplied. Final scoped gates pass: four document/11 private-
+artifact scans,37 local links/anchors, seven active sections/unique ADRs, protected
+sources/old review hash, returned-report/source/result identities and whitespace.
+Collection-limit exception stays explicit; new report/contract/governance notes
+uncommitted, native observer and G2 blocked. Full task diff reviewed.

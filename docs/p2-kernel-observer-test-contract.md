@@ -71,6 +71,10 @@ Before opening worker handles, establish these relationships:
   anchors a different home-prefix peer directory with clean-metadata runtime
   candidates. System-package dirty metadata is not selected-runtime evidence;
   sibling bytes/version agreement still does not prove the active dependency chain.
+  [Publisher metadata](../research/pi/23-p2-static-bundle-publisher-metadata.md)
+  confirms current bundle availability, not the recorded archive SHA256 or member/
+  build binding. Candidate404s and empty release assets are scoped lookup results,
+  not proof that no publisher attestation exists elsewhere.
   [Pinned source trace](../research/pi/21-p2-moby-pid-cgroup-trace.md) confirms
   inspect copies cached `State.Pid`; `RestoreTask` attaches without synchronizing
   that state. Repeated inspect/full ID/StartedAt/RestartCount agreement is not

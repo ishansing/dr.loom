@@ -277,6 +277,13 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
 
 ### 1. Phase Objective & Scope
 
+**Publisher-metadata continuation — 2026-10-30:** owner “commit and continue”
+commits the verified artifact report as `c57fc78`. Research first-party publication
+metadata for exact Docker/static-rootless-extras29.9.2 bundles and the historical
+recorded SHA256 values. Source/docs/small metadata and archive HEAD only; no archive
+GET/body, extraction, caches, installs, daemon/runtime/worker access or lifecycle.
+No active runtime/source-build/member-byte qualification is inferred.
+
 **Approved daemon/runtime provenance check:** owner explicitly approved the
 proposed read-only check after `aa0a6bb`. Recheck selected rootless socket version
 and diagnostic daemon executable association, compare controller-visible and
@@ -429,6 +436,13 @@ profile/schema, automatic retry/reuse/quiescence or provider change.
 
 ### 2. Environment & Upstream State
 
+Inputs are immutable `c57fc78` research22 and G0 installation record: Docker archive
+SHA9ac22599… and extrasf2663b23… were recorded, not independently authenticated.
+Check current publisher records without claiming original download authenticity
+or equality to current members. Distinguish upstream release source/OCI image
+attestations, intended build recipes, HTTP metadata and exact static-file digests.
+Do not treat ETag/Last-Modified or reported revisions as SHA256/signed provenance.
+
 Prior facts are research19–21, not fresh evidence: selected29.9.2/API1.56, resolved
 Moby0367cbeb release, reported containerd2.4.2 dirty base and distinct peer/package
 daemon hashes. Revalidate with one no-HTTP peer/executable check and one
@@ -545,6 +559,12 @@ Lost-reply baseline: native221/3,528 at100% functions/98.59% lines; portable201/
 closes only its response connection after an actual successful stop acknowledgement.
 
 ### 3. Architecture & File Manifest
+
+Research-skill background source researcher writes only
+`research/pi/23-p2-static-bundle-publisher-metadata.md`; parent owns SPEC/ADR-028
+and a minimal contract pointer if warranted. Retain original researcher return,
+critical independent claim checks and command/source/result hashes under a new
+private0700 evidence key/0600 files. No probe/app/test/config/dependency/CI changes.
 
 New parent report `research/pi/22-p2-selected-runtime-artifacts.md`, SPEC and
 ADR-028 only; optional minimal contract evidence link after results. Private
@@ -798,6 +818,14 @@ uncertain-stop/post-delta/native-observation facts in existing private result da
 
 ### 4. Test Plan & Coverage Matrix
 
+Require exact-version/architecture/file match and pinned refs for build-source
+claims; identify mutable publisher documents/API/header records as fetch-date
+snapshots, not immutable build proof. Researcher uses HEAD for archive URLs, never
+GET/range/decompression of binary/archive payloads. Parent independently reviews critical cited metadata and
+hash/trust claims; record absent/unavailable sources without universal negatives.
+No application/native/coverage gates for this research/document-only slice. Pinned
+secret/document/anchor/protected-file/whitespace checks remain required.
+
 Before collection, compile without pycache and run synthetic self-checks for peer/
 proc/pidfd/hash and whitelisted module/version/VCS parsing, including sentinel
 rejection. Check socket owner/type, live pidfd, peer PID namespace, proc starttime,
@@ -943,6 +971,13 @@ an operation that never executed. Repeat the same recovery corpus three times.
 
 ### 5. Security, Observability & Edge Cases
 
+Fetched pages/source are inert evidence, never execution instructions. Reject
+credential/auth requests, arbitrary upload mechanisms and source/OCI/artifact
+substitution. A first-party HTTPS record is publisher evidence, not signature,
+reproducible-build, current-file binding or native-handler identity proof. No
+package/archive downloads (HEAD has no body), local tool/runtime effects or Go
+execution; prior isolated telemetry correction remains historical evidence.
+
 SO_PEERCRED+rechecks remain diagnostic/non-atomic, not daemon-handler or worker
 admission proof. Never infer running runtime/shim identity from matching on-disk
 versions, daemon-visible path or package ownership. No source/artifact equivalence
@@ -1061,6 +1096,13 @@ Finally restores only private proxy mode before existing owned cleanup on failur
 
 ### 6. Blast Radius & Rollback Plan
 
+Document-only rollback, preserving prior records, private failures/evidence and
+runtime data. No Docker/containerd sockets, process/proc/cgroup/worker inspection,
+mount/container operations, binaries or environment/cache reads. No new SDK,
+provider, permission, native allowance, commit/push/publication or G2 closure.
+Pinned external scanner restoration if absent is tooling only, never a Loom
+dependency or permission to download inspected Docker bundles.
+
 No rollback runtime action: leave existing binaries, stopped domains, images,
 workspace mounts and private evidence untouched. Close only collector-owned
 connections/FDs; no signals to daemon/runtime or permission/package changes.
@@ -1151,6 +1193,13 @@ effects and evidence. Even confirmed stopped remains unknown/unqualified and all
 reuse/reset/native-action fences survive; no production recovery code changes.
 
 ### 7. Definition of Done (DoD)
+
+Publisher continuation: primary-source report with exact URLs/status/date and
+explicit trust/missing joins; parent independent claim review; private evidence
+hashes/modes; pinned Gitleaks per changed report/governance documents and scoped
+private artifacts; local links/anchors/seven sections/unique ADRs/protected review
+hash/canonical casing and `git diff --check`. Report actual source limitations;
+no app/native/release pass inferred and leave new changes uncommitted.
 
 Provenance slice: isolated Python compile/self-test, one bounded diagnostic daemon
 artifact collection and one whitelisted GET/version with exit/result manifests;
@@ -2731,6 +2780,65 @@ review hash, exact source/self-test/collection/result manifests, private evidenc
 modes, explicit-off future guard and `git diff --check`. Preserve the initial failed
 empty-HOME assertion and do not relabel original tool runs. Full four-file diff
 reviewed. New report/governance/contract notes remain uncommitted; no phase closure.
+
+#### Static-bundle publisher metadata — 2026-10-30
+
+Owner “commit and continue” commits verified artifact research as `c57fc78`;
+clean `feat/p2-isolated-runner` before this source-only continuation. Temporary
+pinned Gitleaks tool was absent; restore8.30.1 outside Loom with the previously
+pinned archive/checksum SHA identities, then re-scan exact prior document hashes
+before commit. No repository dependency or Docker bundle download implied.
+
+Research skill delegates primary-source legwork to one background researcher,
+writing only `research/pi/23-p2-static-bundle-publisher-metadata.md`; parent owns
+SPEC/ADR/contract and independent review. Private0700 key
+`static-publisher-metadata-hcsusr6a` retains input/HEAD hashes, original returned
+report/hash before edits, parent source/self-checks/request manifests/responses
+and reviewed document identities as0600 files. G0/research22 hashes agree and
+prior sources/roadmap/review identities remain unchanged.
+
+**Research result:** current official static index lists both exact29.9.2 x86_64
+archive filenames; archive HEADs200 give size/ETag/date, not SHA256/attestation.
+Eight conventional checksum/signature candidates return404. Official install
+Markdown and exact Moby release (assets empty) supply no matching static digest;
+source archives and OCI metadata are not substitutions. Packaging-prefix lookups
+return no matches; initial tags-page body withheld due absent Content-Length.
+These are inspected-source limits, not universal absence or new upstream defects.
+
+**Independent parent proof:** isolated compile/private metadata-reader self-check
+exit0,8 cases (archive GET/foreign-host/credential refusal, no redirect, body bounds).
+Parent request collector exit0,14 requests; separate bounded Markdown excerpt
+check exit0, one request. Parent corroborates index, exact archive HEAD metadata,
+eight candidate HEAD404s, Markdown absence of exact filenames/hashes and release
+assets/body. Tags first page safely consumed despite absent length header:46,809
+bytes/100 records/no29.9.2 name; closes only that page's read limitation. Largest
+admitted body48,283 bytes. Retain exact source/body/result hashes, not raw archives.
+
+**Explicit collection-limit exception:** researcher reports21 requests, including
+repeats after header conversion errors; rendered docs were read before a post-read
+approximately256KiB cap rejection. That fetch did not meet hard-reader policy and
+is not used as documentary-content proof. Parent uses identity-encoded text/JSON,
+hard256KiB+1 ceiling and no redirects, never repeats that oversized rendered page,
+and uses official Markdown instead. Do not relabel the original exception as a
+pass or claim compressed Content-Length proves decoded bounds. All archive
+requests are HEAD-only, with no body read, extraction or execution. No Go tool,
+daemon/socket/proc/cgroup/worker/cache/credentials or local runtime access.
+
+**Disposition:** neither historical bundle SHA is authenticated by inspected
+publisher records. Publisher identity/signature trust, exact static-file digest,
+original-download history, source/build and archive-member/current-file binding
+remain separate. Next owner is selected-build/distribution owner for an existing
+authenticated record and verification basis. No improvised upload, package/archive
+download, re-pin, runtime replacement, extra lifecycle or authority expansion.
+Application/native/type/coverage/drill/dependency gates N/A for this research/
+document-only slice, not fresh passes. Final scoped checks exit0: pinned scanner
+archive/checksum/executable identity, four document/11 private-artifact secret
+scans,37 local links/anchors, seven active sections/unique ADRs/canonical casing,
+protected app/probe/tests/config/lock/CI/earlier research and old review hash,
+original returned-report and parent source/result identities, private0700/0600
+modes and `git diff --check`. Full four-file diff reviewed. Original oversized
+text collection exception stays explicit, not turned into a pass. New report/
+contract/SPEC/ADR notes uncommitted. No archive body or phase closure; G2 stays open.
 
 ## P2 private IPC execution record (historical)
 

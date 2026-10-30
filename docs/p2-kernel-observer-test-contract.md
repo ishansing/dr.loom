@@ -67,6 +67,10 @@ Before opening worker handles, establish these relationships:
   Release semantics and applicability to the different selected peer artifact
   must still be checked separately; master source and matching PID numbers are
   not substitutes. A caller-supplied `verified: true` is not evidence.
+  [Fresh artifact comparison](../research/pi/22-p2-selected-runtime-artifacts.md)
+  anchors a different home-prefix peer directory with clean-metadata runtime
+  candidates. System-package dirty metadata is not selected-runtime evidence;
+  sibling bytes/version agreement still does not prove the active dependency chain.
   [Pinned source trace](../research/pi/21-p2-moby-pid-cgroup-trace.md) confirms
   inspect copies cached `State.Pid`; `RestoreTask` attaches without synchronizing
   that state. Repeated inspect/full ID/StartedAt/RestartCount agreement is not

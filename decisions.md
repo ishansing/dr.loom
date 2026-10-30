@@ -2004,3 +2004,61 @@ files/19 private artifacts,33 local links, governance/review/source/fixture iden
 and whitespace. Native-entry AST unchanged; no prohibited reader effect calls.
 No production module/schema/dependency/CLI or provider/runtime effects; changes
 uncommitted, native qualification/G2 still open.
+
+**Approved daemon/runtime provenance — 2026-10-29:** Unix stream slice committed
+as `aa0a6bb`; owner explicitly approved the proposed read-only daemon/runtime check
+without workers or lifecycles. Fresh GET/version still reports selected29.9.2/
+API1.56 and prior component versions/revisions. Rechecked peer executable retains
+SHA3a6132d4… and differs from system dockerd32023e40…; controller and daemon-root
+/usr/bin artifacts match each other. PID/cgroup namespaces match controller while
+mount/user namespaces differ. These daemon-only diagnostic joins are non-atomic,
+not handler binding, active-runtime or worker identity.
+
+One follow-up zero-HTTP reanchor validates the exact proc-reported executable's
+parent via no-symlink traversal and matching file object/hash, then reads only five
+known sibling artifact names. Parent is under the controller-home prefix; no
+recognized controller package owner recorded. Sibling containerd/shim and runc
+have different hashes from /usr/bin; RootlessKit is present only in the peer
+directory among these fixed paths. All four candidates report vcs.modified=false
+at already resolved release revisions. System containerd/shim v2.4.2+dirty remains a
+real system-artifact fact, not evidence that the selected runtime uses dirty code.
+
+Existing ADR-006/G0 setup records owner-authorized official static Docker/extras
+under HOME/bin. This explains why system Arch recipes are not the selected peer's
+build authority; new location/bytes are consistent, not authenticated archive-member
+or source/build equivalence. G0 bundle SHA records were explicitly unauthenticated;
+no cache/archive access, package download, upgrade or runtime substitution used.
+Actual active dependency chain/options and dockerd build provenance remain open.
+Do not equate nearby clean metadata with live dependencies or trusted build inputs.
+
+`research/pi/22-p2-selected-runtime-artifacts.md` records full hashes, observations,
+historical versus fresh facts, source references and next-owner requirements.
+Private key `selected-runtime-provenance-fmsp4o1d` retains exact collector/source/
+command/result manifests; synthetic parser/hash/path checks pass before collection.
+Total three daemon connections: two no-HTTP diagnostics and one GET/version, no
+worker handles/proc scans/children/arguments/environment/config/caches read. Native
+CLI, runtime objects, unknown inventory/actions/fences and G2 unchanged. Final
+document/secret/protected-file gates pending; new notes/report uncommitted.
+
+**Metadata-tool telemetry correction:** final evidence check finds Go1.27.3
+created local counter directories/files in the freshly isolated tool HOME despite
+GOTELEMETRY=off. Do not claim that variable disabled collection or that HOME stayed
+empty. Existing user telemetry/config/caches were not read or changed. Installed
+cmd/internal/telemetry and vendored telemetry source defaults missing mode to local
+(uploads disabled), and returns before counter opening for mode off. No network
+capture/upload verification was performed; source-level local-mode behavior is not
+an observed egress proof. Preserve generated private tool state, never delete it or
+present the failed empty-HOME assertion as passed. Verify explicit mode off in a
+separate new private HOME before any further metadata-tool execution. Artifact
+hash/revision observations remain diagnostic; native/G2 still blocked.
+Explicit mode-off preflight subsequently passes in a separate private HOME with
+no new counter/upload state. Only afterward add an off mode file to the original
+collector-owned HOME for future reruns; original local counters are preserved.
+The original executed sources/results still describe the earlier local-mode runs,
+not retrospectively telemetry-off. No additional daemon connections or user-state
+changes; final validator must distinguish this from its failed empty-HOME check.
+Final scoped checks pass: pinned scanner identity, four document/20 private-artifact
+scans,39 local links/anchors, seven active sections/unique ADRs, protected sources/
+review hash, exact collection/self-test/result identities and whitespace. Initial
+empty-HOME assertion stays failed/preserved; explicit-off future guard is separate.
+Full report/governance/contract diff reviewed; leave new changes uncommitted.

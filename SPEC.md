@@ -277,6 +277,13 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
 
 ### 1. Phase Objective & Scope
 
+**Approved daemon/runtime provenance check:** owner explicitly approved the
+proposed read-only check after `aa0a6bb`. Recheck selected rootless socket version
+and diagnostic daemon executable association, compare controller-visible and
+daemon-root-visible runtime artifacts, extract only whitelisted offline build
+metadata/package ownership. No worker handles/process enumeration, container
+inspection or lifecycle; native observer remains disabled and G2 remains open.
+
 **Approved Unix stream support:** owner answered “do what you recommend” to narrow
 nonblocking AF_UNIX/SOCK_STREAM admission alongside FIFOs. Implement at the existing
 synthetic read_from seam; reject datagram/seqpacket/Internet/unconnected sockets
@@ -422,6 +429,19 @@ profile/schema, automatic retry/reuse/quiescence or provider change.
 
 ### 2. Environment & Upstream State
 
+Prior facts are research19–21, not fresh evidence: selected29.9.2/API1.56, resolved
+Moby0367cbeb release, reported containerd2.4.2 dirty base and distinct peer/package
+daemon hashes. Revalidate with one no-HTTP peer/executable check and one
+GET /v1.56/version only; allow one additional zero-HTTP reanchoring connection
+for the selected executable-location follow-up below. Do not query /info/config/
+workers or read launch arguments/environment/credentials/caches. Offline existing
+Go metadata reader uses GOENV=off, local toolchain/no proxy/sumdb and a fresh
+private HOME, never executes inspected daemon/runtime binaries. GOTELEMETRY=off
+proved insufficient to stop local collection; record that failed assumption and
+verify explicit off mode in a separate private HOME before further tool execution.
+Only the collector-owned HOME may then receive an off mode guard for future runs;
+preserve initial local tool state and never read/change user telemetry/config.
+
 Installed Python socket.py delegates fileno construction to _socket without dup.
 Release CPythonv3.15.2 socketmodule.c detects family/type from that descriptor;
 init_sockobject can set nonblocking mode if a default socket timeout is configured.
@@ -525,6 +545,20 @@ Lost-reply baseline: native221/3,528 at100% functions/98.59% lines; portable201/
 closes only its response connection after an actual successful stop acknowledgement.
 
 ### 3. Architecture & File Manifest
+
+New parent report `research/pi/22-p2-selected-runtime-artifacts.md`, SPEC and
+ADR-028 only; optional minimal contract evidence link after results. Private
+collector extends reviewed retained peer/build parsers, anchored daemon proc/
+pidfd/executable and bounded hash checks. Compare exact known paths for dockerd,
+containerd, containerd-shim-runc-v2, runc and rootlesskit under /usr/bin in controller
+and that daemon's anchored root, not a broad search or runtime-process walk.
+Read daemon/controller namespace identities only; path artifacts are not proven
+active dependencies. Keep scripts/source hashes/results in new0700/0600 evidence.
+If /usr/bin views match but the running peer still differs, the additional
+zero-HTTP check may classify that exact daemon executable's path without exposing
+it, query package ownership, and inspect only the same fixed runtime filenames in
+its anchored parent directory. Reject symlink traversal or changed peer identity;
+no directory enumeration, PATH/config/command-line scan.
 
 Extend only `research/pi/probes/p2-observer.py` admission and its inline self-tests;
 reuse existing poll/read/frame machinery. Temporary socket view uses explicit
@@ -764,6 +798,15 @@ uncertain-stop/post-delta/native-observation facts in existing private result da
 
 ### 4. Test Plan & Coverage Matrix
 
+Before collection, compile without pycache and run synthetic self-checks for peer/
+proc/pidfd/hash and whitelisted module/version/VCS parsing, including sentinel
+rejection. Check socket owner/type, live pidfd, peer PID namespace, proc starttime,
+exe/root identities before/after; block changed/missing/denied prerequisites.
+Emit no raw responses/commands/build flags/paths or OS diagnostics. Compare fresh
+hashes and metadata with prior facts, not an assumption of equivalence. App/native/
+coverage gates N/A for documents/private read-only collector; pinned secret,
+document/protected-file/whitespace gates apply before sign-off.
+
 First reproduce one real socketpair round-trip failure against FIFO-only reader,
 then allow only the approved transport. Test half-close EOF, confirmation without
 EOF, trailing bytes, failure poisoning and descriptor status/inheritability
@@ -900,6 +943,13 @@ an operation that never executed. Repeat the same recovery corpus three times.
 
 ### 5. Security, Observability & Edge Cases
 
+SO_PEERCRED+rechecks remain diagnostic/non-atomic, not daemon-handler or worker
+admission proof. Never infer running runtime/shim identity from matching on-disk
+versions, daemon-visible path or package ownership. No source/artifact equivalence
+from dirty flags or release text alone. Read only fixed daemon proc identity/
+namespace/exe/root entries and known runtime files; no children, cmdline, environ,
+FD enumeration or system-wide proc scan. Preserve unknown inventory/actions/fences.
+
 Only trusted caller-selected connected local stream FDs are eligible; type
 admission is not peer authentication or worker provenance. Temporary view never
 owns cleanup, and getpeername output is discarded (never logged). No timeout
@@ -1011,6 +1061,13 @@ Finally restores only private proxy mode before existing owned cleanup on failur
 
 ### 6. Blast Radius & Rollback Plan
 
+No rollback runtime action: leave existing binaries, stopped domains, images,
+workspace mounts and private evidence untouched. Close only collector-owned
+connections/FDs; no signals to daemon/runtime or permission/package changes.
+No fallback endpoint, source execution, build/install/download of packages,
+provider/SDK, mount restoration, worker acquisition or new native allowance.
+New report/governance notes stay uncommitted; no push, publication or phase closure.
+
 Rollback is the observer probe and new notes only; preserve existing uncommitted
 sender-blocker notes, failed fixtures/evidence and immutable runtime inventory.
 Record starting diff under new0700 private key `observer-unix-stream-5fx3qz_8`.
@@ -1094,6 +1151,14 @@ effects and evidence. Even confirmed stopped remains unknown/unqualified and all
 reuse/reset/native-action fences survive; no production recovery code changes.
 
 ### 7. Definition of Done (DoD)
+
+Provenance slice: isolated Python compile/self-test, one bounded diagnostic daemon
+artifact collection and one whitelisted GET/version with exit/result manifests;
+known-path runtime comparisons and offline build metadata, or explicit blockers.
+Record exact private commands/source digests and sanitized facts, distinguish new
+from historical evidence. Pinned Gitleaks on changed documents/private collector
+artifacts; local links/anchors/seven sections/unique ADRs/protected identities and
+`git diff --check`. No application/native test pass or runtime qualification implied.
 
 Unix-stream slice: deterministic red; lint → strict TS check → Python compile
 without pycache → expanded isolated self-tests → three native-disabled CLI/unread
@@ -2586,6 +2651,86 @@ store/schema/public exports/dependency/config/CI or native CLI changes. Preserve
 all earlier notes/evidence, unresolved inventory/pending actions and reset/reuse
 fences. No container/mount/runtime operation, provider/SDK, privilege fallback,
 commit/push/publication or G2 closure. Leave changes uncommitted for owner review.
+
+#### Approved read-only daemon/runtime provenance — 2026-10-29
+
+Owner explicitly approved the proposed provenance check after committed `aa0a6bb`;
+clean `feat/p2-isolated-runner` before scope edits. Read research19–21, ADR-006/
+ADR-028, retained reviewed collectors and roadmap P2 boundaries. New0700 evidence
+key `selected-runtime-provenance-fmsp4o1d` retains starting context, copied/extended
+collectors, source hashes, self-tests and sanitized result/command manifests as0600
+files, plus an initially empty0700 tool HOME. No prior evidence changed.
+
+**Executed:** compile private sources without pycache; `python3 -I -B
+<evidence>/collect.py --self-test` exit0 (peer/proc/pidfd/hash groups,21 whitelisted
+metadata/artifact checks including sentinel/non-ELF/symlink refusal). Collector
+exit0, one no-HTTP diagnostic peer connection plus one GET /v1.56/version only.
+Known /usr/bin artifact files read from controller and anchored daemon-root views;
+all four present files match across those views, rootlesskit absent at that path.
+Server version/component facts unchanged; reported peer SHA3a6132d4… still differs
+from system dockerd32023e40…. PID/cgroup namespace objects match controller;
+mount/user namespace objects differ. No runtime/shim/worker namespace join inferred.
+
+**Targeted follow-up, within approved read-only scope:** when /usr/bin did not
+identify the different peer image, update scope to allow one additional no-HTTP
+reanchor and only fixed filenames beneath the actual executable parent. Path/
+no-symlink synthetic self-check exits0 (10 cases); location collection exits0.
+Retained proc exe and path file share device/inode/SHA256 before/after. Parent
+matches controller-home prefix; filtered package owner absent does not by itself
+prove universal package unownership. Only the five known sibling artifact names
+are opened, never directory listings, children, cmdline/environ or a proc scan.
+
+**Material finding:** peer-directory containerd/shim and runc bytes differ from
+system packages; RootlessKit is present only in that peer directory among the
+fixed paths. All four have embedded metadata vcs.modified=false, matching
+already resolved containerd b7a25261…, runc29dd3dc2… and RootlessKit888c3189…
+release revisions. Peer dockerd exposes Moby/v2 `(devel)` but no whitelisted full
+VCS/linker revision. Standard `(devel)` was previously excluded by the filter, not
+proved absent. System containerd AND shim still show v2.4.2+dirty at the same base;
+that cannot be carried over as a fact about the unproven active dependency chain.
+
+Historical ADR-006/G0 pack already records static Docker/extras29.9.2 under HOME/bin,
+not the Arch package daemon. New home-prefix/fixed-sibling evidence is consistent
+with that setup, but the redacting collector does not attest the exact install
+pathname or archive members. The two recorded static-bundle hashes were explicitly
+not independently authenticated. No package-archive or cache read/download was
+used to manufacture build proof. Full facts/hashes/limits and handoff are in
+`research/pi/22-p2-selected-runtime-artifacts.md`; contract links the distinction.
+
+**Still blocked:** authoritative selected static-bundle source/build/download
+evidence and current member-byte binding; actual active dependency process chain/
+options; independent fresh init identity and originally assigned cgroup/final OCI/
+delegation; mount/procfs/namespace joins and retained worker-handle qualification.
+Matching clean VCS claims, sibling paths or reported versions do not close these.
+No atomic socket-handler proof or fresh worker acquisition, migration/escape
+exclusion, quiescence, reuse/reset/completion or G2 authority follows.
+
+All three connections were daemon-only: two no-HTTP diagnostics plus one read-only
+GET/version. Tools execute existing Go metadata inspection with GOENV off/local
+toolchain/offline proxy+sumdb/private HOME, never inspected binaries.
+No environment/arguments/credentials, /info/config/worker API, process enumeration,
+container/mount action, runtime signals, permissions/install/upgrade, provider/SDK,
+push or publication. App/native/coverage gates N/A for this four-document/private-
+collector evidence slice, not fresh passes.
+
+**Tool precondition correction:** initial final-validator exit1 expected an empty
+tool HOME; Go1.27.3 had created local telemetry state despite GOTELEMETRY=off.
+Retain the failed assertion, generated state and original collector/result hashes.
+Installed source defaults missing mode to local (uploads disabled); no network
+capture/upload proof collected. A separate new private HOME with explicit mode
+off passes `go version` exit0 without counter/upload state. Only then add a mode
+off file to the original collector-owned HOME for safe future reruns; no existing
+user HOME/config/cache or original counter files are touched. Do not relabel initial
+collection as telemetry-off. New source excerpts/guard/preflight manifests retained;
+no daemon connection or runtime action added. This corrects the metadata-tool
+assumption, not build provenance or native qualification. Final scoped checks exit0:
+pinned scanner archive/checksum/executable identity, four document/20 private-artifact
+secret scans,39 local links/anchors, seven active sections/unique ADRs/canonical
+casing, unchanged app/probe/tests/config/lock/CI/earlier research and protected
+review hash, exact source/self-test/collection/result manifests, private evidence
+modes, explicit-off future guard and `git diff --check`. Preserve the initial failed
+empty-HOME assertion and do not relabel original tool runs. Full four-file diff
+reviewed. New report/governance/contract notes remain uncommitted; no phase closure.
 
 ## P2 private IPC execution record (historical)
 

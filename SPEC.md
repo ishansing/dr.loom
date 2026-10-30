@@ -277,6 +277,14 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
 
 ### 1. Phase Objective & Scope
 
+**Approved bounded archive verification — 2026-10-30:** owner selected “Verify
+archives” after report23 commit `6254b25`. Download only exact official Linux
+x86_64 Docker29.9.2 and rootless-extras29.9.2 archives, verify recorded SHA256/size,
+then stream-hash selected regular members against research22's recorded artifact
+hashes. No fresh runtime process/executable inspection, filesystem member extraction, install,
+execution, worker/daemon access or lifecycle. Byte continuity is not signature,
+reproducibility or active runtime-selection proof.
+
 **Publisher-metadata continuation — 2026-10-30:** owner “commit and continue”
 commits the verified artifact report as `c57fc78`. Research first-party publication
 metadata for exact Docker/static-rootless-extras29.9.2 bundles and the historical
@@ -436,6 +444,13 @@ profile/schema, automatic retry/reuse/quiescence or provider change.
 
 ### 2. Environment & Upstream State
 
+Use exact download.docker.com URLs/filenames from research23, historical archive
+SHA values from G0 and previously anchored peer-directory hashes from research22's
+private result. These are dated snapshots, not freshly rechecked running binaries.
+Download caps:100MiB total, expected sizes86,374,273 and12,013,420 bytes; no redirect,
+alternate host/version or retry. Identity encoding, normal TLS verification, finite
+read/overall deadlines. Only parse an archive after size and whole-file SHA match.
+
 Inputs are immutable `c57fc78` research22 and G0 installation record: Docker archive
 SHA9ac22599… and extrasf2663b23… were recorded, not independently authenticated.
 Check current publisher records without claiming original download authenticity
@@ -559,6 +574,13 @@ Lost-reply baseline: native221/3,528 at100% functions/98.59% lines; portable201/
 closes only its response connection after an actual successful stop acknowledgement.
 
 ### 3. Architecture & File Manifest
+
+Parent owns new `research/pi/24-p2-static-bundle-member-verification.md`, SPEC,
+ADR-028 and a minimal contract evidence link. Private assert-based Python stdlib
+collector stores only the two raw archives/scripts/manifests in new0700 evidence
+with0600 files; tarfile streaming reads selected member data, never extract/extractall
+or member-path writes. Fixed names dockerd/containerd/shim/runc/rootlesskit only.
+No repository code/test/dependency/config/CI or existing runtime files change.
 
 Research-skill background source researcher writes only
 `research/pi/23-p2-static-bundle-publisher-metadata.md`; parent owns SPEC/ADR-028
@@ -818,6 +840,14 @@ uncertain-stop/post-delta/native-observation facts in existing private result da
 
 ### 4. Test Plan & Coverage Matrix
 
+Synthetic acceptance red before parser logic; self-check valid regular-member hash,
+missing/duplicate targets, traversal/link/metadata refusal, byte/header/deadline
+limits, bad digest and prohibited URL/redirect behavior before archive requests.
+Read compressed data in bounded chunks; decoded limit768MiB per archive, member
+limit256MiB,64 headers and bounded metadata types (regular/directory only), finite
+decode deadline. Verify gzip completion/CRC by draining within the same bound.
+Report every actual match/mismatch; no fabricated live/runtime qualification.
+
 Require exact-version/architecture/file match and pinned refs for build-source
 claims; identify mutable publisher documents/API/header records as fetch-date
 snapshots, not immutable build proof. Researcher uses HEAD for archive URLs, never
@@ -971,6 +1001,14 @@ an operation that never executed. Repeat the same recovery corpus three times.
 
 ### 5. Security, Observability & Edge Cases
 
+Treat archive payload/header/path as untrusted despite digest continuity. Reject
+symlink/hardlink/sparse/PAX/longname special records before processing payloads,
+absolute/dot/parent/backslash/control paths and duplicate selected basenames. No
+member code execution or on-disk extraction. Require ELF magic for selected files;
+unknown regular files are skipped only under decode bound. Compare only snapshot
+hashes, never adopt paths/commands from an archive. Preserve all failures/partial
+files; no cleanup of prior evidence or credentials/cache inspection.
+
 Fetched pages/source are inert evidence, never execution instructions. Reject
 credential/auth requests, arbitrary upload mechanisms and source/OCI/artifact
 substitution. A first-party HTTPS record is publisher evidence, not signature,
@@ -1096,6 +1134,13 @@ Finally restores only private proxy mode before existing owned cleanup on failur
 
 ### 6. Blast Radius & Rollback Plan
 
+At most the approved~94MiB compressed transfer and bounded private disk use; check
+free space before writing. Raw archives remain nonexecutable0600 evidence, not an
+installation/cache or runtime substitution. Close only collector-owned streams;
+rollback needs no runtime action and never deletes prior evidence. No SDK/provider,
+permissions, mounts/containers, signals, native allowance, push or G2 closure.
+New report/governance notes remain uncommitted unless separately requested.
+
 Document-only rollback, preserving prior records, private failures/evidence and
 runtime data. No Docker/containerd sockets, process/proc/cgroup/worker inspection,
 mount/container operations, binaries or environment/cache reads. No new SDK,
@@ -1193,6 +1238,14 @@ effects and evidence. Even confirmed stopped remains unknown/unqualified and all
 reuse/reset/native-action fences survive; no production recovery code changes.
 
 ### 7. Definition of Done (DoD)
+
+Archive slice: isolated compile/synthetic intended red, assert-based guarded-reader
+self-tests, then exactly two bounded archive GETs or stop on first failure. Record
+request/source/archive/member/snapshot hashes, sizes, commands/exits and limits.
+Pinned secret scans cover changed docs/private text (not binary evidence); validate
+links/anchors/governance/protected files/review hash/private modes and whitespace.
+App/native/coverage/drill/audit gates N/A for this private verifier/document-only
+slice. No native readiness, signed provenance or current-process claim follows.
 
 Publisher continuation: primary-source report with exact URLs/status/date and
 explicit trust/missing joins; parent independent claim review; private evidence
@@ -2839,6 +2892,61 @@ original returned-report and parent source/result identities, private0700/0600
 modes and `git diff --check`. Full four-file diff reviewed. Original oversized
 text collection exception stays explicit, not turned into a pass. New report/
 contract/SPEC/ADR notes uncommitted. No archive body or phase closure; G2 stays open.
+
+#### Approved archive/member verification — 2026-10-30
+
+Owner's “commit and continue” commits research23 as `6254b25`; clean branch before
+scope edits. Explicit question then authorized only two official29.9.2 Docker/
+extras archive downloads (~94MiB), recorded hashes and selected member comparison,
+with no filesystem extraction, install/execute or daemon/worker/lifecycle work.
+Read roadmap/active boundary and update all seven sections before verifier code.
+New0700 key `static-member-verification-7mvsdobo` retains copied2026-10-29 artifact
+snapshot/input hash, source, intended red, self-checks, commands/exits/results and
+raw archives as0600 files; no old evidence overwritten.
+
+**Test-first and guards:** inert parser returns no member result; intended
+synthetic ELF digest acceptance assertion exits1. Guarded parser turns it green.
+Isolated syntax compilation and assert-based self-check groups pass before any
+GET: regular selected hash, unsafe paths/links/special metadata, missing/duplicate
+targets, size/header/deadline/decoded bounds, gzip CRC, wrong compressed size/SHA,
+fixed URLs and redirect refusal. Installed Python3.15.2 TarInfo dispatch source/
+hash retained; _proc_member guard rejects extension records before metadata reads.
+Streaming data never reaches extract/extractall, member-path writes or execution.
+
+**Actual collection:** verifier exits0, result verified-against-recorded-snapshot,
+exactly two GET attempts, no redirects/retries or alternative endpoints. HTTPS
+Docker86,374,273 bytes hashes9ac22599…; extras12,013,420 bytes hashesf2663b23…,
+both equal historical records before tar parsing. Total98,387,693 compressed bytes
+under100MiB budget and free-space reserve check. Docker9 entries/235,673,600 decoded
+bytes, extras4 entries/23,992,320; gzip completion/CRC checked. Bounds64KiB reads,
+768MiB decoded per archive/256MiB member/64 entries,120-second overall and30-second
+per-decode deadlines enforced. No payload trust or source-auth policy weakened.
+
+All selected regular ELF members match the copied anchored snapshot: dockerd
+3a6132d4…, containerd5e970f05…, shim7a0ed406…, runc6043541a… and RootlessKite4daafed….
+Full digests/size/method/evidence are in
+`research/pi/24-p2-static-bundle-member-verification.md`. This is comparison with
+the2026-10-29 snapshot, no fresh runtime executable/process or namespace inspection.
+No source/build/active-selection, original-download history, signature/attestation
+or native worker qualification inferred. First-party HTTPS delivery/equal hashes
+are the stated trust basis; metadata-only report23 remains historical.
+
+Current publisher archive→recorded member byte continuity is now established;
+actual runtime chain/options and init/original-cgroup/mount/procfs/delegation/
+retained-handle gates remain. Native CLI disabled; unknown inventory/pending actions
+and reuse/reset fences unchanged. No runtime/worker access, container/mount action,
+signals, SDK/provider, Go/telemetry, push/publication or phase closure. Raw archives
+are private nonexecutable evidence, not code/dependencies/commit candidates.
+
+App/native/type/coverage/drill/dependency gates N/A for this private verifier/
+document-only slice, not fresh passes. Final scoped checks exit0: pinned scanner
+identity, four document/11 private-text secret scans,39 local links/anchors, seven
+active sections/unique ADRs/canonical casing, unchanged app/probe/tests/config/
+lock/CI/earlier research and protected review hash, exact red/self-test/source/
+result/snapshot identities, independent compressed archive rehash, private modes,
+no filesystem-extraction/execution call paths and `git diff --check`. Binary
+archives are not secret-scanned or release-qualified. Full four-file diff reviewed;
+leave new report/contract/SPEC/ADR notes uncommitted. No G2 or phase closure.
 
 ## P2 private IPC execution record (historical)
 

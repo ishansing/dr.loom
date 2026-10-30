@@ -75,6 +75,10 @@ Before opening worker handles, establish these relationships:
   confirms current bundle availability, not the recorded archive SHA256 or member/
   build binding. Candidate404s and empty release assets are scoped lookup results,
   not proof that no publisher attestation exists elsewhere.
+  [Separately approved archive/member verification](../research/pi/24-p2-static-bundle-member-verification.md)
+  now matches both historical archive hashes and all five selected members to the
+  2026-10-29 artifact snapshot. This closes that byte-continuity check only: no
+  artifact signature/source-build proof or fresh active-runtime identity follows.
   [Pinned source trace](../research/pi/21-p2-moby-pid-cgroup-trace.md) confirms
   inspect copies cached `State.Pid`; `RestoreTask` attaches without synchronizing
   that state. Repeated inspect/full ID/StartedAt/RestartCount agreement is not

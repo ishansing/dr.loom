@@ -2106,3 +2106,46 @@ artifact scans,37 local links/anchors, seven active sections/unique ADRs, protec
 sources/old review hash, returned-report/source/result identities and whitespace.
 Collection-limit exception stays explicit; new report/contract/governance notes
 uncommitted, native observer and G2 blocked. Full task diff reviewed.
+
+**Approved bounded archive/member comparison — 2026-10-30:** publisher report
+committed as `6254b25` under owner “commit and continue”. Owner separately selected
+“Verify archives” for exactly two official29.9.2 Docker/extras archives (~94MiB),
+recorded SHA/size checks and selected member hashes. No filesystem extraction,
+installation/execution, daemon/worker inspection or lifecycle; compare only the
+previously anchored2026-10-29 artifact snapshot, not a fresh process/file claim.
+
+Private key `static-member-verification-7mvsdobo` retains copied snapshot/hash,
+synthetic red/green and bounded stdlib verifier. Entire compressed SHA/size must
+match before parsing; fixed TLS URLs, no redirects/retries,100MiB total bound.
+Streaming gzip/tar uses768MiB decoded/256MiB member/64 header bounds and deadlines;
+reject special records/unsafe paths before metadata processing, hash only selected
+regular ELF members in memory, then drain gzip for completion/CRC. Installed
+Python3.15.2 TarInfo dispatch source inspected; a narrow _proc_member subclass
+guard is tested through the stream parser, not assumed from older frombuf hooks.
+No generic extraction/download service or repository implementation introduced.
+
+Intended red is an empty parser result failing the known synthetic ELF member
+hash. Guard self-checks pass for valid data, missing/duplicates, traversal, links/
+special metadata, count/size/deadline/decoded bounds, gzip CRC, wrong compressed
+digest/size, fixed URLs and no redirect. Collection/real comparison and final
+document/secret/protected-file gates pending. No signature/build proof or active
+runtime authority follows from a future byte match; all native/G2 fences remain.
+
+**Archive/member result:** exactly two approved GETs complete with no redirects/
+retries,98,387,693 compressed bytes total. Both full SHA256 values equal the G0
+records before parsing. All five selected regular ELF members equal the recorded
+2026-10-29 peer-directory hashes (dockerd/containerd/shim/runc/rootlesskit).
+Docker traverses9 entries/235,673,600 decoded bytes; extras4/23,992,320, within
+bounds and with gzip completion/CRC checked. Original runtime files not reread.
+
+This upgrades metadata-only evidence to current publisher HTTPS-byte/archive/
+recorded-member continuity, not signing, original transport history, source-build
+reproducibility or live runtime selection. Research24 records exact digests, bounds,
+test-first evidence and remaining joins; prior negative metadata findings remain
+historical, not silently rewritten. No filesystem member extraction/install/
+execution, process/daemon/worker/mount/container effects, Go or provider/SDK use.
+Private archives stay0600 evidence, never repository/commit artifacts. Final scoped
+checks pass: four document/11 private-text secret scans,39 local links/anchors,
+governance/protected-file/review hashes, red/source/result/snapshot identities,
+independent compressed-archive rehash, private modes and whitespace. Binary archives
+are not secret-scanned/release-qualified. Changes remain uncommitted and G2 open.

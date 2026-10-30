@@ -2182,3 +2182,29 @@ Native observer/G2/actions/fences unchanged. Final scoped checks pass: four
 document/12 private-text secret scans,39 local links/anchors, governance/protected
 sources/review hash, source/red/result/input identities, private modes and whitespace.
 Live exit2 remains failed/blocked. Notes uncommitted; full task diff reviewed.
+
+**Explicit256-thread retry — 2026-10-30:** owner “commit and continue(Approved)”
+commits preserved64-bound result as `5cce786` and approves exactly one read-only
+retry with256 daemon task entries, unchanged16 child IDs/all exclusions. Copy
+collector/inputs to private key `daemon-containerd-retry-sim5tg2d`; never edit the
+original64-bound evidence. New65-entry synthetic acceptance fails against copied
+old guard first; then exact256 acceptance/257 refusal and all prior self-checks
+pass. AST comparison confirms only one non-test change:64→256 task-count guard;
+helpers, expected members and all role/identity/owner/parent/hash/ns/pidfd checks
+unchanged. Syntax and scoped source/input secret preflight pass before live retry.
+No further bound increase/retry or worker/shim/runc/config/args/env/lifecycle work
+authorized. Live result/final gates pending; new notes remain uncommitted.
+
+**256 retry outcome:** the single approved zero-HTTP retry exits2, again
+bounded-daemon-children/daemon-thread-bound. After256 validated task entries,
+the next entry is rejected before any individual task-directory/children-file
+access. No exact task total/child IDs or containerd candidate/exe/pidfd/ns read;
+final revalidation not reached. No signals, recursive process walk or worker/
+shim/runc inspection. Research26 records source delta, tests and blocked result.
+Both64 and256 failures remain intact, not waived by successful synthetic tests.
+Pause; no additional retry/bound expansion or locator workaround authorized.
+Next owner must explicitly select another bounded discovery plan/limited check.
+Final scoped checks pass: four document/12 private-text secret scans,40 local
+links/anchors, governance/protected sources/review hash, source/red/result/input/
+original64 identities, limit-only AST delta, private modes and whitespace. Live
+exit2 remains failed/blocked; new notes uncommitted, native/G2/fences unchanged.

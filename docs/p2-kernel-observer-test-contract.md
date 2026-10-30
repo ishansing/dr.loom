@@ -83,6 +83,9 @@ Before opening worker handles, establish these relationships:
   stops at its64-thread guard before child discovery. It supplies no runtime
   association, client-selection or worker admission proof; a larger bound requires
   a separate owner decision, not automatic retry.
+  [Explicitly approved256-thread retry](../research/pi/26-p2-daemon-containerd-retry.md)
+  also stops at its bound before child discovery. Both failures remain preserved;
+  no further attempt, runtime association or full-chain proof follows.
   [Pinned source trace](../research/pi/21-p2-moby-pid-cgroup-trace.md) confirms
   inspect copies cached `State.Pid`; `RestoreTask` attaches without synchronizing
   that state. Repeated inspect/full ID/StartedAt/RestartCount agreement is not

@@ -277,6 +277,12 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
 
 ### 1. Phase Objective & Scope
 
+**Locator-plan continuation — 2026-10-30:** owner “commit and continue” commits
+the256-bound result as `14fa21c`. Source-only planning for an alternative single
+containerd PID-file locator, without another process walk/limit increase. Establish
+exact pinned Moby/containerd path/writer semantics and the smallest future approval
+scope; no actual PID-file/runtime/worker read or retry is authorized by this plan.
+
 **Approved256-thread retry — 2026-10-30:** owner “commit and continue(Approved)”
 commits research25 as `5cce786` and explicitly approves the proposed single
 read-only retry with256 daemon thread entries, unchanged16 direct-child IDs and
@@ -459,6 +465,12 @@ profile/schema, automatic retry/reuse/quiescence or provider change.
 
 ### 2. Environment & Upstream State
 
+Use existing pinned Moby0367cbeb49b9d98cb0b4f51e95f7b54b4803e76c and relevant
+vendored/shipped containerd sources identified in research19–21. Report24 ties
+publisher bytes to dated artifact snapshots, not exact source-build or actual
+launch configuration. Defaults/flags/rootless environment and PID namespace views
+must stay conditional; do not infer a selected path from version text alone.
+
 Reuse the exact reviewed64-bound collector/helpers and verified archive-member
 snapshot in a new private directory. Change only the task-count guard and its
 boundary tests; keep20-second internal/35-second outer timeout, fixed selected
@@ -602,6 +614,12 @@ Lost-reply baseline: native221/3,528 at100% functions/98.59% lines; portable201/
 closes only its response connection after an actual successful stop acknowledgement.
 
 ### 3. Architecture & File Manifest
+
+Research-skill delegate writes only
+`research/pi/27-p2-containerd-locator-contract.md`; parent owns SPEC/ADR-028 and
+minimal contract pointer. No implementation or runtime collector. Preserve old
+64/256 failures, input/source hashes and original returned report under new private
+0700/0600 evidence. No app/probe/tests/dependencies/config/CI or prior report edits.
 
 New `research/pi/26-p2-daemon-containerd-retry.md`, SPEC/ADR-028 and minimal current
 contract pointer. Private copy only: approved256 task bound and synthetic65/256
@@ -882,6 +900,13 @@ uncertain-stop/post-delta/native-observation facts in existing private result da
 
 ### 4. Test Plan & Coverage Matrix
 
+Trace the exact supervisor caller, state-dir construction, PID-file writer and
+cleanup/recovery/override cases with immutable primary citations. Parent reviews
+critical claims before proposing any path/read. Document locator spoof/stale/PID-
+reuse/namespace/permission limits; neither owner/path/name nor number alone proves
+runtime selection. Source/document checks only; application/native tests N/A.
+Pinned secret/link/governance/protected-file/whitespace gates remain required.
+
 Synthetic65-task acceptance must fail against copied64 guard before modification.
 Then rerun all parser/owner/parent/hash/pidfd/bounds self-checks plus exact256
 acceptance and257 refusal, compile without pycache and secret preflight. One live
@@ -1058,6 +1083,13 @@ an operation that never executed. Repeat the same recovery corpus three times.
 
 ### 5. Security, Observability & Edge Cases
 
+No system-wide/daemon task/child scan, PID-file filesystem lookup, proc/daemon/
+containerd API, commands/environment/config/cache/credentials, Go or lifecycle.
+Read only small first-party source/docs metadata with bounded responses; no
+archives, package downloads or fetched-code execution. A future PID file is merely
+a candidate locator and needs explicit owner scope plus existing guarded identity
+checks; do not promote default path or stale number into authority.
+
 Explicit larger task bound is not recursive process-walk permission. Keep at most
 16 unique direct-child IDs; skip other owners/roles and fingerprint only a single
 same-owner direct containerd candidate. No worker/shim/runc handles, signals,
@@ -1206,6 +1238,11 @@ Finally restores only private proxy mode before existing owned cleanup on failur
 
 ### 6. Blast Radius & Rollback Plan
 
+Document-only planning, preserving all runtime objects and evidence; no new
+inspection allowance, retries, larger bounds, workers/shim/runc/native observer,
+permissions, SDK/provider or G2 authority. No commit/push/publication for the new
+plan unless separately requested. Rollback cannot remove prior failure evidence.
+
 One separately approved read-only retry; close only collector-owned handles and
 preserve all prior/new evidence, runtime files, images, stopped containers and
 inventory/action/reset fences. No installs, downloads, native implementation,
@@ -1323,6 +1360,13 @@ effects and evidence. Even confirmed stopped remains unknown/unqualified and all
 reuse/reset/native-action fences survive; no production recovery code changes.
 
 ### 7. Definition of Done (DoD)
+
+Locator slice: cited exact-revision plan, independent parent source review,
+explicit smallest owner decision or honest no-safe-locator finding. Retain original
+return/check hashes and private modes. Pinned secret scans of changed docs/private
+text, links/anchors/seven sections/unique ADRs/canonical casing/protected sources/
+review hash and `git diff --check`. No runtime/app/live pass; leave new notes
+uncommitted and stop before any locator read pending explicit approval.
 
 Retry slice: retained intended red, isolated compile/self-tests/secret preflight,
 one live collector command with exact exit/result/source/input hashes; separate
@@ -3138,6 +3182,61 @@ research/review hash, source/red/result/input/original64 identities, one-constan
 non-test AST change, private modes and `git diff --check`. Neither live exit2 is
 turned into a pass. Full four-file diff reviewed; leave new report/contract/SPEC/
 ADR evidence uncommitted. No additional retry, authority or G2/phase closure.
+
+#### Single PID-file locator plan — source only, 2026-10-30
+
+Owner “commit and continue” commits research26 as `14fa21c`, clean branch before
+source-plan scope edits. No further process walk, increased bound or actual
+PID-file inspection. Research-skill delegate writes only
+`research/pi/27-p2-containerd-locator-contract.md`; parent owns independent source
+review, contract and SPEC/ADR. Private0700 key `containerd-locator-plan-u0607joa`
+retains both failure result copies/input hashes, original returned plan/hash,
+parent bounded source collector/self-check/command/result/source identities and
+exact-commit source text as0600 files. Old failures and protected sources unchanged.
+
+**Pinned result:** Moby0367cbeb… main calls daemon/command, whose embedded/explicit
+address/system-address paths precede managed supervision. Managed state base is
+Join(ExecRoot,"containerd"); PID file is directly containerd.pid beneath it, not
+the daemon runtime-state subdirectory. Dockerd's supervisor publishes cmd.Process.Pid
+after child Start with pidfile.Write0644/non-atomic bytes, before health readiness.
+It may reuse a positive live number at startup without spawning/rewriting, and
+shutdown/restart can change/remove publication. This is source behavior only;
+do not execute its signal/removal paths or grant that authority to the collector.
+
+RootlessKit-default ExecRoot depends on nonempty actual XDG_RUNTIME_DIR. No
+/run/user/UID fallback is synthesized by GetRuntimeDir; --rootless alone does not
+set that premise. --exec-root, explicit/external/embedded mode, data-root and
+DOCKER_CONTAINERD_ROOT distinctions remain conditional. No actual config/flags/
+environment or view inspected; source formula does not select a deployed path.
+PID-file number lives in publisher's PID view and is a locator, not identity,
+client binding, readiness or cleanup proof. Parent requires exact owner-supplied/
+approved view+absolute path and separate bounded-read/guarded-candidate scope
+before any actual attempt; no guessed path sequence or PID arithmetic workaround.
+
+**Independent source checks:** parent bounded reader syntax/self-check exits0
+(reused8 request/bound/redirect checks plus an11-entry pinned-path manifest check).
+Collector exits0,11 HTTP200 text/plain identity-encoded/no-redirect sources,
+802–41,533 bytes, each below hard256KiB+1 ceiling. Review confirms writer/timing/
+format/mode, init branch ordering, state/exec-root formulas, rootless defaults and
+live-number startup reuse/health/cleanup limitations. Private source hashes retained;
+no fetched code compiled/executed. Supervisor syscall helper/deployment namespace
+flags are not inferred from call-site arguments; actual child views remain open.
+
+**Delegate exceptions:**22 attempted requests exceeded the approximate16 budget;
+initial3 fetch attempts cannot be certified against streaming cap, and a prior
+AbortSignal setup failed before dispatch. Report preserves these limitations;
+bounded parent review does not retroactively pass original collection constraints.
+No runtime/PID-file/proc/cgroup/worker, environment/args/config/cache/credential,
+Go/SDK/provider, archive/package download, install, permission change, container/
+mount or lifecycle work. App/native/coverage/drill/dependency gates N/A for this
+source-plan/document-only slice, not fresh passes. Final scoped checks exit0:
+pinned scanner identity; four document/24 private-text secret scans;42 local links/
+anchors; seven active sections/unique ADRs/canonical casing; protected input/review
+hashes; original return/source/command/result identities; unchanged64/256 failures;
+0700/0600 modes; offline reader self-test and `git diff --check`. Full four-file
+diff reviewed; collection exceptions remain recorded, not waived. Final document
+hashes retained privately. New report/contract/SPEC/ADR notes uncommitted;
+no further inspection allowance, commit/push/publication or G2/phase closure.
 
 ## P2 private IPC execution record (historical)
 

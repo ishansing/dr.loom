@@ -2208,3 +2208,49 @@ Final scoped checks pass: four document/12 private-text secret scans,40 local
 links/anchors, governance/protected sources/review hash, source/red/result/input/
 original64 identities, limit-only AST delta, private modes and whitespace. Live
 exit2 remains failed/blocked; new notes uncommitted, native/G2/fences unchanged.
+
+**Single-locator plan continuation — 2026-10-30:** owner “commit and continue”
+commits the256-bound refusal as `14fa21c`. Continue source-only: identify a pinned
+managed-containerd PID-file derivation/writer and safe future single-locator
+contract instead of more/larger task walks. Research-skill delegate writes only
+research27; parent owns independent review/governance. No actual locator/PID-file,
+proc/daemon/runtime read, retry or new inspection allowance. Both live failures
+remain preserved under new private key `containerd-locator-plan-u0607joa` with
+input hashes and unchanged protected sources/review identity.
+
+Source defaults, PID files, ownership and names are locator evidence only, not
+runtime selection, fresh process identity, client binding or cleanup authority.
+Any future read needs explicit owner approval of exact path/view and unchanged
+role/UID/PPID/starttime/verified-byte/ns/liveness guards. Do not infer actual
+exec-root/flags/environment, read raw config/args or try multiple guessed paths.
+Pinned-source plan/independent review/final gates pending; new notes uncommitted,
+native observer/G2/action/reset fences unchanged.
+
+**Locator source result:** at pinned Moby0367cbeb…, only the managed supervisor
+branch derives `Join(ExecRoot,"containerd","containerd.pid")`. Dockerd publishes
+cmd.Process.Pid after Start via non-atomic0644 Write before health readiness;
+startup can reuse a live number without rewriting. Embedded/external/override
+branches can invalidate that locator premise. RootlessKit defaults depend on
+actual XDG_RUNTIME_DIR, not UID/socket-derived synthesis; runtime versus persistent
+state roots and dockerd --pidfile are separate. No actual branch/path/view was
+read. Process/file/owner consistency alone cannot prove client selection or writer.
+
+Research27 proposes strict no-symlink/ownership/write-authority/size/content/file-
+identity bounds, then one guarded runtime candidate with existing parent/UID/
+starttime/verified-byte/ns/liveness checks. Stale/reparented/reused PID or ambiguity
+blocks, never authorizes fallback or relaxed PPID. Exact trusted view+absolute path
+and separate bounded-read approval remain owner inputs; no locator read performed.
+
+Collection exceptions remain explicit: researcher reports22 attempts versus the
+approximate16-request budget, and initial fetches lack certified streaming caps.
+Parent preserves original return/hash, independently fetches11 exact-commit files
+under a tested256KiB+1 identity-encoding/no-redirect reader, and corroborates the
+critical writer/path/default/override/recovery claims. No fetched source execution,
+runtime/proc/PID-file, Go or worker access. Parent source/response/hash evidence
+retained under `containerd-locator-plan-u0607joa`. Final scoped checks exit0:
+four document/24 private-text pinned secret scans,42 local links/anchors, seven
+sections/unique ADRs/canonical casing, protected input/review hashes, original
+return/source/command/result identities, unchanged64/256 failures, private modes,
+offline reader self-test and whitespace. Full diff reviewed; final document hashes
+retained privately. Collection exceptions remain recorded, not waived.
+New plan/contract/governance notes uncommitted; no native/G2 authority or retry.

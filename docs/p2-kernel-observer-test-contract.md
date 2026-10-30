@@ -86,6 +86,10 @@ Before opening worker handles, establish these relationships:
   [Explicitly approved256-thread retry](../research/pi/26-p2-daemon-containerd-retry.md)
   also stops at its bound before child discovery. Both failures remain preserved;
   no further attempt, runtime association or full-chain proof follows.
+  [Pinned single-locator plan](../research/pi/27-p2-containerd-locator-contract.md)
+  identifies a conditional supervisor PID file, not an observed deployment path.
+  Owner must select one trusted view/path and separately approve its bounded read;
+  no default-path probe, locator workaround or new process walk is authorized.
   [Pinned source trace](../research/pi/21-p2-moby-pid-cgroup-trace.md) confirms
   inspect copies cached `State.Pid`; `RestoreTask` attaches without synchronizing
   that state. Repeated inspect/full ID/StartedAt/RestartCount agreement is not

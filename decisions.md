@@ -2149,3 +2149,36 @@ checks pass: four document/11 private-text secret scans,39 local links/anchors,
 governance/protected-file/review hashes, red/source/result/snapshot identities,
 independent compressed-archive rehash, private modes and whitespace. Binary archives
 are not secret-scanned/release-qualified. Changes remain uncommitted and G2 open.
+
+**Approved bounded daemon→containerd association — 2026-10-30:** archive report
+committed as `be19fc2`. Owner separately selected “Check containerd” for one
+zero-HTTP reanchor and bounded daemon thread/direct-child identity metadata,
+maximum64 task directories/16 direct-child IDs. Same-owner/parent/containerd comm
+is only a filter; retained executable bytes must match verified archive size/SHA
+before a candidate runtime pidfd is opened, then relation/starttime/exe/ns/liveness
+are rechecked. Skip other children; no raw arguments/environment/memory, worker
+handles, shim/runc inspection, signals/config/lifecycle or process-tree recursion.
+
+New private key `daemon-containerd-association-ncyh2vum` retains member-result
+snapshot/hash, copied reviewed peer helpers, intended identity-parser red and
+self-checks. Guards cover strict PID tokens, task/child/symlink/deadline bounds,
+proc comm/PPID/starttime, owner/parent/role filtering and existing hash/pidfd logic.
+No Go or downloaded code executes. Lookup/rechecks are non-atomic and cannot
+prove daemon-handler/client selection, absence of PID ABA, full runtime chain or
+worker identity; no cleanup/reuse/G2 authority. Live result and final gates pending;
+new evidence/report/governance changes remain uncommitted.
+
+**Association attempt blocked:** one zero-HTTP collector run exits2 at
+bounded-daemon-children/daemon-thread-bound. After64 validated task entries, the
+next entry triggers refusal before any thread-directory/children-file reads.
+No child proc/containerd candidate/executable/pidfd/namespace inspection occurred;
+no exact thread count or external-runtime inference made. Preliminary daemon
+guards were reached, but final identity revalidation/association did not complete.
+Do not turn this required failed check into a pass, silently raise the bound or
+use the partial thread list. Research25 retains method/result and next owner
+choice: explicitly approve a finite larger bound (e.g.256) and one read-only retry,
+still16 child IDs/all exclusions, or pause. No new allowance inferred from failure.
+Native observer/G2/actions/fences unchanged. Final scoped checks pass: four
+document/12 private-text secret scans,39 local links/anchors, governance/protected
+sources/review hash, source/red/result/input identities, private modes and whitespace.
+Live exit2 remains failed/blocked. Notes uncommitted; full task diff reviewed.

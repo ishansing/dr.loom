@@ -277,6 +277,14 @@ high-risk taxonomy and audit retention (`research/phase-1/06-r11-audit-vocabular
 
 ### 1. Phase Objective & Scope
 
+**Approved daemon→containerd diagnostic — 2026-10-30:** owner selected “Check
+containerd” after archive report commit `be19fc2`. Reanchor the selected rootless
+socket peer, bound inspection to64 daemon thread entries/16 direct-child IDs,
+then fingerprint one same-owner, parent/identity-rechecked containerd candidate
+against verified archive bytes. Skip other children. No arguments/environment/
+memory, worker handles, shim/runc inspection, signal/config/container lifecycle.
+Result is diagnostic association, not full runtime selection or G2 authority.
+
 **Approved bounded archive verification — 2026-10-30:** owner selected “Verify
 archives” after report23 commit `6254b25`. Download only exact official Linux
 x86_64 Docker29.9.2 and rootless-extras29.9.2 archives, verify recorded SHA256/size,
@@ -444,6 +452,13 @@ profile/schema, automatic retry/reuse/quiescence or provider change.
 
 ### 2. Environment & Upstream State
 
+Use installed Linux/Python proc identity and pidfd APIs, existing anchored-reader/
+hash parsers, and immutable report24/private archive-member result as expected
+dockerd/containerd sizes/hashes. No Go, metadata execution or binary download.
+One no-HTTP Unix connection only. Check controller /proc/self PID agrees with
+os.getpid and daemon PID namespace before interpreting child IDs; blocked on
+view/permission/identity ambiguity or any bound exceeded. No fallback endpoint.
+
 Use exact download.docker.com URLs/filenames from research23, historical archive
 SHA values from G0 and previously anchored peer-directory hashes from research22's
 private result. These are dated snapshots, not freshly rechecked running binaries.
@@ -574,6 +589,14 @@ Lost-reply baseline: native221/3,528 at100% functions/98.59% lines; portable201/
 closes only its response connection after an actual successful stop acknowledgement.
 
 ### 3. Architecture & File Manifest
+
+New parent report `research/pi/25-p2-daemon-containerd-association.md`, SPEC,
+ADR-028 and minimal contract pointer only. Private collector copies verified
+member result and reviewed pure peer helpers; new thread/direct-child parsers
+are assert-tested before live access. Read daemon task directory/children only,
+not system-wide proc. Stat child ownership first; only same-owner candidates
+get identity fields, and only containerd-role/executable matches get retained
+runtime identity handles. No repository implementation/test/dependency/CI changes.
 
 Parent owns new `research/pi/24-p2-static-bundle-member-verification.md`, SPEC,
 ADR-028 and a minimal contract evidence link. Private assert-based Python stdlib
@@ -840,6 +863,14 @@ uncertain-stop/post-delta/native-observation facts in existing private result da
 
 ### 4. Test Plan & Coverage Matrix
 
+Self-check strict bounded PID lists, task counts/symlinks, process-stat comm/PPID/
+starttime parsing, same-owner/parent/containerd-role filtering and hash bounds.
+Compile without pycache before collection. Require exactly one candidate, matching
+ELF size/SHA and unchanged parent/starttime/executable/ns/liveness across reads.
+Block ambiguous/missing/changed/denied observations, never choose by comm alone.
+App/native/coverage gates N/A; final pinned secret/document/protected-file checks
+and exact source/result/command manifests remain mandatory.
+
 Synthetic acceptance red before parser logic; self-check valid regular-member hash,
 missing/duplicate targets, traversal/link/metadata refusal, byte/header/deadline
 limits, bad digest and prohibited URL/redirect behavior before archive requests.
@@ -1001,6 +1032,14 @@ an operation that never executed. Repeat the same recovery corpus three times.
 
 ### 5. Security, Observability & Edge Cases
 
+Bounded direct-child discovery is separately approved, not permission for recursive
+process walking, worker/shim/runc probing or raw command/config reads. Child
+names are a filter only; hash against verified member bytes before retaining a
+runtime pidfd, then recheck relation/identity. No signaling. SO_PEERCRED/proc/pidfd
+and namespace rechecks remain non-atomic diagnostic joins, not authenticated
+handler/client-selection proof. Keep raw PIDs/comm/namespace IDs out of report;
+emit only fixed classifications/counts/hash/equality fields, no raw diagnostics.
+
 Treat archive payload/header/path as untrusted despite digest continuity. Reject
 symlink/hardlink/sparse/PAX/longname special records before processing payloads,
 absolute/dot/parent/backslash/control paths and duplicate selected basenames. No
@@ -1134,6 +1173,13 @@ Finally restores only private proxy mode before existing owned cleanup on failur
 
 ### 6. Blast Radius & Rollback Plan
 
+Read-only daemon/runtime identity metadata; close only collector-owned handles.
+No downloads, archives reread for payloads, Go/telemetry, workers, root/cgroupfs/
+mount access, native observer implementation or lifecycle. Preserve all artifacts,
+runtime files, stopped domains, pending inventory/actions and reuse/reset fences.
+New private0700/0600 evidence and document notes only; no privilege fallback,
+SDK/provider activation, push/publication/commit or G2 closure.
+
 At most the approved~94MiB compressed transfer and bounded private disk use; check
 free space before writing. Raw archives remain nonexecutable0600 evidence, not an
 installation/cache or runtime substitution. Close only collector-owned streams;
@@ -1238,6 +1284,13 @@ effects and evidence. Even confirmed stopped remains unknown/unqualified and all
 reuse/reset/native-action fences survive; no production recovery code changes.
 
 ### 7. Definition of Done (DoD)
+
+Daemon-child slice: isolated syntax/self-tests followed by one bounded zero-HTTP
+diagnostic collector or explicit blocked result. Record exact identities/hashes/
+namespace equality and lineage limits without upgrading to full chain proof.
+Retain scripts/commands/exits/results; pinned Gitleaks on changed docs/private
+text, links/anchors/seven sections/unique ADRs/canonical casing/protected sources/
+review hash/private modes and `git diff --check`. Leave new changes uncommitted.
 
 Archive slice: isolated compile/synthetic intended red, assert-based guarded-reader
 self-tests, then exactly two bounded archive GETs or stop on first failure. Record
@@ -2947,6 +3000,53 @@ result/snapshot identities, independent compressed archive rehash, private modes
 no filesystem-extraction/execution call paths and `git diff --check`. Binary
 archives are not secret-scanned or release-qualified. Full four-file diff reviewed;
 leave new report/contract/SPEC/ADR notes uncommitted. No G2 or phase closure.
+
+#### Approved daemon/containerd preflight — blocked, 2026-10-30
+
+Owner “commit and continue” commits archive verification as `be19fc2`, clean
+branch. Explicit question then authorizes only a bounded read-only daemon→
+containerd diagnostic:64 daemon task entries/16 direct-child IDs, known owner/
+parent/byte rechecks, no raw args/environment/memory or worker/shim/runc/lifecycle
+access. Seven active sections updated before private collector implementation.
+New0700 key `daemon-containerd-association-ncyh2vum` retains copied reviewed peer
+helpers, verified member-result/input hashes, intended red/green, exact command/
+exit/result manifests as0600 files. Prior artifacts and archives unchanged.
+
+Inert identity parser produces intended synthetic assertion failure exit1; then
+compile and assert-based self-check groups exit0: peer/proc/pidfd/hash readers,
+comm-parentheses/PPID/starttime, strict ASCII child IDs/duplicates/size, owner/
+parent/role filtering, task/child/symlink/deadline bounds. Secret source/input
+preflight exits0 before any live access. Names are filters only; planned runtime
+pidfd acquisition follows archive byte validation and requires final rechecks.
+
+**Actual required check:** `python3 -I -B <evidence>/check.py` exits2, result
+blocked at bounded-daemon-children, reason daemon-thread-bound. One zero-HTTP
+socket connection. Control flow reaches task enumeration after preliminary
+daemon owner/PID/proc/pidfd/expected executable byte guards, but does not reach
+final revalidation or association. After64 validated task entries the next entry
+triggers refusal before opening any thread directory/children file. No exact
+thread count, child IDs, candidate proc/exe/pidfd/namespaces or worker objects read.
+All collector-owned handles close; no signals or runtime mutations.
+
+Report `research/pi/25-p2-daemon-containerd-association.md` preserves the blocked
+JSON and methods/limits. The failure is the approved bound, not evidence of
+external/missing runtime, tampering or a new upstream defect. No partial-list
+selection, retry, increased limit, args/env workaround or recursive process walk.
+Next owner may explicitly approve one larger finite bound (suggest256 task
+entries, same16 child IDs/exclusions) or pause; no such approval inferred here.
+Daemon/client/full-runtime/proc/pidfd/worker joins remain unproved. Native CLI,
+inventory/pending actions/fences and G2 unchanged; no phase or authority closure.
+
+App/native/type/coverage/drill/audit reruns N/A for this private diagnostic/
+document-only slice, not fresh passes. Live exit2 remains a required failed check;
+final scoped checks exit0: pinned scanner identity, four document/12 private-text
+secret scans,39 local links/anchors, seven active sections/unique ADRs/canonical
+casing, protected app/probe/tests/config/lock/CI/earlier research and review hash,
+source/red/result/input identities, private modes, no signal/execution/unreviewed
+helper-call paths and `git diff --check`. This does not pass the live exit2 bound
+failure. Full four-file diff reviewed. No new archive/network download, Go/telemetry/
+provider/SDK, mount/container activity, push or publication.
+Leave new report/contract/SPEC/ADR notes uncommitted.
 
 ## P2 private IPC execution record (historical)
 

@@ -79,6 +79,10 @@ Before opening worker handles, establish these relationships:
   now matches both historical archive hashes and all five selected members to the
   2026-10-29 artifact snapshot. This closes that byte-continuity check only: no
   artifact signature/source-build proof or fresh active-runtime identity follows.
+  [Approved daemon/containerd preflight](../research/pi/25-p2-daemon-containerd-association.md)
+  stops at its64-thread guard before child discovery. It supplies no runtime
+  association, client-selection or worker admission proof; a larger bound requires
+  a separate owner decision, not automatic retry.
   [Pinned source trace](../research/pi/21-p2-moby-pid-cgroup-trace.md) confirms
   inspect copies cached `State.Pid`; `RestoreTask` attaches without synchronizing
   that state. Repeated inspect/full ID/StartedAt/RestartCount agreement is not
